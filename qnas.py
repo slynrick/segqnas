@@ -54,7 +54,7 @@ class QNAS(object):
         self.qpop_net = None
 
     def initialize_qnas(self, num_quantum_ind, params_ranges, repetition, max_generations,
-                        crossover_rate, update_quantum_gen, replace_method, fn_list,
+                        crossover_rate, update_quantum_gen, replace_method, fn_list, fn_new_dict,
                         initial_probs, update_quantum_rate, max_num_nodes, reducing_fns_list,
                         save_data_freq=0, penalize_number=0):
 
@@ -224,9 +224,8 @@ class QNAS(object):
         if self.current_gen > 0:
             new_pop_params = self.qpop_params.classic_crossover(new_pop=new_pop_params,
                                                                 distance=self.random)
-        # Generate classical pop for network structure
         new_pop_net = self.qpop_net.generate_classical()
-
+        self.logger.info("new population created", new_pop_net)
         # Evaluate population
         new_fitnesses, raw_fitnesses = self.eval_pop(new_pop_params, new_pop_net)
 
@@ -267,7 +266,6 @@ class QNAS(object):
         """
 
         decoded_params, decoded_nets = self.decode_pop(pop_params, pop_net)
-
         self.logger.info('Evaluating new population ...')
         fitnesses = self.eval_func(decoded_params, decoded_nets, generation=self.current_gen)
         penalized_fitnesses = np.copy(fitnesses)

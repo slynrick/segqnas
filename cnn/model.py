@@ -47,7 +47,7 @@ class ConvBlock(object):
             output tensor.
         """
 
-        with tf.variable_scope(name):
+        with tf.compat.v1.variable_scope(name):
             tensor = self._conv2d(inputs, name='conv1')
             tensor = self._batch_norm(tensor, is_train, name='bn1')
             tensor = self.activation(tensor)
@@ -65,7 +65,7 @@ class ConvBlock(object):
             output tensor.
         """
 
-        return tf.layers.conv2d(inputs=inputs,
+        return tf.compat.v1.layers.conv2d(inputs=inputs,
                                 filters=self.filters,
                                 kernel_size=self.kernel_size,
                                 activation=None,
@@ -87,7 +87,7 @@ class ConvBlock(object):
             output tensor.
         """
 
-        return tf.layers.batch_normalization(inputs=inputs,
+        return tf.compat.v1.layers.batch_normalization(inputs=inputs,
                                              axis=-1,
                                              momentum=self.batch_norm_mu,
                                              epsilon=self.batch_norm_epsilon,
@@ -127,7 +127,7 @@ class ResidualV1(object):
             output tensor
         """
 
-        with tf.variable_scope(name):
+        with tf.compat.v1.variable_scope(name):
 
             tensor = self._conv_fixed_pad(inputs=inputs, kernel_size=self.kernel_size,
                                           filters=self.filters, strides=self.strides,
@@ -171,7 +171,7 @@ class ResidualV1(object):
             inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end], [pad_beg, pad_end], [0, 0]])
             padding = 'VALID'
 
-        return tf.layers.conv2d(inputs=inputs,
+        return tf.compat.v1.layers.conv2d(inputs=inputs,
                                 kernel_size=kernel_size,
                                 filters=filters,
                                 strides=strides,
@@ -192,7 +192,7 @@ class ResidualV1(object):
             output tensor.
         """
 
-        return tf.layers.batch_normalization(inputs=inputs,
+        return tf.compat.v1.layers.batch_normalization(inputs=inputs,
                                              axis=-1,
                                              momentum=self.batch_norm_mu,
                                              epsilon=self.batch_norm_epsilon,
@@ -204,7 +204,7 @@ class ResidualV1Pr(ResidualV1):
     """ Residual V1 block with projection shortcut """
     def _projection(self, inputs, filters, name):
 
-        return tf.layers.conv2d(inputs=inputs,
+        return tf.compat.v1.layers.conv2d(inputs=inputs,
                                 kernel_size=1,
                                 filters=filters,
                                 strides=1,
@@ -225,7 +225,7 @@ class ResidualV1Pr(ResidualV1):
             output tensor.
         """
 
-        with tf.variable_scope(name):
+        with tf.compat.v1.variable_scope(name):
             shortcut = self._projection(inputs, filters=self.filters, name='shortcut')
             shortcut = self._batch_norm(shortcut, is_train, name='bn_s')
 
@@ -270,7 +270,7 @@ class MaxPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return tf.layers.max_pooling2d(inputs=inputs,
+            return tf.compat.v1.layers.max_pooling2d(inputs=inputs,
                                            pool_size=self.pool_size,
                                            strides=self.strides,
                                            data_format='channels_last',
@@ -306,7 +306,7 @@ class AvgPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return tf.layers.average_pooling2d(inputs=inputs,
+            return tf.compat.v1.layers.average_pooling2d(inputs=inputs,
                                                pool_size=self.pool_size,
                                                strides=self.strides,
                                                data_format='channels_last',
@@ -340,7 +340,7 @@ class FullyConnected(object):
             output tensor.
         """
 
-        tensor = tf.layers.dense(inputs=inputs,
+        tensor = tf.compat.v1.layers.dense(inputs=inputs,
                                  units=self.units,
                                  activation=self.activation,
                                  kernel_initializer=self.initializer(),
@@ -436,7 +436,7 @@ class NetworkGraph(object):
 
             i += 1
 
-        shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3]).value
+        shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         tensor = tf.reshape(inputs, [-1, shape])
 
         logits = FullyConnected(units=self.num_classes)(inputs=tensor, name='linear')

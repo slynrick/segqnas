@@ -21,9 +21,10 @@ The specific versions that we used in our runs are:
 
 ```
 pyyaml==3.13
-numpy==1.14.5
+numpy==last version
 mpi4py==3.0.0
-tensorflow==1.9.0
+tensorflow==2.3.0
+psultil
 ```
 
 All of our runs were executed in a multi-computer environment, with NVIDIA K80 GPUs and Power8 processors

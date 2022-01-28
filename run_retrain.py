@@ -12,7 +12,6 @@ from util import check_files, init_log
 
 
 def main(**args):
-
     logger = init_log(args['log_level'], name=__name__)
     # Check if *experiment_path* contains all the necessary files to retrain an evolved model
     check_files(args['experiment_path'])
@@ -38,7 +37,37 @@ def main(**args):
     # It is important to merge the dicts with the evolved_params first, as they need to be
     # overwritten in case we are using one of the special train schemes.
     train_params = {**config.evolved_params['params'], **config.train_spec}
+    best_ind_tese = ['conv_5_1_512', 'conv_3_1_128', 'conv_3_1_512',
+                     'conv_5_1_256',
+                     'avg_pool_2_2',
+                     'conv_3_1_256',
+                     'avg_pool_2_2',
+                     'conv_5_1_128',
+                     'avg_pool_2_2',
+                     'max_pool_2_2']
 
+    # best_ind_tese = ['bv1p_3_1_128',
+    #                  'bv1p_3_1_128',
+    #                  'bv1p_3_1_256',
+    #                  'avg_pool_2_2',
+    #                  'no_op',
+    #                  'bv1p_3_1_256',
+    #                  'no_op',
+    #                  'no_op',
+    #                  'no_op',
+    #                  'max_pool_2_2',
+    #                  'max_pool_2_2',
+    #                  'bv1_3_1_128',
+    #                  'bv1_3_1_64',
+    #                  'bv1p_3_1_256',
+    #                  'no_op',
+    #                  'bv1_3_1_256',
+    #                  'max_pool_2_2',
+    #                  'bv1_3_1_256',
+    #                  'bv1p_3_1_64',
+    #                  'no_op'
+    #                  ]
+    config.evolved_params['net'] = best_ind_tese
     logger.info(f"Starting training of model {config.evolved_params['net']}")
     valid_acc, test_info = train.train_and_eval(data_info=config.data_info,
                                                 params=train_params,
@@ -55,7 +84,6 @@ def main(**args):
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--experiment_path', type=str, required=True,
                         help='Directory where the evolved network logs are.')

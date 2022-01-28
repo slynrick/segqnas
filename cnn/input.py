@@ -12,6 +12,9 @@ import os
 
 import numpy as np
 import tensorflow as tf
+import platform
+import psutil
+tf.compat.v1.disable_v2_behavior()
 
 
 class DataSet(object):
@@ -60,15 +63,15 @@ class DataSet(object):
             label (shape = []).
         """
 
-        features = tf.parse_single_example(
+        features = tf.compat.v1.parse_single_example(
             serialized_example,
-            features={'height': tf.FixedLenFeature([], tf.int64),
-                      'width': tf.FixedLenFeature([], tf.int64),
-                      'depth': tf.FixedLenFeature([], tf.int64),
-                      'label': tf.FixedLenFeature([], tf.int64),
-                      'image_raw': tf.FixedLenFeature([], tf.string)})
+            features={'height': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'width': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'depth': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'label': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'image_raw': tf.compat.v1.FixedLenFeature([], tf.string)})
 
-        image = tf.decode_raw(features['image_raw'], tf.uint8)
+        image = tf.compat.v1.decode_raw(features['image_raw'], tf.uint8)
         image = tf.reshape(image, (self.info.height, self.info.width, self.info.num_channels))
 
         # Rescale the values of the image from the range [0, 255] to [0, 1.0]
@@ -100,6 +103,8 @@ class DataSet(object):
         if not threads:
             if os.uname().sysname == 'Linux':
                 threads = len(os.sched_getaffinity(0))
+            elif platform.system() == 'Windows':
+                threads = len(psutil.Process().cpu_affinity())
             else:
                 threads = os.cpu_count()
 
@@ -116,7 +121,9 @@ class DataSet(object):
             dataset = dataset.repeat()
 
         # Batch results by up to batch_size, and then fetch the tuple from the iterator.
-        iterator = dataset.batch(batch_size).make_one_shot_iterator()
+        batched_dataset = dataset.batch(batch_size)
+        iterator = tf.compat.v1.data.make_one_shot_iterator(batched_dataset)
+
         images, labels = iterator.get_next()
 
         return images, labels
@@ -133,8 +140,8 @@ class DataSet(object):
 
         pad_height = self.info.height + self.info.pad
         pad_width = self.info.width + self.info.pad
-        image = tf.image.resize_image_with_crop_or_pad(image, pad_height, pad_width)
-        image = tf.random_crop(image, [self.info.height, self.info.width,
+        image = tf.compat.v1.image.resize_image_with_crop_or_pad(image, pad_height, pad_width)
+        image = tf.compat.v1.random_crop(image, [self.info.height, self.info.width,
                                        self.info.num_channels])
         image = tf.image.random_flip_left_right(image)
 
@@ -205,7 +212,7 @@ def count_records(file_list):
 
     c = 0
     for file_path in file_list:
-        for _ in tf.python_io.tf_record_iterator(file_path):
+        for _ in tf.compat.v1.python_io.tf_record_iterator(file_path):
             c += 1
     return c
 

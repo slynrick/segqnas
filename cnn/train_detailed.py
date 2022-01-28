@@ -12,8 +12,23 @@ import functools
 import os
 
 import tensorflow as tf
+import keras.backend as K
+from tensorflow_addons.optimizers import CyclicalLearningRate
+from adam2sgd import Adam2SGD, SWATS
+import clr_callback
 
-from cnn import model, input, hooks
+from cnn import model, input, hooks, hparam
+
+physical_devices = tf.config.list_physical_devices('GPU')
+try:
+    tf.config.set_logical_device_configuration(
+        physical_devices[0],
+        [tf.config.LogicalDeviceConfiguration(memory_limit=6000)])
+    logical_devices = tf.config.list_logical_devices('GPU')
+except:
+    print('Failed to limit GPU RAM size')
+    # Invalid device or cannot modify logical devices once initialized.
+    pass
 
 
 class CosineScheme(object):
@@ -47,11 +62,11 @@ class CosineScheme(object):
         """
 
         steps = int(CosineScheme.max_epochs * steps_per_epoch)
-        decay_lr = tf.train.cosine_decay(CosineScheme.learning_rate, global_step,
-                                         decay_steps=steps)
+        decay_lr = tf.compat.v1.train.cosine_decay(CosineScheme.learning_rate, global_step,
+                                                   decay_steps=steps)
 
-        optimizer = tf.train.MomentumOptimizer(learning_rate=decay_lr,
-                                               momentum=CosineScheme.momentum)
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=decay_lr,
+                                                         momentum=CosineScheme.momentum)
         return decay_lr, optimizer
 
 
@@ -83,11 +98,11 @@ class Cosine500Scheme(object):
         """
 
         steps = int(Cosine500Scheme.max_epochs * steps_per_epoch)
-        decay_lr = tf.train.cosine_decay(Cosine500Scheme.learning_rate, global_step,
-                                         decay_steps=steps)
+        decay_lr = tf.compat.v1.train.cosine_decay(Cosine500Scheme.learning_rate, global_step,
+                                                   decay_steps=steps)
 
-        optimizer = tf.train.MomentumOptimizer(learning_rate=decay_lr,
-                                               momentum=Cosine500Scheme.momentum)
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=decay_lr,
+                                                         momentum=Cosine500Scheme.momentum)
         return decay_lr, optimizer
 
 
@@ -125,11 +140,11 @@ class SpecialScheme(object):
         """
 
         boundaries = [int(i * steps_per_epoch) for i in SpecialScheme.lr_epoch_boundaries]
-        decay_lr = tf.train.piecewise_constant(global_step, boundaries,
-                                               SpecialScheme.learning_rate)
+        decay_lr = tf.compat.v1.train.piecewise_constant(global_step, boundaries,
+                                                         SpecialScheme.learning_rate)
 
-        optimizer = tf.train.MomentumOptimizer(learning_rate=decay_lr,
-                                               momentum=SpecialScheme.momentum)
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=decay_lr,
+                                                         momentum=SpecialScheme.momentum)
         return decay_lr, optimizer
 
 
@@ -148,15 +163,23 @@ def _model_fn(features, labels, mode, params):
 
     is_train = (mode == tf.estimator.ModeKeys.TRAIN)
 
-    with tf.variable_scope('q_net'):
-        loss, grads_and_vars, predictions = _get_loss_and_grads(is_train=is_train,
-                                                                params=params,
-                                                                features=features,
-                                                                labels=labels)
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.compat.v1.variable_scope('q_net'):
+        if params.optimizer == 'Adam2SGD':
+            loss, model_params, predictions = _get_loss_and_grads(is_train=is_train,
+                                                                  params=params,
+                                                                  features=features,
+                                                                  labels=labels)
+        else:
+            loss, grads_and_vars, predictions = _get_loss_and_grads(is_train=is_train,
+                                                                    params=params,
+                                                                    features=features,
+                                                                    labels=labels)
+        update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
     tf.summary.scalar('train_loss', loss)
+    global_step = tf.compat.v1.train.get_global_step()
 
+    params.learning_rate = clr_callback.cyclic_learning_rate(global_step=global_step, mode='triangular')
     if params.lr_schedule is None:
 
         decay = params.decay if params.optimizer == 'RMSProp' else None
@@ -167,13 +190,15 @@ def _model_fn(features, labels, mode, params):
 
     train_hooks = [hooks.ExamplesPerSecondHook(params.batch_size, every_n_steps=100)]
 
-    # Create single grouped train op
-    train_op = [optimizer.apply_gradients(grads_and_vars,
-                                          global_step=tf.train.get_global_step())]
+    if params.optimizer == 'Adam2SGD':
+        train_op = [optimizer.get_updates(loss, model_params), global_step.assign(global_step + 1)]
+    else:
+        train_op = [optimizer.apply_gradients(grads_and_vars,
+                                              global_step=global_step)]
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    accuracy = tf.metrics.accuracy(labels, predictions['classes'])
+    accuracy = tf.compat.v1.metrics.accuracy(labels, predictions['classes'])
     confusion = _confusion_matrix(labels, predictions['classes'], params.num_classes)
 
     metrics = {'accuracy': accuracy, 'confusion_matrix': confusion}
@@ -198,12 +223,15 @@ def _evolution_optimizer(optimizer_name, learning_rate, momentum, decay):
     """
 
     if optimizer_name == 'RMSProp':
-        optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
-                                              decay=decay,
-                                              momentum=momentum)
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate=learning_rate,
+                                                        decay=decay,
+                                                        momentum=momentum)
+    elif optimizer_name == 'Adam2SGD':
+        optimizer = SWATS(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-9)
+
     else:
-        optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate,
-                                               momentum=momentum)
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate,
+                                                         momentum=momentum)
     return optimizer
 
 
@@ -221,7 +249,7 @@ def _get_special_optimizer(lr_schedule, steps_per_epoch):
 
     scheme = train_schemes_map[lr_schedule]
     decay_lr, optimizer = scheme.get_lr_and_optimizer(steps_per_epoch=steps_per_epoch,
-                                                      global_step=tf.train.get_global_step())
+                                                      global_step=tf.compat.v1.train.get_global_step())
     tf.summary.scalar('learning_rate', decay_lr)
 
     return optimizer
@@ -248,15 +276,18 @@ def _get_loss_and_grads(is_train, params, features, labels):
     predictions = {'classes': tf.argmax(input=logits, axis=1),
                    'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
 
-    loss = tf.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
+    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
 
     # Apply weight decay for every trainable variable in the model
-    model_params = tf.trainable_variables()
+    model_params = tf.compat.v1.trainable_variables()
     loss += params.weight_decay * tf.add_n([tf.nn.l2_loss(v) for v in model_params])
 
     gradients = tf.gradients(loss, model_params)
 
-    return loss, list(zip(gradients, model_params)), predictions
+    if params.optimizer == 'Adam2SGD':
+        return loss, model_params, predictions
+    else:
+        return loss, list(zip(gradients, model_params)), predictions
 
 
 def _set_train_steps(max_steps, save_checkpoints_steps, estimator):
@@ -282,7 +313,7 @@ def _set_train_steps(max_steps, save_checkpoints_steps, estimator):
         initial_step = 0
         num_loops, remain = divmod(max_steps, save_checkpoints_steps)
 
-    train_steps = [initial_step + (i*save_checkpoints_steps) for i in range(1, num_loops+1)]
+    train_steps = [initial_step + (i * save_checkpoints_steps) for i in range(1, num_loops + 1)]
     if remain > 0:
         train_steps.append(train_steps[-1] + remain)
 
@@ -306,15 +337,15 @@ def _confusion_matrix(labels, predictions, num_classes):
         Tensor for confusion matrix and its update operation.
     """
 
-    with tf.variable_scope('confusion_matrix'):
-        confusion = tf.confusion_matrix(labels=labels, predictions=predictions,
-                                        num_classes=num_classes)
+    with tf.compat.v1.variable_scope('confusion_matrix'):
+        confusion = tf.compat.v1.confusion_matrix(labels=labels, predictions=predictions,
+                                                  num_classes=num_classes)
 
-        confusion_sum = tf.Variable(tf.zeros(shape=(num_classes, num_classes), dtype=tf.int32),
-                                    trainable=False, name='confusion_matrix_result',
-                                    collections=[tf.GraphKeys.LOCAL_VARIABLES])
+        confusion_sum = tf.compat.v1.Variable(tf.zeros(shape=(num_classes, num_classes), dtype=tf.int32),
+                                              trainable=False, name='confusion_matrix_result',
+                                              collections=[tf.compat.v1.GraphKeys.LOCAL_VARIABLES])
 
-        update_op = tf.assign_add(confusion_sum, confusion, name='update_conf_op')
+        update_op = tf.compat.v1.assign_add(confusion_sum, confusion, name='update_conf_op')
 
         return tf.convert_to_tensor(confusion_sum), update_op
 
@@ -344,7 +375,7 @@ def _load_best_acc(model_dir):
             files.sort(key=lambda x: os.path.getmtime(x))
             files = files[-1:]
 
-        iterator = tf.train.summary_iterator(files[0])
+        iterator = tf.compat.v1.train.summary_iterator(files[0])
 
         for e in iterator:
             for v in e.summary.value:
@@ -380,34 +411,36 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
                                         config=run_config,
                                         params=params)
 
+    es_hook = tf.estimator.experimental.stop_if_no_decrease_hook(classifier, "loss", 3000)
+
     eval_hook = hooks.SaveBestHook(name='accuracy/value:0', best_metric=best_acc,
                                    checkpoint_dir=best_dir)
 
     train_steps = _set_train_steps(max_steps=params.max_steps,
                                    save_checkpoints_steps=params.save_checkpoints_steps,
                                    estimator=classifier)
-
+    print(train_steps)
     for steps in train_steps:
+        tf.summary.scalar('learning rate', data= params.learning_rate, step=steps)
         classifier.train(input_fn=train_input_fn,
-                         max_steps=steps)
+                         max_steps=steps, hooks=[es_hook])
 
-        tf.logging.log(level=tf.logging.get_verbosity(),
-                       msg='Running evaluation on valid dataset ...')
+        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
+                                 msg='Running evaluation on valid dataset ...')
 
         classifier.evaluate(input_fn=eval_input_fns['valid'],
-                            steps=None,
-                            hooks=[eval_hook])
+                            steps=None, hooks=[eval_hook])
 
         if 'train' in eval_input_fns.keys():
-            tf.logging.log(level=tf.logging.get_verbosity(),
-                           msg='Running evaluation on train dataset ...')
+            tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
+                                     msg='Running evaluation on train dataset ...')
 
             classifier.evaluate(input_fn=eval_input_fns['train'],
                                 steps=None, hooks=None, name='train_eval')
 
     # Run test on the best validation model
-    tf.logging.log(level=tf.logging.get_verbosity(),
-                   msg='Running final test using the best validation model ...')
+    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
+                             msg='Running final test using the best validation model ...')
     ckpt = tf.train.latest_checkpoint(best_dir)
     test_results = classifier.evaluate(input_fn=test_input_fn,
                                        steps=None, hooks=None, checkpoint_path=ckpt,
@@ -441,23 +474,24 @@ def train_and_eval(data_info, params, fn_dict, net_list, lr_schedule=None, run_t
     os.environ['TF_SYNC_ON_FINISH'] = '0'
     os.environ['TF_ENABLE_WINOGRAD_NONFUSED'] = '1'
     if params['log_level'] == 'INFO':
-        tf.logging.set_verbosity(tf.logging.INFO)
+        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
     elif params['log_level'] == 'DEBUG':
-        tf.logging.set_verbosity(tf.logging.DEBUG)
+        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.DEBUG)
 
     # Session configuration.
-    sess_config = tf.ConfigProto(allow_soft_placement=True,
-                                 intra_op_parallelism_threads=params['threads'],
-                                 inter_op_parallelism_threads=params['threads'],
-                                 gpu_options=tf.GPUOptions(force_gpu_compatible=True,
-                                                           allow_growth=True))
+    sess_config = tf.compat.v1.ConfigProto(allow_soft_placement=True,
+                                           intra_op_parallelism_threads=params['threads'],
+                                           inter_op_parallelism_threads=params['threads'],
+                                           gpu_options=tf.compat.v1.GPUOptions(force_gpu_compatible=True,
+                                                                               allow_growth=True))
 
     config = tf.estimator.RunConfig(session_config=sess_config,
                                     model_dir=params['experiment_path'],
                                     save_checkpoints_steps=params['save_checkpoints_steps'],
                                     save_summary_steps=params['save_summary_steps'],
                                     save_checkpoints_secs=None,
-                                    keep_checkpoint_max=1)
+                                    keep_checkpoint_max=1
+                                    )
 
     net = model.NetworkGraph(num_classes=data_info.num_classes, mu=0.99)
     filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
@@ -468,7 +502,7 @@ def train_and_eval(data_info, params, fn_dict, net_list, lr_schedule=None, run_t
     params['num_classes'] = data_info.num_classes
     params['lr_schedule'] = lr_schedule
 
-    hparams = tf.contrib.training.HParams(**params)
+    hparams = hparam.HParams(**params)
 
     train_input_fn = functools.partial(input.input_fn, data_info=data_info,
                                        dataset_type='train',
@@ -503,7 +537,7 @@ def train_and_eval(data_info, params, fn_dict, net_list, lr_schedule=None, run_t
                                                     process_for_training=False,
                                                     threads=hparams.threads)
 
-    tf.logging.log(level=tf.logging.get_verbosity(), msg='Training model ...')
+    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='Training model ...')
 
     valid_acc, test_info = train_multi_eval(params=hparams, run_config=config,
                                             train_input_fn=train_input_fn,

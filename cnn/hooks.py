@@ -68,7 +68,7 @@ class ExamplesPerSecondHook(session_run_hook.SessionRunHook):
         self._global_step_tensor = None
 
     def begin(self):
-        self._global_step_tensor = tf.train.get_global_step()
+        self._global_step_tensor = tf.compat.v1.train.get_global_step()
         if self._global_step_tensor is None:
             raise RuntimeError('Global step should be created to use ExamplesPerSecondHook.')
 
@@ -97,7 +97,7 @@ class ExamplesPerSecondHook(session_run_hook.SessionRunHook):
                                 f'({current_examples_per_sec}), step = {self._total_steps}')
 
 
-class SaveBestHook(tf.train.SessionRunHook):
+class SaveBestHook(tf.compat.v1.train.SessionRunHook):
     """ Hook to monitor validation metric and save the best performing model so far.
 
         This hook takes a list as input in order to save the best metric in an outer scope
@@ -117,7 +117,7 @@ class SaveBestHook(tf.train.SessionRunHook):
             checkpoint_dir: (str) path to the directory where to save the best model.
         """
 
-        tf.train.SessionRunHook.__init__(self)
+        tf.compat.v1.train.SessionRunHook.__init__(self)
         self.tensor_name = name
         self.best_metric = best_metric
         self._saver = None
@@ -126,11 +126,11 @@ class SaveBestHook(tf.train.SessionRunHook):
         self.global_step = None
 
     def begin(self):
-        self.global_step = tf.train.get_global_step()
-        self._saver = tf.train.Saver(max_to_keep=1)
+        self.global_step = tf.compat.v1.train.get_global_step()
+        self._saver = tf.compat.v1.train.Saver(max_to_keep=1)
 
     def before_run(self, run_context):
-        return tf.train.SessionRunArgs({'step': self.global_step})
+        return tf.compat.v1.train.SessionRunArgs({'step': self.global_step})
 
     def after_run(self, run_context, run_values):
         self.current_step = run_values.results['step']
@@ -139,7 +139,7 @@ class SaveBestHook(tf.train.SessionRunHook):
         metric_tensor = session.graph.get_tensor_by_name(self.tensor_name)
         current_metric = session.run(metric_tensor)
 
-        tf.logging.log(level=tf.logging.get_verbosity(),
+        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
                        msg=f'Last: {self.best_metric[1]}, {self.best_metric[0]};   '
                            f'Current: {self.current_step}, {current_metric}')
 
@@ -147,7 +147,7 @@ class SaveBestHook(tf.train.SessionRunHook):
             self.best_metric[0] = current_metric
             self.best_metric[1] = self.current_step
 
-            tf.logging.log(level=tf.logging.get_verbosity(),
+            tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
                            msg=f'Saving new best model... Step: {self.best_metric[1]}, '
                                f'metric: {self.best_metric[0]}')
 
@@ -157,7 +157,7 @@ class SaveBestHook(tf.train.SessionRunHook):
                              global_step=self.best_metric[1])
 
 
-class GetBestHook(tf.train.SessionRunHook):
+class GetBestHook(tf.compat.v1.train.SessionRunHook):
     """ Hook to monitor validation metric.
 
         This hook takes a list as input in order to save the best metric in an outer scope
@@ -174,7 +174,7 @@ class GetBestHook(tf.train.SessionRunHook):
             best_metric: list of length 2, to keep track of the best metric and the
                 corresponding step.
         """
-        tf.train.SessionRunHook.__init__(self)
+        tf.compat.v1.train.SessionRunHook.__init__(self)
         self.tensor_name = name
         self.best_metric = best_metric
         # Initialize best_metric with zero values
@@ -184,10 +184,10 @@ class GetBestHook(tf.train.SessionRunHook):
         self.global_step = None
 
     def begin(self):
-        self.global_step = tf.train.get_global_step()
+        self.global_step = tf.compat.v1.train.get_global_step()
 
     def before_run(self, run_context):
-        return tf.train.SessionRunArgs({'step': self.global_step})
+        return tf.compat.v1.train.SessionRunArgs({'step': self.global_step})
 
     def after_run(self, run_context, run_values):
         self.current_step = run_values.results['step']
@@ -196,7 +196,7 @@ class GetBestHook(tf.train.SessionRunHook):
         metric_tensor = session.graph.get_tensor_by_name(self.tensor_name)
         current_metric = session.run(metric_tensor)
 
-        tf.logging.log(level=tf.logging.get_verbosity(),
+        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
                        msg=f'Last: {self.best_metric[1]}, {self.best_metric[0]};  '
                            f'Current: {self.current_step}, {current_metric}')
 
@@ -238,7 +238,7 @@ class TimeOutHook(session_run_hook.SessionRunHook):
             raise TimeoutError()
 
     def begin(self):
-        self._global_step_tensor = tf.train.get_global_step()
+        self._global_step_tensor = tf.compat.v1.train.get_global_step()
 
     def before_run(self, run_context):
         return basic_session_run_hooks.SessionRunArgs(self._global_step_tensor)

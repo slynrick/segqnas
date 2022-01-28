@@ -76,7 +76,7 @@ class ExtractData(object):
 
         out_file = f'{os.path.split(self.dir_path)[-1]}_{tag}.csv'
         out_path = os.path.join(self.output_dir, out_file)
-        iterator = tf.train.summary_iterator(event_file)
+        iterator = tf.compat.v1.train.summary_iterator(event_file)
 
         with open(out_path, 'w') as f:
             if write_headers:
@@ -256,7 +256,7 @@ def convert_to_tfrecords(data, labels, output_file):
 
     print(f'Generating {output_file}')
 
-    with tf.python_io.TFRecordWriter(output_file) as record_writer:
+    with tf.compat.v1.python_io.TFRecordWriter(output_file) as record_writer:
         for i in range(len(labels)):
             image = data[i]
             image_raw = image.flatten().tostring()

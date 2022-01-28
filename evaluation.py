@@ -11,10 +11,10 @@ from mpi4py import MPI
 
 from cnn import train
 from util import init_log
-
+import random
 
 class EvalPopulation(object):
-    def __init__(self, params, data_info, fn_dict, log_level='INFO'):
+    def __init__(self, params, data_info, fn_dict, new_fn_dict, log_level='INFO'):
         """ Initialize EvalPopulation.
 
         Args:
@@ -28,6 +28,7 @@ class EvalPopulation(object):
         self.train_params = params
         self.data_info = data_info
         self.fn_dict = fn_dict
+        self.fn_new_dict = new_fn_dict
         self.timeout = 9000
         self.logger = init_log(log_level, name=__name__)
         self.comm = MPI.COMM_WORLD
@@ -56,7 +57,14 @@ class EvalPopulation(object):
 
         try:
             self.send_data(decoded_params, decoded_nets, generation)
-
+            print(self.fn_dict)
+            if generation % 10 == 0:
+                fn_list = ["add", "sub"]
+                choice = random.choice(fn_list)
+                if choice == "add":
+                    self.fn_dict = self.fn_dict.update(random.choice(self.fn_new_dict))
+                else:
+                    self.fn_dict = self.fn_dict.pop(random.choice(self.fn_dict))
             # After sending tasks, Master starts its own work...
             evaluations[0] = train.fitness_calculation(id_num=f'{generation}_0',
                                                        data_info=self.data_info,

@@ -70,13 +70,13 @@ def profile_model(file_path, model_name):
         model_name: (str) some model identifying name.
     """
 
-    profile_opts = tf.profiler.ProfileOptionBuilder
+    profile_opts = tf.compat.v1.profiler.ProfileOptionBuilder
 
-    param_stats = tf.profiler.profile(tf.get_default_graph(), cmd='graph',
+    param_stats = tf.compat.v1.profiler.profile(tf.compat.v1.get_default_graph(), cmd='graph',
                                       options=profile_opts.trainable_variables_parameter())
     total_params = param_stats.total_parameters
 
-    param_stats = tf.profiler.profile(tf.get_default_graph(), cmd='op',
+    param_stats = tf.compat.v1.profiler.profile(tf.compat.v1.get_default_graph(), cmd='op',
                                       options=profile_opts.float_operation())
     total_float_ops = param_stats.total_float_ops
 
@@ -94,16 +94,15 @@ def main(exp_path, generation, individual):
     profile_path = os.path.join(os.path.join(exp_path), file_name)
 
     with tf.Graph().as_default():
-        with tf.variable_scope('q_net'):
+        with tf.compat.v1.variable_scope('q_net'):
             # Adding input placeholder into the graph
-            input_image = tf.placeholder(tf.float32, shape=params['input_shape'],
+            input_image = tf.compat.v1.placeholder(tf.float32, shape=params['input_shape'],
                                          name='input_image')
 
             net = model.NetworkGraph(num_classes=params['num_classes'], mu=0.99)
             filtered_dict = {key: item for key, item in params['fn_dict'].items()
                              if key in params['net_list']}
             net.create_functions(fn_dict=filtered_dict)
-
             net.create_network(inputs=input_image, net_list=params['net_list'], is_train=False)
             profile_model(profile_path, params['individual_id_str'])
 
