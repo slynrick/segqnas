@@ -1,5 +1,0 @@
-pyyaml==3.13
-numpy
-mpi4py==3.0.0
-tensorflow==2.3.0
-psutil
