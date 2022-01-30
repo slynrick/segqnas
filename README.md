@@ -1,4 +1,13 @@
 # Q-NAS
+
+## Seting up the environment
+
+```
+git clone https://github.com/GuilhermeBaldo/segqnas.git
+conda create --name segqnas python=3.7
+conda activate segqnas
+```
+
 ## Neural Architecture Search using the Q-NAS algorithm and Tensorflow.
 
 This repository contains code for the works presented in the following papers:
