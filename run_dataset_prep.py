@@ -87,6 +87,7 @@ def main(data_path, output_folder, limit_data, random_seed):
     np.random.seed(random_seed)  # Choose random seed
     info_dict['seed'] = random_seed
 
+    # TODO pending stratified split
     train_imgs, train_masks, valid_imgs, valid_masks = util.split_dataset(
         images=train_imgs, masks=train_masks, num_classes=NUM_CLASSES,
         valid_ratio=VALID_DATA_RATIO, limit=size)
