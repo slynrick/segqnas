@@ -75,12 +75,11 @@ def main(data_path, output_folder, limit_data, random_seed):
     train_imgs, train_masks, test_imgs, test_masks = load_pascalvoc12(data_path)
 
     # split train set into train and validation
-
+    size = len(train_masks)
     if limit_data:
-        size = limit_data
-    else:
-        size = len(train_masks)
-
+        if limit_data < size:
+            size = limit_data
+    
     if random_seed is None:
         random_seed = int(time())
 

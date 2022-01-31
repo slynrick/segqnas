@@ -389,9 +389,12 @@ def split_dataset(images, masks, num_classes, valid_ratio, limit):
         valid_imgs: ndarray of images (shape = (valid_size, height, width, channels)).
         valid_masks: ndarray of labels (shape = (valid_size, )).
     """
+
+    train_size = int(limit * (1. - valid_ratio))
+    valid_size = limit - train_size
     
     # TODO split dataset in stratified manner pixel-wise or class-wise?
-    train_imgs, valid_imgs, train_masks, valid_masks = train_test_split(images, masks, test_size=VALID_DATA_RATIO)
+    train_imgs, valid_imgs, train_masks, valid_masks = train_test_split(images, masks, test_size=valid_size, train_size=train_size)
 
     # train_count = {}
     # for mask in train_masks:
