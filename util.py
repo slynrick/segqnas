@@ -13,9 +13,11 @@ import logging
 import os
 import pickle as pkl
 import re
+import tarfile
 import sys
 from shutil import rmtree
-
+from run_dataset_prep import VALID_DATA_RATIO
+from sklearn.model_selection import train_test_split
 import numpy as np
 import tensorflow as tf
 import yaml
@@ -229,45 +231,98 @@ def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
+# def calculate_mean_old(images):
+#     """ Calculate the image mean of the rescaled images array. Rescale the uint8 values to
+#         floats in the range [0, 1], and calculate the mean over all examples.
+
+#     Args:
+#         images: uint8 numpy array of images (shape = [num_examples, height, width, channels]).
+
+#     Returns:
+#         np.ndarray of mean image with shape = [height, width, channels].
+#     """
+#     img_mean = np.mean(np.array(images) / 255, axis=0)
+
+#     return img_mean
+
+
 def calculate_mean(images):
-    """ Calculate the image mean of the rescaled images array. Rescale the uint8 values to
-        floats in the range [0, 1], and calculate the mean over all examples.
+    """ Calculate the image mean and std of the rescaled images array. Rescale the uint8 values to
+        floats in the range [0, 1], and calculate the mean and std over all examples.
 
     Args:
-        images: uint8 numpy array of images (shape = [num_examples, height, width, channels]).
+        images: list of uint8 numpy arrays
 
     Returns:
-        np.ndarray of mean image with shape = [height, width, channels].
+        mean: np.ndarray of mean image with shape = [channels].
+        std: np.ndarray of mean image with shape = [channels]
     """
+    pixel_sum = np.zeros((1,3))
+    pixel_square_sum = np.zeros((1,3))
+    pixel_count = 0
 
-    img_mean = np.mean(images / 255, axis=0)
+    for image in images:
 
-    return img_mean
+        rescaled_image = image / 255
+        flattened_image = np.reshape(rescaled_image, (-1, image.shape[2]))
+
+        pixel_sum += np.sum(flattened_image, axis=0)
+        pixel_square_sum += np.sum(flattened_image ** 2, axis=0)
+
+        pixel_count += image.shape[0] * image.shape[1]
+
+    total_mean = pixel_sum / pixel_count
+    total_var = (pixel_square_sum / pixel_count) - (total_mean ** 2)
+    total_std = np.sqrt(total_var)
+
+    return total_mean[0], total_std[0]
 
 
-def convert_to_tfrecords(data, labels, output_file):
-    """ Convert data and labels (numpy arrays) to tfrecords files.
+def convert_to_tfrecords(images, masks, output_file):
+    """ Convert images and masks (numpy arrays) to tfrecords files.
 
     Args:
-        data: uint8 numpy array of images (shape = [num_examples, height, width, channels]).
-        labels: int32 numpy array with labels.
+        images: list of uint8 numpy array of images (shape = [height, width, channels]).
+        masks: list of uint8 numpy array of images (shape = [height, width]).
         output_file: (str) path to output file.
     """
 
     print(f'Generating {output_file}')
 
     with tf.compat.v1.python_io.TFRecordWriter(output_file) as record_writer:
-        for i in range(len(labels)):
-            image = data[i]
+        for i in range(len(masks)):
+            image = images[i]
             image_raw = image.flatten().tostring()
+            mask_raw = masks[i].flatten().tostring()
             example = tf.train.Example(features=tf.train.Features(
                 feature={'height': _int64_feature(image.shape[0]),
                          'width': _int64_feature(image.shape[1]),
                          'depth': _int64_feature(image.shape[2]),
-                         'label': _int64_feature(labels[i]),
+                         'mask_raw': _bytes_feature(mask_raw),
                          'image_raw': _bytes_feature(image_raw)}))
 
             record_writer.write(example.SerializeToString())
+
+def extract_file(file_path, data_path):
+    """ Extracts *file_path* in *data_path* if it is not already extracted.
+
+    Args:
+        file_path: (str) path to the .tar is downloaded.
+        data_path: (str) path where the .tar is suposed to be extracted.
+
+    Returns:
+        path to the extracted file.
+    """
+    compressed_file = tarfile.open(file_path, 'r')
+    folder_name_after_extraction = compressed_file.getnames()[0]
+
+    if not os.path.exists(os.path.join(data_path, folder_name_after_extraction)):
+        print(f'Extracting dataset...')
+        tarfile.open(file_path, 'r').extractall(data_path)
+    else:
+        print(f'Dataset already extracted, skipping extraction...')
+
+    return os.path.join(data_path, folder_name_after_extraction)
 
 
 def download_file(data_path, file_name, source_url):
@@ -316,63 +371,56 @@ def create_info_file(out_path, info_dict):
         yaml.dump(info_dict, f)
 
 
-def split_dataset(images, labels, num_classes, valid_ratio, limit):
-    """ Separate *images* and *labels* into train and validation sets, keeping both sets
+def split_dataset(images, masks, num_classes, valid_ratio, limit):
+    """ Separate *images* and *masks* into train and validation sets, keeping both sets
         balanced, that is, the number of examples for each class are similar in the
         training and validation sets.
 
     Args:
         images: ndarray of images (shape = (num_examples, height, width, channels)).
-        labels: ndarray of labels (shape = (num_examples,)).
+        masks: ndarray of labels (shape = (num_examples,)).
         num_classes: (int) number of classes in the dataset.
         valid_ratio: (float) ratio of the examples that will be on the validation set.
         limit: (int) maximum number of examples (train + validation examples).
 
     Returns:
         train_imgs: ndarray of images (shape = (train_size, height, width, channels))
-        train_labels: ndarray of labels (shape = (train_size, )).
+        train_masks: ndarray of labels (shape = (train_size, )).
         valid_imgs: ndarray of images (shape = (valid_size, height, width, channels)).
-        valid_labels: ndarray of labels (shape = (valid_size, )).
+        valid_masks: ndarray of labels (shape = (valid_size, )).
     """
+    
+    # TODO split dataset in stratified manner pixel-wise or class-wise?
+    train_imgs, valid_imgs, train_masks, valid_masks = train_test_split(images, masks, test_size=VALID_DATA_RATIO)
 
-    train_size = int(limit * (1. - valid_ratio))
-    valid_size = limit - train_size
+    # train_count = {}
+    # for mask in train_masks:
+    #     unique, counts = np.unique(mask, return_counts=True)
+    #     count = dict(zip(unique, counts))
+    #     for key in count:
+    #         if key in train_count:
+    #             train_count[key] += 1
+    #         else:
+    #             train_count[key] = 1
 
-    count_train = 0
-    count_valid = 0
+    # print('-------train-------')
+    # train_count = dict(sorted(train_count.items()))
+    # for key in train_count:
+    #     print(train_count[key])
 
-    train_imgs = np.zeros(shape=[train_size, images.shape[1], images.shape[2], images.shape[3]],
-                          dtype=np.uint8)
-    train_labels = np.zeros(shape=(train_size,), dtype=np.int32)
-    valid_imgs = np.zeros(shape=[valid_size, images.shape[1], images.shape[2], images.shape[3]],
-                          dtype=np.uint8)
-    valid_labels = np.zeros(shape=(valid_size,), dtype=np.int32)
+    # valid_count = {}
+    # for mask in valid_masks:
+    #     unique, counts = np.unique(mask, return_counts=True)
+    #     count = dict(zip(unique, counts))
+    #     for key in count:
+    #         if key in valid_count:
+    #             valid_count[key] += 1
+    #         else:
+    #             valid_count[key] = 1
 
-    division = np.linspace(0, train_size, num=num_classes + 1, dtype=np.int32)
-    train_ex_per_class = [division[i] - division[i - 1] for i in range(1, len(division))]
-    division = np.linspace(0, valid_size, num=num_classes + 1, dtype=np.int32)
-    valid_ex_per_class = [division[i] - division[i - 1] for i in range(1, len(division))]
+    # print('-------valid-------')
+    # valid_count = dict(sorted(valid_count.items()))
+    # for key in valid_count:
+    #     print(valid_count[key])
 
-    for i in range(num_classes):
-        idx = np.random.permutation(np.where(labels == i)[0])
-        train_idx = idx[:train_ex_per_class[i]]
-        valid_idx = [n for n in idx if n not in train_idx][:valid_ex_per_class[i]]
-
-        train_imgs[count_train:count_train+len(train_idx), :, :, :] = images[train_idx, :, :, :]
-        train_labels[count_train:count_train+len(train_idx)] = labels[train_idx]
-        valid_imgs[count_valid:count_valid+len(valid_idx), :, :, :] = images[valid_idx, :, :, :]
-        valid_labels[count_valid:count_valid+len(valid_idx)] = labels[valid_idx]
-
-        count_train += train_ex_per_class[i]
-        count_valid += valid_ex_per_class[i]
-
-    # Shuffle final arrays
-    idx = np.random.permutation(np.arange(train_size))
-    train_imgs = train_imgs[idx]
-    train_labels = train_labels[idx]
-
-    idx = np.random.permutation(np.arange(valid_size))
-    valid_imgs = valid_imgs[idx]
-    valid_labels = valid_labels[idx]
-
-    return train_imgs, train_labels, valid_imgs, valid_labels
+    return train_imgs, train_masks, valid_imgs, valid_masks

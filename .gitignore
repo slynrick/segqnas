@@ -112,3 +112,5 @@ ENV/
 cifar10/
 
 pascalvoc12/
+
+*.ipynb
