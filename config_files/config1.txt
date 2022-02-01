@@ -36,7 +36,7 @@ train:
     optimizer: RMSProp
 
     # Dataset
-    dataset: Cifar10
+    dataset: PASCALVOC12
     data_augmentation: True
     subtract_mean: True
 

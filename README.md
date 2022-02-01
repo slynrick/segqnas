@@ -8,6 +8,7 @@ conda create --name segqnas python=3.7
 conda activate segqnas
 
 python run_dataset_prep.py --data_path pascalvoc12 --output_folder pascalvoc12_trf_10000 --limit_data 10000
+mpirun -n 6 python run_evolution.py --experiment_path my_exp_config1 --config-file config_files/config1.txt --data_path pascalvoc12/pascalvoc12_tfr_1000 --log_level INFO
 ```
 
 
