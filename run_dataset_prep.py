@@ -104,6 +104,9 @@ def main(data_path, output_folder, limit_data, random_seed):
     np.savez_compressed(os.path.join(output_path, 'pascalvoc12_train_mean'),
                         train_img_mean=train_img_mean)
 
+    np.savez_compressed(os.path.join(output_path, 'pascalvoc12_train_std'),
+        train_img_std=train_img_std)
+
     # Convert to tf.train. Example and write the to TFRecords
     output_file = os.path.join(output_path, 'train_1.tfrecords')
     util.convert_to_tfrecords(train_imgs, train_masks, output_file)
