@@ -10,6 +10,7 @@
 
 """
 
+from warnings import filters
 import tensorflow as tf
 
 
@@ -349,6 +350,105 @@ class FullyConnected(object):
 
         return tensor
 
+def FCNLikeInference(object):
+    """ FCN like Inference Block with Conv -> Linear -> ConvTranspose -> Softmax """
+    def __init__(self, filters, mu, epsilon):
+        """ Initialize ConvBlock.
+
+        Args:
+            kernel: (int) represents the size of the convolution window (3 means [3, 3]).
+            filters: (int) number of filters.
+            strides: (int) specifies the strides of the convolution operation (1 means [1, 1]).
+            mu: (float) batch normalization mean.
+            epsilon: (float) batch normalization epsilon.
+        """
+
+        self.filters = filters
+        self.batch_norm_mu = mu
+        self.batch_norm_epsilon = epsilon
+
+    def __call__(self, inputs, name=None, is_train=True):
+        """ Convolutional block with convolution op + batch normalization op.
+
+        Args:
+            inputs: input tensor to the block.
+            name: (str) name of the block.
+            is_train: (bool) True if block is going to be created for training.
+
+        Returns:
+            output tensor.
+        """
+
+        with tf.compat.v1.variable_scope(name):
+            tensor = self._conv2d(inputs, name='conv1')
+            tensor = self._batch_norm(tensor, is_train, name='bn1')
+            tensor = self.activation(tensor)
+            tensor = self._conv2dtranspose(tensor, name='conv1transpose')
+            tensor = self._batch_norm(tensor, is_train, name='bn2')
+            tensor = self.activation(tensor)
+
+        return tensor
+
+    def _conv2d(self, inputs, name=None):
+        """ Convolution operation wrapper.
+
+        Args:
+            inputs: input tensor to the layer.
+            name: (str) name of the layer.
+
+        Returns:
+            output tensor.
+        """
+
+        return tf.compat.v1.layers.conv2d(inputs=inputs,
+                                filters=self.filters,
+                                kernel_size=1,
+                                activation=None,
+                                padding='SAME',
+                                strides=1,
+                                data_format='channels_last',
+                                kernel_initializer=tf.keras.initializers.he_normal,
+                                bias_initializer=tf.keras.initializers.he_normal, name=name)
+
+    def _conv2dtranspose(self, inputs, name=None):
+        """ Transpose Convolution operation wrapper.
+
+        Args:
+            inputs: input tensor to the layer.
+            name: (str) name of the layer.
+
+        Returns:
+            output tensor.
+        """
+
+        return tf.compat.v1.layers.conv2d_transpose(inputs=inputs,
+                                filters=self.filters,
+                                kernel_size=64,
+                                activation=None,
+                                padding='SAME',
+                                strides=self.strides,
+                                data_format='channels_last',
+                                kernel_initializer=tf.keras.initializers.he_normal,
+                                bias_initializer=tf.keras.initializers.he_normal, name=name)
+
+    def _batch_norm(self, inputs, is_train, name=None):
+            """ Batch normalization layer wrapper.
+
+            Args:
+                inputs: input tensor to the layer.
+                is_train: (bool) True if layer is going to be created for training.
+                name: (str) name of the block.
+
+            Returns:
+                output tensor.
+            """
+
+            return tf.compat.v1.layers.batch_normalization(inputs=inputs,
+                                                axis=-1,
+                                                momentum=self.batch_norm_mu,
+                                                epsilon=self.batch_norm_epsilon,
+                                                training=is_train,
+                                                name=name)
 
 class NoOp(object):
     pass
@@ -426,7 +526,6 @@ class NetworkGraph(object):
 
         i = 0
         
-        # create encoder
         for f in net_list:
             if f == 'no_op':
                 continue
@@ -438,13 +537,11 @@ class NetworkGraph(object):
 
             i += 1
 
-        # create decoder
+        #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
+        #tensor = tf.reshape(inputs, [-1, shape])
 
+        #logits = FullyConnected(units=self.num_classes)(inputs=tensor, name='linear')
 
-
-        shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
-        tensor = tf.reshape(inputs, [-1, shape])
-
-        logits = FullyConnected(units=self.num_classes)(inputs=tensor, name='linear')
+        logits = FCNLikeInference(filters=self.num_classes)(inputs=inputs, name='FCNInference')
 
         return logits
