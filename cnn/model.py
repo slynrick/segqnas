@@ -426,10 +426,10 @@ def FCNLikeInference(object):
                                 kernel_size=64,
                                 activation=None,
                                 padding='SAME',
-                                strides=self.strides,
+                                strides=32,
                                 data_format='channels_last',
                                 kernel_initializer=tf.keras.initializers.he_normal,
-                                bias_initializer=tf.keras.initializers.he_normal, name=name)
+                                use_bias=False, name=name)
 
     def _batch_norm(self, inputs, is_train, name=None):
             """ Batch normalization layer wrapper.
