@@ -138,9 +138,7 @@ class DataSet(object):
             preprocessed image, with same shape.
         """
 
-        pad_height = self.info.height + self.info.pad
-        pad_width = self.info.width + self.info.pad
-        image = tf.compat.v1.image.resize_image_with_crop_or_pad(image, pad_height, pad_width)
+        image = tf.compat.v1.image.resize_image_with_crop_or_pad(image, self.info.height, self.info.width)
         image = tf.compat.v1.random_crop(image, [self.info.height, self.info.width,
                                        self.info.num_channels])
         image = tf.image.random_flip_left_right(image)
