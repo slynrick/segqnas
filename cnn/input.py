@@ -147,12 +147,11 @@ class DataSet(object):
 
         return image
 
-
-class Cifar10Info(object):
+class PascalVOC12Info(object):
     def __init__(self, data_path, validation=True):
-        """ Cifar10 dataset information.
+        """ Pascal VOC 2012 dataset information.
 
-            Info in http://www.cs.toronto.edu/~kriz/cifar.html.
+            Info in http://host.robots.ox.ac.uk/pascal/VOC/voc2012/.
 
         Args:
             data_path: (str) path to the folder containing the tfrecords files.
@@ -160,13 +159,13 @@ class Cifar10Info(object):
         """
 
         self.data_path = data_path
-        self.height = 32
-        self.width = 32
+        self.height = 128
+        self.width = 128
         self.num_channels = 3
         self.mean_image = np.load(os.path.join(self.data_path,
-                                               'cifar_train_mean.npz'))['train_img_mean']
-        self.num_classes = 10
-        self.pad = 4
+                                               'pascalvoc12_train_mean.npz'))['train_img_mean']
+        self.num_classes = 21
+        #self.pad = 4
 
         self.train_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
                             if f.startswith('train')]
@@ -183,22 +182,6 @@ class Cifar10Info(object):
         self.num_train_ex = count_records(self.train_files)
         self.num_valid_ex = count_records(self.valid_files)
         self.num_test_ex = count_records(self.test_files)
-
-
-class Cifar100Info(Cifar10Info):
-    def __init__(self, data_path, validation=True):
-        """ Cifar100 dataset information.
-
-            Info in http://www.cs.toronto.edu/~kriz/cifar.html.
-
-        Args:
-            data_path: (str) path to the folder containing the tfrecords files.
-            validation: (bool) whether to use the validation dataset for validation.
-        """
-
-        super(Cifar100Info, self).__init__(data_path, validation)
-        self.num_classes = 100
-
 
 def count_records(file_list):
     """ Count total number of records in a file list.

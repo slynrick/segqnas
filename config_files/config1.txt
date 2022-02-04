@@ -36,7 +36,7 @@ train:
     optimizer: RMSProp
 
     # Dataset
-    dataset: PASCALVOC12
+    dataset: PascalVOC12
     data_augmentation: True
     subtract_mean: True
 
