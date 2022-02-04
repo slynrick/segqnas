@@ -138,7 +138,7 @@ class DataSet(object):
             preprocessed image, with same shape.
         """
 
-        image = tf.compat.v1.image.resize_image(image, self.info.height, self.info.width)
+        image = tf.compat.v1.image.resize(image, self.info.height, self.info.width)
         image = tf.image.random_flip_left_right(image)
 
         return image
