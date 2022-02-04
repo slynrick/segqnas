@@ -425,6 +425,8 @@ class NetworkGraph(object):
         """
 
         i = 0
+        
+        # create encoder
         for f in net_list:
             if f == 'no_op':
                 continue
@@ -435,6 +437,10 @@ class NetworkGraph(object):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
 
             i += 1
+
+        # create decoder
+
+
 
         shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         tensor = tf.reshape(inputs, [-1, shape])
