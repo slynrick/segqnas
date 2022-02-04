@@ -537,11 +537,11 @@ class NetworkGraph(object):
 
             i += 1
 
-        #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
+        shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         #tensor = tf.reshape(inputs, [-1, shape])
 
         #logits = FullyConnected(units=self.num_classes)(inputs=tensor, name='linear')
 
-        logits = FCNLikeInference(filters=self.num_classes)(inputs=inputs, name='FCNInference')
+        logits = FCNLikeInference(filters=shape)(inputs=inputs, name='FCNInference')
 
         return logits
