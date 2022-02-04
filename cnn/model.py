@@ -544,4 +544,6 @@ class NetworkGraph(object):
 
         logits = FCNLikeInference(filters=shape)(inputs=inputs, name='FCNInference')
 
+        print(logits)
+
         return logits
