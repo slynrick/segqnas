@@ -129,7 +129,7 @@ class DataSet(object):
         return images, labels
 
     def preprocess(self, image):
-        """ Pad, resize and randomly flip a single image with shape = [H, W, C].
+        """ Resize and randomly flip a single image with shape = [H, W, C].
 
         Args:
             image: raw image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
@@ -138,9 +138,7 @@ class DataSet(object):
             preprocessed image, with same shape.
         """
 
-        image = tf.compat.v1.image.resize_image_with_crop_or_pad(image, self.info.height, self.info.width)
-        image = tf.compat.v1.random_crop(image, [self.info.height, self.info.width,
-                                       self.info.num_channels])
+        image = tf.compat.v1.image.resize_image(image, self.info.height, self.info.width)
         image = tf.image.random_flip_left_right(image)
 
         return image
