@@ -59,12 +59,7 @@ class EvalPopulation(object):
             self.send_data(decoded_params, decoded_nets, generation)
             print(self.fn_dict)
             if generation % 10 == 0:
-                fn_list = ["add", "sub"]
-                choice = random.choice(fn_list)
-                if choice == "add":
-                    self.fn_dict = self.fn_dict.update(random.choice(self.fn_new_dict))
-                else:
-                    self.fn_dict = self.fn_dict.pop(random.choice(self.fn_dict))
+                self.fn_dict = self.fn_dict.pop(random.choice(self.fn_dict))
             # After sending tasks, Master starts its own work...
             evaluations[0] = train.fitness_calculation(id_num=f'{generation}_0',
                                                        data_info=self.data_info,
