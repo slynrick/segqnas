@@ -231,22 +231,7 @@ def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-# def calculate_mean_old(images):
-#     """ Calculate the image mean of the rescaled images array. Rescale the uint8 values to
-#         floats in the range [0, 1], and calculate the mean over all examples.
-
-#     Args:
-#         images: uint8 numpy array of images (shape = [num_examples, height, width, channels]).
-
-#     Returns:
-#         np.ndarray of mean image with shape = [height, width, channels].
-#     """
-#     img_mean = np.mean(np.array(images) / 255, axis=0)
-
-#     return img_mean
-
-
-def calculate_mean(images):
+def calculate_stats(images):
     """ Calculate the image mean and std of the rescaled images array. Rescale the uint8 values to
         floats in the range [0, 1], and calculate the mean and std over all examples.
 
@@ -290,73 +275,68 @@ def convert_to_tfrecords(images, masks, output_file):
     print(f'Generating {output_file}')
 
     with tf.compat.v1.python_io.TFRecordWriter(output_file) as record_writer:
-        for i in range(len(masks)):
+        for i in range(len(images)):
             image = images[i]
             image_raw = image.flatten().tostring()
-            mask_raw = masks[i].flatten().tostring()
-            example = tf.train.Example(features=tf.train.Features(
-                feature={'height': _int64_feature(image.shape[0]),
-                         'width': _int64_feature(image.shape[1]),
-                         'depth': _int64_feature(image.shape[2]),
-                         'mask_raw': _bytes_feature(mask_raw),
-                         'image_raw': _bytes_feature(image_raw)}))
+            if(masks):
+                mask_raw = masks[i].flatten().tostring()
+                example = tf.train.Example(features=tf.train.Features(
+                    feature={'height': _int64_feature(image.shape[0]),
+                            'width': _int64_feature(image.shape[1]),
+                            'depth': _int64_feature(image.shape[2]),
+                            'mask_raw': _bytes_feature(mask_raw),
+                            'image_raw': _bytes_feature(image_raw)}))
+            else:
+                example = tf.train.Example(features=tf.train.Features(
+                    feature={'height': _int64_feature(image.shape[0]),
+                            'width': _int64_feature(image.shape[1]),
+                            'depth': _int64_feature(image.shape[2]),
+                            'image_raw': _bytes_feature(image_raw)}))
 
             record_writer.write(example.SerializeToString())
 
-def extract_file(file_path, data_path):
-    """ Extracts *file_path* in *data_path* if it is not already extracted.
-
-    Args:
-        file_path: (str) path to the .tar is downloaded.
-        data_path: (str) path where the .tar is suposed to be extracted.
-
-    Returns:
-        path to the extracted file.
-    """
-    compressed_file = tarfile.open(file_path, 'r')
-    folder_name_after_extraction = compressed_file.getnames()[0]
-
-    if not os.path.exists(os.path.join(data_path, folder_name_after_extraction)):
-        print(f'Extracting dataset...')
-        tarfile.open(file_path, 'r').extractall(data_path)
-    else:
-        print(f'Dataset already extracted, skipping extraction...')
-
-    return os.path.join(data_path, folder_name_after_extraction)
-
-
-def download_file(data_path, file_name, source_url):
-    """ Download *file_name* in *source_url* if it is not in *data_path*.
+def download_pascalvoc12(data_path):   
+    """ Download the train, validation and test datasets to the *data_path* if it is not already there.
 
     Args:
         data_path: (str) path to the directory where the dataset is or where to download it to.
-        file_name: (str) name of the file to download.
-        source_url: (str) URL source from where the file should be downloaded.
 
     Returns:
-        path to the downloaded file.
+        paths to the downloaded files.
     """
+    pascalvoc12_train_val_url = "http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar"
+    pascalvoc12_test_url = "http://pjreddie.com/media/files/VOC2012test.tar"
 
-    file_path = os.path.join(data_path, file_name)
+    source_urls = [pascalvoc12_train_val_url, pascalvoc12_test_url]
 
-    if not os.path.exists(file_path):
+    file_names = [source_url.split('/')[-1] for source_url in source_urls]
 
-        def _progress(count, block_size, total_size):
-            sys.stdout.write(
-                f'\r>> Downloading {file_name} {100.0 * count * block_size / total_size:.1f}%')
-            sys.stdout.flush()
+    file_paths = []
 
-        if not os.path.exists(data_path):
-            os.makedirs(data_path)
+    for source_url, file_name in zip(source_urls, file_names):
 
-        print(f'Download from {source_url}.')
-        file_path, _ = urllib.request.urlretrieve(source_url, file_path, _progress)
-        stat_info = os.stat(file_path)
-        print(f'\nSuccessfully downloaded {file_name} {stat_info.st_size} bytes! :)')
-    else:
-        print(f'Dataset already downloaded, skipping download...')
+        file_path = os.path.join(data_path, file_name)
 
-    return file_path
+        if not os.path.exists(file_path):
+
+            def _progress(count, block_size, total_size):
+                sys.stdout.write(
+                    f'\r>> Downloading {file_name} {100.0 * count * block_size / total_size:.1f}%')
+                sys.stdout.flush()
+
+            if not os.path.exists(data_path):
+                os.makedirs(data_path)
+
+            print(f'Download from {source_url}.')
+            file_path, _ = urllib.request.urlretrieve(source_url, file_path, _progress)
+            stat_info = os.stat(file_path)
+            print(f'\nSuccessfully downloaded {file_name} {stat_info.st_size} bytes! :)')
+        else:
+            print(f'Dataset from {source_url} already downloaded, skipping download...')
+
+        file_paths.append(file_path)
+
+    return file_paths
 
 
 def create_info_file(out_path, info_dict):
@@ -369,61 +349,3 @@ def create_info_file(out_path, info_dict):
 
     with open(os.path.join(out_path, 'data_info.txt'), 'w') as f:
         yaml.dump(info_dict, f)
-
-
-def split_dataset(images, masks, num_classes, valid_ratio, limit):
-    """ Separate *images* and *masks* into train and validation sets, keeping both sets
-        balanced, that is, the number of examples for each class are similar in the
-        training and validation sets.
-
-    Args:
-        images: ndarray of images (shape = (num_examples, height, width, channels)).
-        masks: ndarray of labels (shape = (num_examples,)).
-        num_classes: (int) number of classes in the dataset.
-        valid_ratio: (float) ratio of the examples that will be on the validation set.
-        limit: (int) maximum number of examples (train + validation examples).
-
-    Returns:
-        train_imgs: ndarray of images (shape = (train_size, height, width, channels))
-        train_masks: ndarray of labels (shape = (train_size, )).
-        valid_imgs: ndarray of images (shape = (valid_size, height, width, channels)).
-        valid_masks: ndarray of labels (shape = (valid_size, )).
-    """
-
-    train_size = int(limit * (1. - valid_ratio))
-    valid_size = limit - train_size
-    
-    # TODO split dataset in stratified manner pixel-wise or class-wise?
-    train_imgs, valid_imgs, train_masks, valid_masks = train_test_split(images, masks, test_size=valid_size, train_size=train_size)
-
-    # train_count = {}
-    # for mask in train_masks:
-    #     unique, counts = np.unique(mask, return_counts=True)
-    #     count = dict(zip(unique, counts))
-    #     for key in count:
-    #         if key in train_count:
-    #             train_count[key] += 1
-    #         else:
-    #             train_count[key] = 1
-
-    # print('-------train-------')
-    # train_count = dict(sorted(train_count.items()))
-    # for key in train_count:
-    #     print(train_count[key])
-
-    # valid_count = {}
-    # for mask in valid_masks:
-    #     unique, counts = np.unique(mask, return_counts=True)
-    #     count = dict(zip(unique, counts))
-    #     for key in count:
-    #         if key in valid_count:
-    #             valid_count[key] += 1
-    #         else:
-    #             valid_count[key] = 1
-
-    # print('-------valid-------')
-    # valid_count = dict(sorted(valid_count.items()))
-    # for key in valid_count:
-    #     print(valid_count[key])
-
-    return train_imgs, train_masks, valid_imgs, valid_masks

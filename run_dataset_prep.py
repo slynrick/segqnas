@@ -10,12 +10,12 @@
 
 import argparse
 import os
+import shutil
 import tarfile
 from time import time
 from PIL import Image
 import numpy as np
 
-import util
 
 VALID_DATA_RATIO = 0.1
 TRAIN_EX = 50000
@@ -23,34 +23,48 @@ TEST_EX = 10000
 NUM_BINS = 5
 NUM_CLASSES = 21 # 20 classes + 1 background
 
+import util
+
+
 def load_pascalvoc12(data_path):
-    """ Download PASCAL VOC 12 and load the images and labels for training and test sets.
+    """ Download PASCAL VOC 2012 and load the images for training, validationand test sets and masks for training and validation sets.
+    The masks are not provided for the test dataset and evaluation must be done on their evaluation server.
 
     Args:
-        data_path: (str) path to the directory where PASCAL VOC 12 is, or where to download it to.
+        data_path: (str) path to the directory where PASCAL VOC 2012 is, or where to download it to.
 
     Returns:
-        train_imgs, train_labels, test_imgs, test_labels.
+        train_imgs, train_masks, val_imgs, val_masks, test_imgs.
     """
-    pascalvoc12_url = "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar"
 
-    # Check if dataset exists and download it if does not
-    name = pascalvoc12_url.split('/')[-1]
-    downloaded_file_path = util.download_file(data_path, name, pascalvoc12_url)
-    extracted_data_path = util.extract_file(downloaded_file_path, data_path)
+    # Download PASCAL VOC 2012 dataset (2 links are used, the first contains train and val sets and the second contains test set)
+    downloaded_file_paths = util.download_pascalvoc12(data_path)
+
+    # Extract the .tar files downloaded to the data_path path
+    for downloaded_file_path in downloaded_file_paths:
+        print(f'Extracting {downloaded_file_path}')
+        tarfile.open(downloaded_file_path, 'r').extractall(data_path)
+        os.remove(downloaded_file_path)
+
+    # Clean unused folders in dataset
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'Annotations'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Action'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Layout'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Main'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'SegmentationObject'), ignore_errors=True)
 
     # Relevant folders for the data
     # Directory where train.txt and val.txt files are. These files contain the name of the images in the training and validation datasets
-    descriptor_files_folder = os.path.join(extracted_data_path, 'VOC2012', 'ImageSets', 'Segmentation')
+    descriptor_files_folder = os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Segmentation')
     # Directory where the images are
-    img_files_folder = os.path.join(extracted_data_path, 'VOC2012', 'JPEGImages')
+    img_files_folder = os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'JPEGImages')
     # Directory where the masks are
-    mask_files_folder = os.path.join(extracted_data_path, 'VOC2012', 'SegmentationClass')
+    mask_files_folder = os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'SegmentationClass')
 
-    # go through the folders to populate the dataset dictionary with imgs and masks from train and validation
-    print("Loading training and validation dataset")
+    # Iterate through the folders to populate the dataset dictionary with imgs and masks from train and validation
     dataset = {}
     for split in ['train', 'val']:
+        print(f"Loading {split} dataset")
 
         dataset[split] = {
             'imgs': [],
@@ -59,40 +73,38 @@ def load_pascalvoc12(data_path):
 
         dataset_descriptor_file = open(os.path.join(descriptor_files_folder, split + '.txt'))
         for data_file_name in dataset_descriptor_file.read().splitlines():
-
             img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
             mask = np.array(Image.open(os.path.join(mask_files_folder, data_file_name + '.png')))
-
             dataset[split]['imgs'].append(img)
             dataset[split]['masks'].append(mask)
 
-    return dataset['train']['imgs'], dataset['train']['masks'], dataset['val']['imgs'], dataset['val']['masks']
+    
+    print(f"Loading test dataset")
+
+    dataset['test'] = {
+        'imgs': [],
+    }
+
+    dataset_descriptor_file = open(os.path.join(descriptor_files_folder, 'test.txt'))
+    for data_file_name in dataset_descriptor_file.read().splitlines():
+        img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
+        dataset['test']['imgs'].append(img)
+
+    return (dataset['train']['imgs'], 
+            dataset['train']['masks'], 
+            dataset['val']['imgs'], 
+            dataset['val']['masks'], 
+            dataset['test']['imgs'])
 
 def main(data_path, output_folder, limit_data, random_seed):
     
     info_dict = {'dataset': f'PascalVOC12'}
 
-    train_imgs, train_masks, test_imgs, test_masks = load_pascalvoc12(data_path)
-
-    # split train set into train and validation
-    size = len(train_masks)
-    if limit_data:
-        if limit_data < size:
-            size = limit_data
-    
-    if random_seed is None:
-        random_seed = int(time())
-
-    np.random.seed(random_seed)  # Choose random seed
-    info_dict['seed'] = random_seed
-
-    # TODO pending stratified split
-    train_imgs, train_masks, valid_imgs, valid_masks = util.split_dataset(
-        images=train_imgs, masks=train_masks, num_classes=NUM_CLASSES,
-        valid_ratio=VALID_DATA_RATIO, limit=size)
+    # Download dataset and load train, val and test dataset
+    train_imgs, train_masks, val_imgs, val_masks, test_imgs = load_pascalvoc12(data_path)
 
     # Calculate mean of training dataset (does not include validation!)
-    train_img_mean, train_img_std = util.calculate_mean(train_imgs)
+    train_img_mean, train_img_std = util.calculate_stats(train_imgs)
 
     output_path = os.path.join(data_path, output_folder)
     if not os.path.exists(output_path):
@@ -111,15 +123,17 @@ def main(data_path, output_folder, limit_data, random_seed):
     output_file = os.path.join(output_path, 'train_1.tfrecords')
     util.convert_to_tfrecords(train_imgs, train_masks, output_file)
     output_file = os.path.join(output_path, 'valid_1.tfrecords')
-    util.convert_to_tfrecords(valid_imgs, valid_masks, output_file)
+    util.convert_to_tfrecords(val_imgs, val_masks, output_file)
     output_file = os.path.join(output_path, 'test_1.tfrecords')
-    util.convert_to_tfrecords(test_imgs, test_masks, output_file)
+    util.convert_to_tfrecords(test_imgs, None, output_file)
 
-    info_dict['train_records'] = len(train_masks)
-    info_dict['valid_records'] = len(valid_masks)
-    info_dict['test_records'] = len(test_masks)
+    info_dict['train_records'] = len(train_imgs)
+    info_dict['valid_records'] = len(val_imgs)
+    info_dict['test_records'] = len(test_imgs)
     
     util.create_info_file(out_path=output_path, info_dict=info_dict)
+
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit'), ignore_errors=True)
 
     print('Done! =)')
 
