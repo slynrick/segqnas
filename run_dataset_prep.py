@@ -10,6 +10,7 @@
 
 import argparse
 import os
+import shutil
 import tarfile
 from time import time
 from PIL import Image
@@ -43,6 +44,14 @@ def load_pascalvoc12(data_path):
     for downloaded_file_path in downloaded_file_paths:
         print(f'Extracting {downloaded_file_path}')
         tarfile.open(downloaded_file_path, 'r').extractall(data_path)
+        os.remove(downloaded_file_path)
+
+    # Clean unused folders in dataset
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'Annotations'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Action'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Layout'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'ImageSets', 'Main'), ignore_errors=True)
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit', 'VOC2012', 'SegmentationObject'), ignore_errors=True)
 
     # Relevant folders for the data
     # Directory where train.txt and val.txt files are. These files contain the name of the images in the training and validation datasets
@@ -79,7 +88,7 @@ def load_pascalvoc12(data_path):
     dataset_descriptor_file = open(os.path.join(descriptor_files_folder, 'test.txt'))
     for data_file_name in dataset_descriptor_file.read().splitlines():
         img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
-        dataset[split]['imgs'].append(img)
+        dataset['test']['imgs'].append(img)
 
     return (dataset['train']['imgs'], 
             dataset['train']['masks'], 
@@ -123,6 +132,8 @@ def main(data_path, output_folder, limit_data, random_seed):
     info_dict['test_records'] = len(test_imgs)
     
     util.create_info_file(out_path=output_path, info_dict=info_dict)
+
+    shutil.rmtree(os.path.join(data_path, 'VOCdevkit'), ignore_errors=True)
 
     print('Done! =)')
 
