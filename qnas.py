@@ -54,7 +54,7 @@ class QNAS(object):
         self.qpop_net = None
 
     def initialize_qnas(self, num_quantum_ind, params_ranges, repetition, max_generations,
-                        crossover_rate, update_quantum_gen, replace_method, fn_list, fn_new_dict,
+                        crossover_rate, update_quantum_gen, replace_method, fn_list,
                         initial_probs, update_quantum_rate, max_num_nodes, reducing_fns_list,
                         save_data_freq=0, penalize_number=0):
 
