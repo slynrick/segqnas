@@ -66,7 +66,7 @@ class ConfigParameters(object):
             available_fn = [c[0] for c in inspect.getmembers(model, inspect.isclass)]
 
             fn_dict = config_file['QNAS']['function_dict']
-            fn_new_dict = config_file['QNAS']['fn_new_dict']
+            # fn_new_dict = config_file['QNAS']['fn_new_dict']
 
             probs = []
 
@@ -77,13 +77,13 @@ class ConfigParameters(object):
                     if type(param) is not int or param < 0:
                         raise ValueError(f"{name} has an invalid parameter: "
                                          f"{definition['params']}!")
-            for name, definition in fn_new_dict.items():
-                if definition['function'] not in available_fn:
-                    raise ValueError(f"{definition['function']} is not a valid function!")
-                for param in definition['params'].values():
-                    if type(param) is not int or param < 0:
-                        raise ValueError(f"{name} has an invalid parameter: "
-                                         f"{definition['params']}!")
+            # for name, definition in fn_new_dict.items():
+            #     if definition['function'] not in available_fn:
+            #         raise ValueError(f"{definition['function']} is not a valid function!")
+            #     for param in definition['params'].values():
+            #         if type(param) is not int or param < 0:
+            #             raise ValueError(f"{name} has an invalid parameter: "
+            #                              f"{definition['params']}!")
 
                 if type(definition['prob']) == str:
                     probs.append(eval(definition['prob']))
@@ -400,7 +400,7 @@ class ConfigParameters(object):
                            'train': self.train_spec,
                            'files': self.files_spec,
                            'fn_dict': self.fn_dict,
-                           'fn_new_dict': self.fn_new_dict,
+                           #'fn_new_dict': self.fn_new_dict,
                            'train_data_info': data_dict}
 
         params_file_path = os.path.join(self.train_spec['experiment_path'],
