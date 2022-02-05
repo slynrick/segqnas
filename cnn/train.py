@@ -140,7 +140,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
     masks = tf.nn.softmax(logits, name='softmax')
 
-    predictions = {'mask': tf.argmax(input=logits, axis=1),
+    predictions = {'mask': tf.argmax(input=logits, axis=-1),
                     'masks': masks}
 
     #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
