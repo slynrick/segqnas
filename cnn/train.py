@@ -269,6 +269,8 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
                        f'structure:\n{net_list}')
 
     try:
+        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
+                msg=f'oi...')
         accuracy = train_and_eval(params=hparams, run_config=config,
                                   train_input_fn=train_input_fn,
                                   eval_input_fn=eval_input_fn)
