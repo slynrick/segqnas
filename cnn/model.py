@@ -481,11 +481,12 @@ class NetworkGraph(object):
 
         #     i += 1
 
-        logits = ConvBlock(1, self.num_classes, 1, self.mu, self.epsilon)
+        logits = ConvBlock(1, self.num_classes, 1, self.mu, self.epsilon)(inputs=inputs, name='final_conv')
+        pred_masks = tf.nn.softmax(logits, name='softmax')
 
         #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         #tensor = tf.reshape(inputs, [-1, shape])
 
         #logits = FullyConnected(units=self.num_classes)(inputs=tensor, name='linear')
 
-        return logits
+        return pred_masks
