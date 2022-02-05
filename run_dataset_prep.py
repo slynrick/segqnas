@@ -24,7 +24,7 @@ NUM_BINS = 5
 NUM_CLASSES = 21 # 20 classes + 1 background
 
 import util
-
+import matplotlib.pyplot as plt
 
 def load_pascalvoc12(data_path):
     """ Download PASCAL VOC 2012 and load the images for training, validationand test sets and masks for training and validation sets.
@@ -75,10 +75,10 @@ def load_pascalvoc12(data_path):
         for data_file_name in dataset_descriptor_file.read().splitlines():
             img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
             mask = np.array(Image.open(os.path.join(mask_files_folder, data_file_name + '.png')))
+            mask = mask[..., np.newaxis] # tranforms masks from (height, width) to (height, width, 1)
             dataset[split]['imgs'].append(img)
             dataset[split]['masks'].append(mask)
 
-    
     print(f"Loading test dataset")
 
     dataset['test'] = {
