@@ -1,9 +1,0 @@
-dataset: COVID
-seed: 1623079449
-shape:
-- 224
-- 224
-- 3
-test_records: 165
-train_records: 1345
-valid_records: 167

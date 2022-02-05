@@ -53,14 +53,14 @@ class DataSet(object):
             return self.info.test_files
 
     def rec_parser(self, serialized_example):
-        """ Parse a single tf.Example into image and label tensors.
+        """ Parse a single tf.Example into image and mask tensors.
 
         Args:
             serialized_example: tfrecords example.
 
         Returns:
             image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
-            label (shape = []).
+            mask  (tf.float32 [0, 1] and shape = [height, width, 1]).
         """
 
         features = tf.compat.v1.parse_single_example(
@@ -68,26 +68,31 @@ class DataSet(object):
             features={'height': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'width': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'depth': tf.compat.v1.FixedLenFeature([], tf.int64),
-                      'label': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'mask_raw': tf.compat.v1.FixedLenFeature([], tf.string),
                       'image_raw': tf.compat.v1.FixedLenFeature([], tf.string)})
 
         image = tf.compat.v1.decode_raw(features['image_raw'], tf.uint8)
         image = tf.reshape(image, (self.info.height, self.info.width, self.info.num_channels))
+
+        mask = tf.compat.v1.decode_raw(features['image_raw'], tf.uint8)
+        mask = tf.reshape(image, (self.info.height, self.info.width))
 
         # Rescale the values of the image from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
         # Subtract mean_img from image
         if self.subtract_mean:
             image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
-        label = tf.cast(features['label'], tf.int32)
+
+        # Rescale the values of the mask from the range [0, 255] to [0, 1.0]
+        mask = tf.divide(tf.cast(mask, tf.float32), 255.0)
 
         if self.process_for_training and self.data_augmentation:
             image = self.preprocess(image)
 
-        return image, label
+        return image, mask
 
     def make_batch(self, batch_size, dataset_type, threads=0):
-        """ Read the images and labels from files corresponding to *dataset_type* and prepare a
+        """ Read the images and masks from files corresponding to *dataset_type* and prepare a
             batch of them.
 
         Args:
@@ -97,7 +102,7 @@ class DataSet(object):
 
         Returns:
             images (shape = (batch_size, height, width, num_channels)).
-            labels (shape = (batch_size,)).
+            masks (shape = (batch_size, height, width, 1)).
         """
 
         if not threads:
@@ -124,9 +129,9 @@ class DataSet(object):
         batched_dataset = dataset.batch(batch_size)
         iterator = tf.compat.v1.data.make_one_shot_iterator(batched_dataset)
 
-        images, labels = iterator.get_next()
+        images, masks = iterator.get_next()
 
-        return images, labels
+        return images, masks
 
     def preprocess(self, image):
         """ Resize and randomly flip a single image with shape = [H, W, C].
@@ -201,7 +206,7 @@ def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, proce
     """ Create input function for model.
 
     Args:
-        data_info: one of Cifar10Info, Cifar100Info or objects.
+        data_info: PascalVOC12 supported.
         dataset_type: (str) one of 'train', 'valid' or 'test'.
         batch_size: (int) number of examples in a batch (can be different for train or evaluate)
         data_aug: (bool) True if user wants to train using data augmentation.
@@ -214,11 +219,11 @@ def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, proce
 
     Returns:
         batch of images (shape = (batch_size, height, width, num_channels)).
-        batch of labels (shape = (batch_size,)).
+        batch of masks (shape = (batch_size, height, width, 1)).
     """
 
     with tf.device('/cpu:0'):
         dataset = DataSet(data_info, data_aug, subtract_mean, process_for_training)
-        image_batch, label_batch = dataset.make_batch(batch_size, dataset_type, threads)
+        image_batch, mask_batch = dataset.make_batch(batch_size, dataset_type, threads)
 
-        return image_batch, label_batch
+        return image_batch, mask_batch
