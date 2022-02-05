@@ -23,7 +23,7 @@ class DataSet(object):
         """ Initialize DataSet base class.
 
         Args:
-            data_info: one of Cifar10Info or Cifar100Info objects.
+            data_info: only PascalVOCInfo object supported so far.
             data_aug: (bool) True if user wants to train using data augmentation.
             subtract_mean: (bool) True if calculated mean on the training set should be
                 subtracted.
@@ -221,9 +221,6 @@ def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, proce
         batch of images (shape = (batch_size, height, width, num_channels)).
         batch of masks (shape = (batch_size, height, width)).
     """
-
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                   msg=f'data info {data_info}')
 
     with tf.device('/cpu:0'):
         dataset = DataSet(data_info, data_aug, subtract_mean, process_for_training)
