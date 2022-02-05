@@ -160,9 +160,9 @@ class PascalVOC12Info(object):
         """
 
         self.data_path = data_path
-        self.height = 128
-        self.width = 128
-        self.num_channels = 3
+        #self.height = 128
+        #self.width = 128
+        #self.num_channels = 3
         self.mean_image = np.load(os.path.join(self.data_path,
                                                'pascalvoc12_train_mean.npz'))['train_img_mean']
         self.num_classes = 21

@@ -263,9 +263,6 @@ class ConfigParameters(object):
 
         import tensorflow as tf
 
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                    msg=f'data info {self.data_info}')
-
         if not self.train_spec['eval_batch_size']:
             self.train_spec['eval_batch_size'] = self.data_info.num_valid_ex
 
