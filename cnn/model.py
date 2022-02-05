@@ -480,7 +480,7 @@ class NetworkGraph(object):
 
             i += 1
 
-        logits = inputs
+        logits = ConvBlock(1, self.num_classes, 1)
 
         #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         #tensor = tf.reshape(inputs, [-1, shape])
