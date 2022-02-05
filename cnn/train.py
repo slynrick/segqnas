@@ -144,7 +144,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
                     'masks': masks}
 
     #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
-    loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=masks)
+    loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=predictions['mask'])
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
