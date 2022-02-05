@@ -143,8 +143,7 @@ class DataSet(object):
             preprocessed image, with same shape.
         """
 
-        #image = tf.compat.v1.image.resize(image, self.info.height, self.info.width)
-        image = tf.compat.v1.image.resize(image, 224, 224)
+        image = tf.compat.v1.image.resize(image, self.info.height, self.info.width)
         image = tf.image.random_flip_left_right(image)
 
         return image
@@ -161,8 +160,8 @@ class PascalVOC12Info(object):
         """
 
         self.data_path = data_path
-        #self.height = 128
-        #self.width = 128
+        self.height = 224 # after preprocessing
+        self.width = 224 # after preprocessing
         #self.num_channels = 3
         self.mean_image = np.load(os.path.join(self.data_path,
                                                'pascalvoc12_train_mean.npz'))['train_img_mean']
