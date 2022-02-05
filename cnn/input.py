@@ -61,7 +61,7 @@ class DataSet(object):
 
         Returns:
             image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
-            mask  (tf.float32 [0, 1] and shape = [height, width]).
+            mask  (tf.float32 [0, 1] and shape = [height, width, 1]).
         """
 
         features = tf.compat.v1.parse_single_example(
@@ -76,7 +76,7 @@ class DataSet(object):
         image = tf.reshape(image, (features['height'], features['width'], features['depth']))
 
         mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
-        mask = tf.reshape(image, (features['height'], features['width']))
+        mask = tf.reshape(image, (features['height'], features['width'], 1))
 
         # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
@@ -221,7 +221,7 @@ def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, proce
 
     Returns:
         batch of images (shape = (batch_size, height, width, num_channels)).
-        batch of masks (shape = (batch_size, height, width)).
+        batch of masks (shape = (batch_size, height, width, 1)).
     """
 
     with tf.device('/cpu:0'):

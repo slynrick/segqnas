@@ -24,7 +24,6 @@ NUM_BINS = 5
 NUM_CLASSES = 21 # 20 classes + 1 background
 
 import util
-import matplotlib.pyplot as plt
 
 def load_pascalvoc12(data_path):
     """ Download PASCAL VOC 2012 and load the images for training, validationand test sets and masks for training and validation sets.
