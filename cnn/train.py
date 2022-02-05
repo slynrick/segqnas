@@ -171,12 +171,12 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     train_steps = params.max_steps - params.epochs_to_eval * int(params.steps_per_epoch)
 
     # Create estimator.
-    classifier = tf.estimator.Estimator(model_fn=_model_fn,
+    segmentation_model = tf.estimator.Estimator(model_fn=_model_fn,
                                         config=run_config,
                                         params=params)
 
     # Train estimator for the first train_steps.
-    classifier.train(input_fn=train_input_fn, max_steps=train_steps)
+    segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
     eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
 
@@ -184,10 +184,10 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     # Evaluate 1 time per epoch.
     for _ in range(params.epochs_to_eval):
         train_steps += int(params.steps_per_epoch)
-        classifier.train(input_fn=train_input_fn,
+        segmentation_model.train(input_fn=train_input_fn,
                          max_steps=train_steps)
 
-        classifier.evaluate(input_fn=eval_input_fn,
+        segmentation_model.evaluate(input_fn=eval_input_fn,
                             steps=None,
                             hooks=[eval_hook])
 
