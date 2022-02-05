@@ -9,6 +9,7 @@
 """
 
 import os
+from turtle import width
 
 import numpy as np
 import tensorflow as tf
@@ -72,10 +73,10 @@ class DataSet(object):
                       'image_raw': tf.compat.v1.FixedLenFeature([], tf.string)})
 
         image = tf.compat.v1.decode_raw(features['image_raw'], tf.uint8)
-        image = tf.reshape(image, (self.info.height, self.info.width, self.info.num_channels))
+        image = tf.reshape(image, (features['height'], features['width'], features['depth']))
 
         mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
-        mask = tf.reshape(image, (self.info.height, self.info.width))
+        mask = tf.reshape(image, (features['height'], features['width']))
 
         # Rescale the values of the image from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
