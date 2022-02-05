@@ -58,7 +58,7 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['classes'])}
+    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
                                       train_op=train_op, training_hooks=train_hooks,

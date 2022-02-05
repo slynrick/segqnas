@@ -78,14 +78,13 @@ class DataSet(object):
         mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
         mask = tf.reshape(image, (features['height'], features['width']))
 
-        # Rescale the values of the image from the range [0, 255] to [0, 1.0]
+        # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
+        mask = tf.divide(tf.cast(mask, tf.float32), 255.0)
+
         # Subtract mean_img from image
         if self.subtract_mean:
             image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
-
-        # Rescale the values of the mask from the range [0, 255] to [0, 1.0]
-        mask = tf.divide(tf.cast(mask, tf.float32), 255.0)
 
         if self.process_for_training and self.data_augmentation:
             image = self.preprocess(image)
