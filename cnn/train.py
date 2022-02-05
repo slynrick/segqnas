@@ -176,9 +176,7 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
                                         config=run_config,
                                         params=params)
 
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-            msg=f'train input fn {train_input_fn}')
-
+    ## ERRO ACONTECE AQUI
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
