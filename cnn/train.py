@@ -170,9 +170,6 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     # Calculate max_steps based on epochs_to_eval.
     train_steps = params.max_steps - params.epochs_to_eval * int(params.steps_per_epoch)
 
-    
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-            msg=f'1...')
 
     # Create estimator.
     segmentation_model = tf.estimator.Estimator(model_fn=_model_fn,
@@ -180,13 +177,10 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
                                         params=params)
 
     tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-            msg=f'2...')
+            msg=f'train input fn {train_input_fn}')
 
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
-
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-            msg=f'3...')
 
     eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
 
