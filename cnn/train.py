@@ -132,15 +132,19 @@ def _get_loss_and_grads(is_train, params, features, labels):
         the model, and predictions.
     """
 
-    pred_masks = params.net.create_network(inputs=features,
+    logits = params.net.create_network(inputs=features,
                                        net_list=params.net_list,
                                        is_train=is_train)
 
     #predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
-    predictions = {'masks': tf.argmax(input=pred_masks, axis=1)}
+    masks = tf.nn.softmax(logits, name='softmax')
 
-    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
+    predictions = {'mask': tf.argmax(input=logits, axis=1),
+                    'masks': masks}
+
+    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
+    loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=masks)
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
