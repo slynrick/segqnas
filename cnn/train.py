@@ -281,7 +281,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     except ValueError:
         tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
                        msg=f'Model is possibly incorrect in dimensions. '
-                           f'Negative dimensions are not allowed')
+                           f'Negative dimensions are not allowed {ValueError}')
         return 0
     except TimeoutError:
         tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
