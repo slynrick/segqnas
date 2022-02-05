@@ -139,16 +139,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
     predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
                    'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
 
-    def dice_loss(y_true, y_pred):
-        y_true = tf.cast(y_true, tf.float32)
-        y_pred = tf.math.sigmoid(y_pred)
-        numerator = 2 * tf.reduce_sum(y_true * y_pred)
-        denominator = tf.reduce_sum(y_true + y_pred)
-
-        return 1 - numerator / denominator
-
-    loss = 0#dice_loss(y_true=labels, y_pred=pred_masks)
-    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
+    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
