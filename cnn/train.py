@@ -147,7 +147,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
         return 1 - numerator / denominator
 
-    loss = dice_loss(y_true=labels, y_pred=pred_masks)
+    loss = 0#dice_loss(y_true=labels, y_pred=pred_masks)
     #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
 
     # Apply weight decay for every trainable variable in the model

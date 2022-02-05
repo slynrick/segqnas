@@ -483,9 +483,6 @@ class NetworkGraph(object):
 
         logits = ConvBlock(1, self.num_classes, 1, self.mu, self.epsilon)
 
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                       msg=f'logits {logits}')
-
         #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         #tensor = tf.reshape(inputs, [-1, shape])
 
