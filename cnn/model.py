@@ -481,7 +481,7 @@ class NetworkGraph(object):
 
         #     i += 1
 
-        logits = ConvBlock(1, self.num_classes, 1)
+        logits = ConvBlock(1, self.num_classes, 1, self.mu, self.epsilon)
 
         tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
                        msg=f'logits {logits}')
