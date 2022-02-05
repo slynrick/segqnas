@@ -465,20 +465,21 @@ class NetworkGraph(object):
                                                                          ResidualV1):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
             else:
-                inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
-
-            i += 1
-
-        for f in net_list[::-1]:
-            if f == 'no_op':
                 continue
-            elif isinstance(self.layer_dict[f], ConvBlock) or isinstance(self.layer_dict[f],
-                                                                         ResidualV1):
-                inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
-            else:
-                inputs = UpSampling(inputs=inputs, name=f'l{i}_{f}')
+                #inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
 
             i += 1
+
+        # for f in net_list[::-1]:
+        #     if f == 'no_op':
+        #         continue
+        #     elif isinstance(self.layer_dict[f], ConvBlock) or isinstance(self.layer_dict[f],
+        #                                                                  ResidualV1):
+        #         inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
+        #     else:
+        #         inputs = UpSampling(inputs=inputs, name=f'l{i}_{f}')
+
+        #     i += 1
 
         logits = ConvBlock(1, self.num_classes, 1)
 
