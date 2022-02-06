@@ -279,12 +279,13 @@ def convert_to_tfrecords(images, masks, output_file):
             image = images[i]
             image_raw = image.flatten().tostring()
             if(masks):
-                mask_raw = masks[i].flatten().tostring()
+                mask = masks[i]
+                mask_raw = mask.flatten().tostring()
                 example = tf.train.Example(features=tf.train.Features(
                     feature={'height': _int64_feature(image.shape[0]),
                             'width': _int64_feature(image.shape[1]),
                             'channels': _int64_feature(image.shape[2]),
-                            'classes': _int64_feature(mask_raw.shape[2]),
+                            'classes': _int64_feature(mask.shape[2]),
                             'mask_raw': _bytes_feature(mask_raw),
                             'image_raw': _bytes_feature(image_raw)}))
             else:
