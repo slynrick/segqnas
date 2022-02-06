@@ -39,7 +39,7 @@ def one_hot_encode_mask(mask):
         class_mask = np.all(np.equal(mask, _class), axis=-1)
         one_hot_mask.append(class_mask)
     one_hot_mask = np.stack(one_hot_mask, axis=-1)
-    one_hot_mask = one_hot_mask.astype(np.int64)
+    one_hot_mask = one_hot_mask.astype(np.int8)
     
     return one_hot_mask
 
