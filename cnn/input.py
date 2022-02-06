@@ -81,7 +81,7 @@ class DataSet(object):
 
         # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
-        mask = tf.divide(tf.cast(mask, tf.float32), 255.0)
+        #mask = tf.divide(tf.cast(mask, tf.int64), 255.0)
 
         # Subtract mean_img from image
         if self.subtract_mean:
