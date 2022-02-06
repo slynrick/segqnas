@@ -74,7 +74,6 @@ def load_pascalvoc12(data_path):
         for data_file_name in dataset_descriptor_file.read().splitlines():
             img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
             mask = np.array(Image.open(os.path.join(mask_files_folder, data_file_name + '.png')))
-            mask = mask[..., np.newaxis] # tranforms masks from (height, width) to (height, width, 1)
             dataset[split]['imgs'].append(img)
             dataset[split]['masks'].append(mask)
 

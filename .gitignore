@@ -114,3 +114,4 @@ cifar10/
 pascalvoc12/
 
 *.ipynb
+*.png

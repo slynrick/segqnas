@@ -268,7 +268,7 @@ def convert_to_tfrecords(images, masks, output_file):
 
     Args:
         images: list of uint8 numpy array of images (shape = [height, width, channels]).
-        masks: list of uint8 numpy array of images (shape = [height, width, 1]).
+        masks: list of uint8 numpy array of images (shape = [height, width]).
         output_file: (str) path to output file.
     """
 
