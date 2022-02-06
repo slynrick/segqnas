@@ -15,7 +15,6 @@ import tarfile
 from time import time
 from PIL import Image
 import numpy as np
-import tensorflow as tf
 
 VALID_DATA_RATIO = 0.1
 TRAIN_EX = 50000
@@ -37,10 +36,10 @@ def one_hot_encode_mask(mask):
     # create a binary mask for each channel (class)
     one_hot_mask = []
     for _class in classes:
-        class_mask = tf.reduce_all(tf.equal(mask, _class), axis=-1)
+        class_mask = np.all(np.equal(mask, _class), axis=-1)
         one_hot_mask.append(class_mask)
-    one_hot_mask = tf.stack(one_hot_mask, axis=-1)
-    one_hot_mask = tf.cast(one_hot_mask, tf.int64)
+    one_hot_mask = np.stack(one_hot_mask, axis=-1)
+    one_hot_mask = one_hot_mask.astype(np.int64)
     
     return one_hot_mask
 
