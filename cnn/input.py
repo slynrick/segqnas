@@ -60,24 +60,24 @@ class DataSet(object):
             serialized_example: tfrecords example.
 
         Returns:
-            image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
-            mask  (tf.float32 [0, 1] and shape = [height, width, 1]).
+            image (tf.float32 [0, 1] and shape = [height, width, channels]).
+            mask  (tf.float32 [0, 1] and shape = [height, width, classes]).
         """
 
         features = tf.compat.v1.parse_single_example(
             serialized_example,
             features={'height': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'width': tf.compat.v1.FixedLenFeature([], tf.int64),
-                      'depth': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'channels': tf.compat.v1.FixedLenFeature([], tf.int64),
+                      'classes': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'mask_raw': tf.compat.v1.FixedLenFeature([], tf.string),
                       'image_raw': tf.compat.v1.FixedLenFeature([], tf.string)})
 
         image = tf.compat.v1.decode_raw(features['image_raw'], tf.uint8)
-        image = tf.reshape(image, (features['height'], features['width'], features['depth']))
+        image = tf.reshape(image, (features['height'], features['width'], features['channels']))
 
         mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
-        mask = tf.reshape(image, (features['height'], features['width']))
-        mask = mask[..., np.newaxis] # tranforms masks from (height, width) to (height, width, 1)
+        mask = tf.reshape(image, (features['height'], features['width'], features['classes']))
 
         # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
@@ -102,8 +102,8 @@ class DataSet(object):
             threads: (int) number of threads to parse dataset examples.
 
         Returns:
-            images (shape = (batch_size, height, width, num_channels)).
-            masks (shape = (batch_size, height, width, 1)).
+            images (shape = (batch_size, height, width, channels)).
+            masks (shape = (batch_size, height, width, classes)).
         """
 
         if not threads:
@@ -138,7 +138,7 @@ class DataSet(object):
         """ Resize and randomly flip a single image with shape = [H, W, C].
 
         Args:
-            image: raw image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
+            image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
 
         Returns:
             preprocessed image, with same shape.
@@ -221,8 +221,8 @@ def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, proce
             of logical cores.
 
     Returns:
-        batch of images (shape = (batch_size, height, width, num_channels)).
-        batch of masks (shape = (batch_size, height, width, 1)).
+        batch of images (shape = (batch_size, height, width, channels)).
+        batch of masks (shape = (batch_size, height, width, classes)).
     """
 
     with tf.device('/cpu:0'):

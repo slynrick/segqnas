@@ -15,7 +15,7 @@ import tarfile
 from time import time
 from PIL import Image
 import numpy as np
-
+import tensorflow as tf
 
 VALID_DATA_RATIO = 0.1
 TRAIN_EX = 50000
@@ -24,6 +24,26 @@ NUM_BINS = 5
 NUM_CLASSES = 21 # 20 classes + 1 background
 
 import util
+
+def one_hot_encode_mask(mask):
+    # create channel for mask
+    # (height, width) => (height, width, 1)
+    mask = mask[..., np.newaxis] 
+
+    # list of classes (that will become the channels in the encoded mask)
+    classes = list(range(NUM_CLASSES))
+    classes.append(255) # referent to the border (is it necessary?)
+
+    # create a binary mask for each channel (class)
+    one_hot_mask = []
+    for _class in classes:
+        class_mask = tf.reduce_all(tf.equal(mask, _class), axis=-1)
+        one_hot_mask.append(class_mask)
+    one_hot_mask = tf.stack(one_hot_mask, axis=-1)
+    one_hot_mask = tf.cast(one_hot_mask, tf.int64)
+    
+    return one_hot_mask
+
 
 def load_pascalvoc12(data_path):
     """ Download PASCAL VOC 2012 and load the images for training, validationand test sets and masks for training and validation sets.
@@ -74,6 +94,7 @@ def load_pascalvoc12(data_path):
         for data_file_name in dataset_descriptor_file.read().splitlines():
             img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
             mask = np.array(Image.open(os.path.join(mask_files_folder, data_file_name + '.png')))
+            mask = one_hot_encode_mask(mask)
             dataset[split]['imgs'].append(img)
             dataset[split]['masks'].append(mask)
 

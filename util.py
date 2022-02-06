@@ -283,17 +283,19 @@ def convert_to_tfrecords(images, masks, output_file):
                 example = tf.train.Example(features=tf.train.Features(
                     feature={'height': _int64_feature(image.shape[0]),
                             'width': _int64_feature(image.shape[1]),
-                            'depth': _int64_feature(image.shape[2]),
+                            'channels': _int64_feature(image.shape[2]),
+                            'classes': _int64_feature(mask_raw.shape[2]),
                             'mask_raw': _bytes_feature(mask_raw),
                             'image_raw': _bytes_feature(image_raw)}))
             else:
                 example = tf.train.Example(features=tf.train.Features(
                     feature={'height': _int64_feature(image.shape[0]),
                             'width': _int64_feature(image.shape[1]),
-                            'depth': _int64_feature(image.shape[2]),
+                            'channels': _int64_feature(image.shape[2]),
                             'image_raw': _bytes_feature(image_raw)}))
 
             record_writer.write(example.SerializeToString())
+
 
 def download_pascalvoc12(data_path):   
     """ Download the train, validation and test datasets to the *data_path* if it is not already there.
