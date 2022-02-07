@@ -481,8 +481,16 @@ class NetworkGraph(object):
 
         #     i += 1
 
-        logits = ConvBlock(1, self.num_classes, 1, self.mu, self.epsilon)(inputs=inputs, name='final_conv')
-        #pred_masks = tf.nn.softmax(logits, name='softmax')
+        logits =  tf.compat.v1.layers.conv2d(inputs=inputs,
+                                filters=self.num_classes,
+                                kernel_size=1,
+                                activation=None,
+                                padding='SAME',
+                                strides=1,
+                                data_format='channels_last',
+                                kernel_initializer=tf.keras.initializers.he_normal,
+                                bias_initializer=tf.keras.initializers.he_normal, name='final_conv')
+
 
         #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         #tensor = tf.reshape(inputs, [-1, shape])
