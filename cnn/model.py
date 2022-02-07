@@ -481,6 +481,7 @@ class NetworkGraph(object):
 
         #     i += 1
 
+        # produces a tensor of dimensions (input height, input width, num_classes)
         logits =  tf.compat.v1.layers.conv2d(inputs=inputs,
                                 filters=self.num_classes,
                                 kernel_size=1,
@@ -489,7 +490,8 @@ class NetworkGraph(object):
                                 strides=1,
                                 data_format='channels_last',
                                 kernel_initializer=tf.keras.initializers.he_normal,
-                                bias_initializer=tf.keras.initializers.he_normal, name='final_conv')
+                                bias_initializer=tf.keras.initializers.he_normal, 
+                                name='final_conv')
 
 
         #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])

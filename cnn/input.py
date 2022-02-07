@@ -95,7 +95,7 @@ class DataSet(object):
         image = tf.reshape(image, (features['height'], features['width'], features['channels']))
 
         mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
-        mask = tf.reshape(image, (features['height'], features['width'], 1))
+        mask = tf.reshape(mask, (features['height'], features['width'], 1))
 
         # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
