@@ -24,24 +24,25 @@ NUM_CLASSES = 21 # 20 classes + 1 background
 
 import util
 
-def one_hot_encode_mask(mask):
-    # create channel for mask
-    # (height, width) => (height, width, 1)
-    mask = mask[..., np.newaxis] 
+# def one_hot_encode_mask(mask):
+#     # create channel for mask
+#     # (height, width) => (height, width, 1)
+#     mask = mask[..., np.newaxis] 
 
-    # list of classes (that will become the channels in the encoded mask)
-    classes = list(range(NUM_CLASSES))
-    classes.append(255) # referent to the border (is it necessary?)
+#     # list of classes (that will become the channels in the encoded mask)
+#     classes = list(range(NUM_CLASSES))
+#     classes.append(255) # referent to the border (is it necessary?)
 
-    # create a binary mask for each channel (class)
-    one_hot_mask = []
-    for _class in classes:
-        class_mask = np.all(np.equal(mask, _class), axis=-1)
-        one_hot_mask.append(class_mask)
-    one_hot_mask = np.stack(one_hot_mask, axis=-1)
-    one_hot_mask = one_hot_mask.astype(np.int8)
+#     # create a binary mask for each channel (class)
+#     one_hot_mask = []
+#     for _class in classes:
+#         class_mask = np.all(np.equal(mask, _class), axis=-1)
+#         one_hot_mask.append(class_mask)
+#     one_hot_mask = np.stack(one_hot_mask, axis=-1)
+#     one_hot_mask = one_hot_mask.astype(np.int8)
     
-    return one_hot_mask
+#     # mask (height, width, num_classes)
+#     return one_hot_mask
 
 
 def load_pascalvoc12(data_path):
@@ -93,8 +94,8 @@ def load_pascalvoc12(data_path):
         for data_file_name in dataset_descriptor_file.read().splitlines():
             img = np.array(Image.open(os.path.join(img_files_folder, data_file_name + '.jpg')))
             mask = np.array(Image.open(os.path.join(mask_files_folder, data_file_name + '.png')))
-            mask = one_hot_encode_mask(mask)
             dataset[split]['imgs'].append(img)
+            mask = mask[..., np.newaxis] 
             dataset[split]['masks'].append(mask)
 
     print(f"Loading test dataset")
