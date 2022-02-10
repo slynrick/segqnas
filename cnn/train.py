@@ -19,8 +19,8 @@ from cnn import model, input, hparam
 from cnn.hooks import GetBestHook, TimeOutHook
 
 
-TRAIN_TIMEOUT = 5400
-
+#TRAIN_TIMEOUT = 5400
+TRAIN_TIMEOUT = 10800
 
 def _model_fn(features, labels, mode, params):
     """ Returns a function that will build the model.
