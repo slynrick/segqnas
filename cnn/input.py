@@ -107,8 +107,7 @@ class DataSet(object):
         if self.subtract_mean:
             image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
 
-        if self.process_for_training:
-            image, mask = self.preprocess(image, mask)
+        image, mask = self.preprocess(image, mask)
 
         return image, mask
 
