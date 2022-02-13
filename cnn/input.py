@@ -155,17 +155,20 @@ class DataSet(object):
         return images, masks
 
     def preprocess(self, image, mask):
-        """ Resize and randomly flip a single image with shape = [H, W, C].
+        """ 
 
         Args:
             image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
+            mask: raw mask (tf.float32 [0, 1] and shape = [height, width, num_classes]).
 
         Returns:
             preprocessed image, with same shape.
         """
 
-        image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
-        mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
+        #image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
+        #mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
+        image = tf.compat.v1.image.resize(image, (224, 224))
+        mask = tf.compat.v1.image.resize(mask, (224, 224))
         # TODO augmentation for image and masks
         #image = tf.image.random_flip_left_right(image)
 
@@ -185,7 +188,7 @@ class PascalVOC12Info(object):
         self.data_path = data_path
         self.height = 224 # after preprocessing
         self.width = 224 # after preprocessing
-        #self.num_channels = 3
+        self.num_channels = 3
         self.mean_image = np.load(os.path.join(self.data_path, 'pascalvoc12_train_mean.npz'))['train_img_mean']
         self.std_image = np.load(os.path.join(self.data_path, 'pascalvoc12_train_std.npz'))['train_img_std']
         self.num_classes = 21
