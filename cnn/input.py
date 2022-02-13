@@ -107,7 +107,7 @@ class DataSet(object):
         if self.subtract_mean:
             image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
 
-        if self.process_for_training and self.data_augmentation:
+        if self.process_for_training:
             image, mask = self.preprocess(image, mask)
 
         return image, mask
@@ -165,12 +165,13 @@ class DataSet(object):
             preprocessed image, with same shape.
         """
 
-        #image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
-        #mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
-        image = tf.compat.v1.image.resize(image, (224, 224))
-        mask = tf.compat.v1.image.resize(mask, (224, 224))
+        image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
+        mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
+
         # TODO augmentation for image and masks
         #image = tf.image.random_flip_left_right(image)
+        if(self.data_augmentation):
+            pass
 
         return image, mask
 
