@@ -181,11 +181,16 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
                                         config=run_config,
                                         params=params)
 
-    ## ERRO ACONTECE AQUI
+    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='1')
+
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
+    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='2')
+
     eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
+
+    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='3')
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.
@@ -197,6 +202,8 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
         segmentation_model.evaluate(input_fn=eval_input_fn,
                             steps=None,
                             hooks=[eval_hook])
+
+    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='4')
 
     return best_acc[0]
 
