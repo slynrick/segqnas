@@ -22,6 +22,24 @@ from cnn.hooks import GetBestHook, TimeOutHook
 #TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 21600
 
+
+def dice_coef(y_true, y_pred):
+    smooth=1
+    threshold=0.5
+    prediction = tf.where(y_pred > threshold, 1, 0)
+    prediction = tf.cast(prediction, dtype=y_true.dtype)
+    ground_truth_area = tf.reduce_sum(
+        y_true, axis=(1, 2, 3))
+    prediction_area = tf.reduce_sum(
+        prediction, axis=(1, 2, 3))
+    intersection_area = tf.reduce_sum(
+        y_true*y_pred, axis=(1, 2, 3))
+    combined_area = ground_truth_area + prediction_area
+    dice = tf.reduce_mean(
+        (2*intersection_area + smooth)/(combined_area + smooth))
+    return dice
+
+
 def _model_fn(features, labels, mode, params):
     """ Returns a function that will build the model.
 
@@ -58,7 +76,8 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    #metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    metrics = {'accuraty': dice_coef(labels, predictions['masks'])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
                                       train_op=train_op, training_hooks=train_hooks,
@@ -138,10 +157,9 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     #predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
-    masks = tf.nn.softmax(logits, name='softmax')
 
     predictions = {'mask': tf.argmax(input=logits, axis=-1),
-                    'masks': masks}
+                    'masks': tf.nn.softmax(logits, name='softmax_tensor')}
 
     #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
     loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
@@ -181,16 +199,10 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
                                         config=run_config,
                                         params=params)
 
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='1')
-
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='2')
-
     eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
-
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='3')
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.
@@ -202,8 +214,6 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
         segmentation_model.evaluate(input_fn=eval_input_fn,
                             steps=None,
                             hooks=[eval_hook])
-
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(), msg='4')
 
     return best_acc[0]
 
