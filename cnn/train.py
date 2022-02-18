@@ -22,31 +22,6 @@ from cnn.hooks import GetBestHook, TimeOutHook
 #TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 21600
 
-
-# def dice_coef(y_true, y_pred):
-#     smooth=1
-#     threshold=0.5
-#     prediction = tf.where(y_pred > threshold, 1, 0)
-#     prediction = tf.cast(prediction, dtype=y_true.dtype)
-#     ground_truth_area = tf.reduce_sum(
-#         y_true, axis=(1, 2, 3))
-#     prediction_area = tf.reduce_sum(
-#         prediction, axis=(1, 2, 3))
-#     intersection_area = tf.reduce_sum(
-#         y_true*y_pred, axis=(1, 2, 3))
-#     combined_area = ground_truth_area + prediction_area
-#     dice = tf.reduce_mean(
-#         (2*intersection_area + smooth)/(combined_area + smooth))
-#     return dice
-
-def dice_coef(y_true, y_pred):
-    smooth = 1.
-    y_true = tf.cast(y_true, dtype = tf.float32)
-    y_true_f = tf.compat.v1.keras.backend.flatten(y_true)
-    y_pred_f = tf.compat.v1.keras.backend.flatten(y_pred)
-    intersection = tf.compat.v1.keras.backend.sum(y_true_f * y_pred_f)
-    return (2. * intersection + smooth) / (tf.compat.v1.keras.backend.sum(y_true_f) + tf.compat.v1.keras.backend.sum(y_pred_f) + smooth)
-
 def _model_fn(features, labels, mode, params):
     """ Returns a function that will build the model.
 
@@ -84,7 +59,7 @@ def _model_fn(features, labels, mode, params):
     train_op = tf.group(*train_op)
 
     #metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
-    metrics = {'accuracy': dice_coef(labels, predictions['masks'])}
+    metrics = {'accuracy': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
                                       train_op=train_op, training_hooks=train_hooks,
