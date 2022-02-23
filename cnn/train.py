@@ -40,7 +40,7 @@ def _model_fn(features, labels, mode, params):
     with tf.compat.v1.variable_scope('q_net'):
         loss, grads_and_vars, predictions = _get_loss_and_grads(is_train=is_train,
                                                                 params=params,
-                                                                features=features,
+                                               s                 features=features,
                                                                 labels=labels)
         update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
@@ -59,7 +59,7 @@ def _model_fn(features, labels, mode, params):
     train_op = tf.group(*train_op)
 
     #metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
-    metrics = {'accuracy': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'])}
+    metrics = {'accuracy': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'],  predictions['masks'].shape[-1])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
                                       train_op=train_op, training_hooks=train_hooks,
