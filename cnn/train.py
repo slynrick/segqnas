@@ -40,7 +40,7 @@ def _model_fn(features, labels, mode, params):
     with tf.compat.v1.variable_scope('q_net'):
         loss, grads_and_vars, predictions = _get_loss_and_grads(is_train=is_train,
                                                                 params=params,
-                                               s                 features=features,
+                                                                features=features,
                                                                 labels=labels)
         update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
