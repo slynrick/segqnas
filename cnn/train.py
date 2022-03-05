@@ -143,8 +143,8 @@ def _get_loss_and_grads(is_train, params, features, labels):
     predictions = {'classes': tf.argmax(input=logits, axis=-1),
                     'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
 
-    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
-    #loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
+    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
+    loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
