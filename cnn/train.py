@@ -139,10 +139,17 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     #predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
-
     predictions = {'classes': tf.argmax(input=logits, axis=-1),
-                    'probabilities': tf.nn.softmax(logits, name='softmax_tensor'),
-                    'masks': tf.argmax(input=logits, axis=0)}
+                    'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
+
+    one_hot_mask = []
+    for _class in range(21):
+        class_mask = tf.reduce_all(tf.equal(predictions['classes'], _class), axis=-1)
+        one_hot_mask.append(class_mask)
+    one_hot_mask = tf.stack(one_hot_mask, axis=-1)
+    one_hot_mask = tf.cast(one_hot_mask, tf.float32)
+
+    predictions['masks'] = one_hot_mask
 
     #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
     loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
