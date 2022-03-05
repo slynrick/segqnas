@@ -17,7 +17,6 @@ import platform
 import psutil
 tf.compat.v1.disable_v2_behavior()
 
-
 class DataSet(object):
     def __init__(self, data_info, data_aug, subtract_mean, process_for_training):
         """ Initialize DataSet base class.
@@ -53,6 +52,26 @@ class DataSet(object):
         elif dataset_type == 'test':
             return self.info.test_files
 
+    def _one_hot_encode_mask(self, mask):
+        """ One hot encode the mask tensor.
+
+        Args:
+            mask: tensor tf.uint8 with shape = [height, width, 1] and pallete encoding of classes.
+
+        Returns:
+            mask  (tf.float32 [0, 1] and shape = [height, width, classes]).
+        """
+        # create a binary mask for each channel (class)
+        one_hot_mask = []
+        for _class in range(self.info.num_classes):
+            class_mask = tf.reduce_all(tf.equal(mask, _class), axis=-1)
+            one_hot_mask.append(class_mask)
+        one_hot_mask = tf.stack(one_hot_mask, axis=-1)
+        one_hot_mask = tf.cast(one_hot_mask, tf.float32)
+        
+        # mask (height, width, num_classes)
+        return one_hot_mask
+
     def rec_parser(self, serialized_example):
         """ Parse a single tf.Example into image and mask tensors.
 
@@ -69,7 +88,6 @@ class DataSet(object):
             features={'height': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'width': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'channels': tf.compat.v1.FixedLenFeature([], tf.int64),
-                      'classes': tf.compat.v1.FixedLenFeature([], tf.int64),
                       'mask_raw': tf.compat.v1.FixedLenFeature([], tf.string),
                       'image_raw': tf.compat.v1.FixedLenFeature([], tf.string)})
 
@@ -77,18 +95,19 @@ class DataSet(object):
         image = tf.reshape(image, (features['height'], features['width'], features['channels']))
 
         mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
-        mask = tf.reshape(image, (features['height'], features['width'], features['classes']))
+        mask = tf.reshape(mask, (features['height'], features['width'], 1))
 
         # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
-        #mask = tf.divide(tf.cast(mask, tf.int64), 255.0)
+
+        # Make one hot encoding of the mask (height, width) -> (height, width, num_classes)
+        mask = self._one_hot_encode_mask(mask)
 
         # Subtract mean_img from image
         if self.subtract_mean:
             image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
 
-        if self.process_for_training and self.data_augmentation:
-            image, mask = self.preprocess(image, mask)
+        image, mask = self.preprocess(image, mask)
 
         return image, mask
 
@@ -135,11 +154,19 @@ class DataSet(object):
         return images, masks
 
     def preprocess(self, image, mask):
+<<<<<<< HEAD
         """ Resize an image with shape = [height, width, channels] and a mask with shape = [height, width, classes].
 
         Args:
             image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
             mask: mask (tf.uint8 [0, 1] and shape = [height, width, classes])
+=======
+        """ 
+
+        Args:
+            image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
+            mask: raw mask (tf.float32 [0, 1] and shape = [height, width, num_classes]).
+>>>>>>> 3e8154439babe7c23d591e79b42e07ac5148f0ee
 
         Returns:
             preprocessed image, with same shape.
@@ -147,8 +174,11 @@ class DataSet(object):
 
         image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
         mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
+
         # TODO augmentation for image and masks
         #image = tf.image.random_flip_left_right(image)
+        if(self.data_augmentation):
+            pass
 
         return image, mask
 
@@ -166,7 +196,7 @@ class PascalVOC12Info(object):
         self.data_path = data_path
         self.height = 224 # after preprocessing
         self.width = 224 # after preprocessing
-        #self.num_channels = 3
+        self.num_channels = 3
         self.mean_image = np.load(os.path.join(self.data_path, 'pascalvoc12_train_mean.npz'))['train_img_mean']
         self.std_image = np.load(os.path.join(self.data_path, 'pascalvoc12_train_std.npz'))['train_img_std']
         self.num_classes = 21

@@ -19,8 +19,8 @@ from cnn import model, input, hparam
 from cnn.hooks import GetBestHook, TimeOutHook
 
 
-TRAIN_TIMEOUT = 5400
-
+#TRAIN_TIMEOUT = 5400
+TRAIN_TIMEOUT = 21600
 
 def _model_fn(features, labels, mode, params):
     """ Returns a function that will build the model.
@@ -58,7 +58,8 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    #metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    metrics = {'accuracy': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'],  predictions['masks'].shape[-1])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
                                       train_op=train_op, training_hooks=train_hooks,
@@ -138,13 +139,12 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     #predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
-    masks = tf.nn.softmax(logits, name='softmax')
 
-    predictions = {'mask': tf.argmax(input=logits, axis=-1),
-                    'masks': masks}
+    predictions = {'classes': tf.argmax(input=logits, axis=1),
+                    'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
 
-    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=pred_masks, labels=labels)
-    loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
+    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
+    #loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
@@ -181,11 +181,11 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
                                         config=run_config,
                                         params=params)
 
-    ## ERRO ACONTECE AQUI
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-    eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
+    #eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
+    eval_hook = GetBestHook(name='mean_iou/value:0', best_metric=best_acc)
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.

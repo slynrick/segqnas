@@ -66,15 +66,25 @@ class ConvBlock(object):
             output tensor.
         """
 
-        return tf.compat.v1.layers.conv2d(inputs=inputs,
-                                filters=self.filters,
-                                kernel_size=self.kernel_size,
-                                activation=None,
-                                padding=self.padding,
-                                strides=self.strides,
-                                data_format='channels_last',
-                                kernel_initializer=self.initializer(),
-                                bias_initializer=self.initializer(), name=name)
+        # return tf.compat.v1.layers.conv2d(inputs=inputs,
+        #                         filters=self.filters,
+        #                         kernel_size=self.kernel_size,
+        #                         activation=None,
+        #                         padding=self.padding,
+        #                         strides=self.strides,
+        #                         data_format='channels_last',
+        #                         kernel_initializer=self.initializer(),
+        #                         bias_initializer=self.initializer(), name=name)
+
+        return tf.keras.layers.Conv2D(filters=self.filters,
+                                    kernel_size=self.kernel_size,
+                                    activation=None,
+                                    padding=self.padding,
+                                    strides=self.strides,
+                                    data_format="channels_last",
+                                    kernel_initializer=self.initializer(),
+                                    bias_initializer=self.initializer(),
+                                    name=name)(inputs)
 
     def _batch_norm(self, inputs, is_train, name=None):
         """ Batch normalization layer wrapper.
@@ -88,12 +98,17 @@ class ConvBlock(object):
             output tensor.
         """
 
-        return tf.compat.v1.layers.batch_normalization(inputs=inputs,
-                                             axis=-1,
-                                             momentum=self.batch_norm_mu,
-                                             epsilon=self.batch_norm_epsilon,
-                                             training=is_train,
-                                             name=name)
+        # return tf.compat.v1.layers.batch_normalization(inputs=inputs,
+        #                                      axis=-1,
+        #                                      momentum=self.batch_norm_mu,
+        #                                      epsilon=self.batch_norm_epsilon,
+        #                                      training=is_train,
+        #                                      name=name)
+        return tf.keras.layers.BatchNormalization(axis=-1,
+                                                momentum=self.batch_norm_mu,
+                                                epsilon=self.batch_norm_epsilon,
+                                                trainable=is_train,
+                                                name=name)(inputs)
 
 
 class ResidualV1(object):
@@ -172,14 +187,22 @@ class ResidualV1(object):
             inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end], [pad_beg, pad_end], [0, 0]])
             padding = 'VALID'
 
-        return tf.compat.v1.layers.conv2d(inputs=inputs,
-                                kernel_size=kernel_size,
-                                filters=filters,
-                                strides=strides,
-                                padding=padding,
-                                use_bias=False,
-                                data_format='channels_last',
-                                kernel_initializer=self.initializer(), name=name)
+        # return tf.compat.v1.layers.conv2d(inputs=inputs,
+        #                         kernel_size=kernel_size,
+        #                         filters=filters,
+        #                         strides=strides,
+        #                         padding=padding,
+        #                         use_bias=False,
+        #                         data_format='channels_last',
+        #                         kernel_initializer=self.initializer(), name=name)
+        return tf.keras.layers.Conv2D(kernel_size=kernel_size,
+                            filters=filters,
+                            strides=strides,
+                            padding=padding,
+                            use_bias=False,
+                            data_format="channels_last",
+                            kernel_initializer=self.initializer(),
+                            name=name)(inputs)
 
     def _batch_norm(self, inputs, is_train, name=None):
         """ Batch normalization layer wrapper.
@@ -193,26 +216,39 @@ class ResidualV1(object):
             output tensor.
         """
 
-        return tf.compat.v1.layers.batch_normalization(inputs=inputs,
-                                             axis=-1,
-                                             momentum=self.batch_norm_mu,
-                                             epsilon=self.batch_norm_epsilon,
-                                             training=is_train,
-                                             name=name)
+        # return tf.compat.v1.layers.batch_normalization(inputs=inputs,
+        #                                      axis=-1,
+        #                                      momentum=self.batch_norm_mu,
+        #                                      epsilon=self.batch_norm_epsilon,
+        #                                      training=is_train,
+        #                                      name=name)
+        return tf.keras.layers.BatchNormalization(axis=-1,
+                                                momentum=self.batch_norm_mu,
+                                                epsilon=self.batch_norm_epsilon,
+                                                trainable=is_train,
+                                                name=name)(inputs)
 
 
 class ResidualV1Pr(ResidualV1):
     """ Residual V1 block with projection shortcut """
     def _projection(self, inputs, filters, name):
 
-        return tf.compat.v1.layers.conv2d(inputs=inputs,
-                                kernel_size=1,
-                                filters=filters,
-                                strides=1,
-                                padding='SAME',
-                                use_bias=False,
-                                data_format='channels_last',
-                                kernel_initializer=self.initializer(), name=name)
+        # return tf.compat.v1.layers.conv2d(inputs=inputs,
+        #                         kernel_size=1,
+        #                         filters=filters,
+        #                         strides=1,
+        #                         padding='SAME',
+        #                         use_bias=False,
+        #                         data_format='channels_last',
+        #                         kernel_initializer=self.initializer(), name=name)
+        return tf.keras.layers.Conv2D(kernel_size=1,
+                                    filters=filters,
+                                    strides=1,
+                                    padding="SAME",
+                                    use_bias=False,
+                                    data_format="channels_last",
+                                    kernel_initializer=self.initializer(),
+                                    name=name)(inputs)
 
     def __call__(self, inputs, name=None, is_train=True):
         """ Residual unit with 2 sub layers, using Plan A for shortcut connection.
@@ -271,12 +307,17 @@ class MaxPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return tf.compat.v1.layers.max_pooling2d(inputs=inputs,
-                                           pool_size=self.pool_size,
-                                           strides=self.strides,
-                                           data_format='channels_last',
-                                           padding=self.padding,
-                                           name=name)
+            # return tf.compat.v1.layers.max_pooling2d(inputs=inputs,
+            #                                pool_size=self.pool_size,
+            #                                strides=self.strides,
+            #                                data_format='channels_last',
+            #                                padding=self.padding,
+            #                                name=name)
+            return tf.keras.layers.MaxPooling2D(pool_size=self.pool_size,
+                                                strides=self.strides,
+                                                data_format="channels_last",
+                                                padding=self.padding,
+                                                name=name)(inputs)
         else:
             return inputs
 
@@ -307,7 +348,7 @@ class UpSampling(object):
             return tf.keras.layers.UpSampling2D(
                                            size=self.pool_size,
                                            data_format='channels_last',
-                                           name=name)
+                                           name=name)(inputs)
         else:
             return inputs
 
@@ -338,12 +379,17 @@ class AvgPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return tf.compat.v1.layers.average_pooling2d(inputs=inputs,
-                                               pool_size=self.pool_size,
-                                               strides=self.strides,
-                                               data_format='channels_last',
-                                               padding=self.padding,
-                                               name=name)
+            # return tf.compat.v1.layers.average_pooling2d(inputs=inputs,
+            #                                    pool_size=self.pool_size,
+            #                                    strides=self.strides,
+            #                                    data_format='channels_last',
+            #                                    padding=self.padding,
+            #                                    name=name)
+            return tf.keras.layers.AveragePooling2D(pool_size=self.pool_size,
+                                                    strides=self.strides,
+                                                    data_format="channels_last",
+                                                    padding=self.padding,
+                                                    name=name)(inputs)
         else:
             return inputs
 
@@ -372,12 +418,17 @@ class FullyConnected(object):
             output tensor.
         """
 
-        tensor = tf.compat.v1.layers.dense(inputs=inputs,
-                                 units=self.units,
-                                 activation=self.activation,
-                                 kernel_initializer=self.initializer(),
-                                 bias_initializer=self.initializer(),
-                                 name=name)
+        # tensor = tf.compat.v1.layers.dense(inputs=inputs,
+        #                          units=self.units,
+        #                          activation=self.activation,
+        #                          kernel_initializer=self.initializer(),
+        #                          bias_initializer=self.initializer(),
+        #                          name=name)
+        tensor = tf.keras.layers.Dense(units=self.units,
+                                    activation=self.activation,
+                                    kernel_initializer=self.initializer(),
+                                    bias_initializer=self.initializer(),
+                                    name=name)(inputs)
 
         return tensor
 
@@ -481,8 +532,27 @@ class NetworkGraph(object):
 
         #     i += 1
 
-        logits = ConvBlock(1, self.num_classes, 1, self.mu, self.epsilon)(inputs=inputs, name='final_conv')
-        #pred_masks = tf.nn.softmax(logits, name='softmax')
+        # produces a tensor of dimensions (input height, input width, num_classes)
+        # logits =  tf.compat.v1.layers.conv2d(inputs=inputs,
+        #                         filters=self.num_classes,
+        #                         kernel_size=1,
+        #                         activation=None,
+        #                         padding='SAME',
+        #                         strides=1,
+        #                         data_format='channels_last',
+        #                         kernel_initializer=tf.keras.initializers.he_normal,
+        #                         bias_initializer=tf.keras.initializers.he_normal, 
+        #                         name='final_conv')
+        logits =  tf.keras.layers.Conv2D(filters=self.num_classes,
+                                kernel_size=1,
+                                activation=None,
+                                padding="SAME",
+                                strides=1,
+                                data_format="channels_last",
+                                kernel_initializer=tf.keras.initializers.he_normal(),
+                                bias_initializer=tf.keras.initializers.he_normal(),
+                                name="final_conv")(inputs)
+
 
         #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
         #tensor = tf.reshape(inputs, [-1, shape])
