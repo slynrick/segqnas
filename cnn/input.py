@@ -135,10 +135,11 @@ class DataSet(object):
         return images, masks
 
     def preprocess(self, image, mask):
-        """ Resize and randomly flip a single image with shape = [H, W, C].
+        """ Resize an image with shape = [height, width, channels] and a mask with shape = [height, width, classes].
 
         Args:
             image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
+            mask: mask (tf.uint8 [0, 1] and shape = [height, width, classes])
 
         Returns:
             preprocessed image, with same shape.
