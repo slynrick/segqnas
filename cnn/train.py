@@ -58,7 +58,7 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['classes'])}
+    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
     #metrics = {'accuracy': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'],  predictions['masks'].shape[-1])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
@@ -139,8 +139,9 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     #predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
-    predictions = {'classes': tf.argmax(input=logits, axis=-1),
+    predictions = {'classes': tf.expand_dims(tf.argmax(input=logits, axis=-1),-1),
                     'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
+
 
     one_hot_mask = []
     for _class in range(21):
