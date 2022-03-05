@@ -154,19 +154,10 @@ class DataSet(object):
         return images, masks
 
     def preprocess(self, image, mask):
-<<<<<<< HEAD
         """ Resize an image with shape = [height, width, channels] and a mask with shape = [height, width, classes].
-
-        Args:
-            image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
-            mask: mask (tf.uint8 [0, 1] and shape = [height, width, classes])
-=======
-        """ 
-
         Args:
             image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
             mask: raw mask (tf.float32 [0, 1] and shape = [height, width, num_classes]).
->>>>>>> 3e8154439babe7c23d591e79b42e07ac5148f0ee
 
         Returns:
             preprocessed image, with same shape.
