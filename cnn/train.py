@@ -58,8 +58,8 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
-    #metrics = {'accuracy': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'],  predictions['masks'].shape[-1])}
+    #metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    metrics = {'mean_iou': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'],  predictions['masks'].shape[-1])}
 
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
                                       train_op=train_op, training_hooks=train_hooks,
@@ -193,8 +193,8 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-    eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
-    #eval_hook = GetBestHook(name='mean_iou/value:0', best_metric=best_acc)
+    #eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
+    eval_hook = GetBestHook(name='mean_iou/value:0', best_metric=best_acc)
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.
