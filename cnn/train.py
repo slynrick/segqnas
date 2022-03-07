@@ -194,7 +194,7 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
     #eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
-    eval_hook = GetBestHook(name='mean_iou/value:0', best_metric=best_acc)
+    eval_hook = GetBestHook(name='mean_iou/mean_iou:0', best_metric=best_acc)
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.
