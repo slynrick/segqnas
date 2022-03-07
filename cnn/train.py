@@ -27,7 +27,7 @@ def _model_fn(features, labels, mode, params):
 
     Args:
         features: a tensor with a batch of features.
-        labels: a tensor with a batch of labels.
+        labels: a tensor with a batch of labels (masks).
         mode: ModeKeys.TRAIN or EVAL.
         params: tf.contrib.training.HParams object with various hyperparameters.
 
@@ -194,7 +194,7 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
     #eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
-    eval_hook = GetBestHook(name='mean_iou', best_metric=best_acc)
+    eval_hook = GetBestHook(name='mean_iou/value:0', best_metric=best_acc)
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.
