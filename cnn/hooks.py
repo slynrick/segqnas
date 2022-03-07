@@ -193,8 +193,7 @@ class GetBestHook(tf.compat.v1.train.SessionRunHook):
         self.current_step = run_values.results['step']
 
     def end(self, session):
-        all_nodes = [n for n in session.graph.as_graph_def().node]
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),msg=all_nodes)
+        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),msg=session.graph.as_graph_def())
 
         metric_tensor = session.graph.get_tensor_by_name(self.tensor_name)
         current_metric = session.run(metric_tensor)
