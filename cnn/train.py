@@ -20,7 +20,7 @@ from cnn.hooks import GetBestHook, TimeOutHook
 
 
 #TRAIN_TIMEOUT = 5400
-TRAIN_TIMEOUT = 21600
+TRAIN_TIMEOUT = 43200
 
 def _model_fn(features, labels, mode, params):
     """ Returns a function that will build the model.

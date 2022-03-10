@@ -516,8 +516,7 @@ class NetworkGraph(object):
                                                                          ResidualV1):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
             else:
-                continue
-                #inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
+                inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
 
             i += 1
 
@@ -533,16 +532,6 @@ class NetworkGraph(object):
         #     i += 1
 
         # produces a tensor of dimensions (input height, input width, num_classes)
-        # logits =  tf.compat.v1.layers.conv2d(inputs=inputs,
-        #                         filters=self.num_classes,
-        #                         kernel_size=1,
-        #                         activation=None,
-        #                         padding='SAME',
-        #                         strides=1,
-        #                         data_format='channels_last',
-        #                         kernel_initializer=tf.keras.initializers.he_normal,
-        #                         bias_initializer=tf.keras.initializers.he_normal, 
-        #                         name='final_conv')
         logits =  tf.keras.layers.Conv2D(filters=self.num_classes,
                                 kernel_size=1,
                                 activation=None,
@@ -554,9 +543,5 @@ class NetworkGraph(object):
                                 name="final_conv")(inputs)
 
 
-        #shape = (inputs.shape[1] * inputs.shape[2] * inputs.shape[3])
-        #tensor = tf.reshape(inputs, [-1, shape])
-
-        #logits = FullyConnected(units=self.num_classes)(inputs=tensor, name='linear')
 
         return logits
