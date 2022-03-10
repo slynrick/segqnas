@@ -515,8 +515,8 @@ class NetworkGraph(object):
             elif isinstance(self.layer_dict[f], ConvBlock) or isinstance(self.layer_dict[f],
                                                                          ResidualV1):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
-            else:
-                inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
+            #else:
+            #    inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
 
             i += 1
 
