@@ -10,6 +10,7 @@
 
 """
 
+from re import S
 from warnings import filters
 import tensorflow as tf
 
@@ -509,6 +510,8 @@ class NetworkGraph(object):
 
         i = 0
         
+        skip_connections = []
+
         for f in net_list:
             if f == 'no_op':
                 continue
@@ -516,20 +519,22 @@ class NetworkGraph(object):
                                                                          ResidualV1):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
             else:
+                skip_connections.append(inputs)
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}')
 
             i += 1
 
-        # for f in net_list[::-1]:
-        #     if f == 'no_op':
-        #         continue
-        #     elif isinstance(self.layer_dict[f], ConvBlock) or isinstance(self.layer_dict[f],
-        #                                                                  ResidualV1):
-        #         inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
-        #     else:
-        #         inputs = UpSampling(inputs=inputs, name=f'l{i}_{f}')
+        for f in net_list[::-1]:
+            if f == 'no_op':
+                continue
+            elif isinstance(self.layer_dict[f], ConvBlock) or isinstance(self.layer_dict[f],
+                                                                         ResidualV1):
+                inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
+            else:
+                inputs = UpSampling(inputs=inputs, name=f'l{i}_{f}')
+                inputs = tf.keras.layers.Concatenate()(inputs, skip_connections.pop())
 
-        #     i += 1
+            i += 1
 
         # produces a tensor of dimensions (input height, input width, num_classes)
         logits =  tf.keras.layers.Conv2D(filters=self.num_classes,
