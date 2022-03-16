@@ -322,37 +322,6 @@ class MaxPooling(object):
         else:
             return inputs
 
-class UpSampling(object):
-    def __init__(self, kernel):
-        """ Initialize Up Sampling.
-
-        Args:
-            kernel: (int) represents the size of the pooling window (3 means [3, 3]).
-            strides: (int) specifies the strides of the pooling operation (1 means [1, 1]).
-        """
-
-        self.pool_size = kernel
-
-    def __call__(self, inputs, name=None):
-        """ Create Up Sampling layer.
-
-        Args:
-            inputs: input tensor to the layer.
-            name: (str) name of the layer.
-
-        Returns:
-            output tensor.
-        """
-
-        # check of the image size
-        if inputs.shape[2] > 1:
-            return tf.keras.layers.UpSampling2D(
-                                           size=self.pool_size,
-                                           data_format='channels_last',
-                                           name=name)(inputs)
-        else:
-            return inputs
-
 
 class AvgPooling(object):
     def __init__(self, kernel, strides):
@@ -531,7 +500,7 @@ class NetworkGraph(object):
                                                                          ResidualV1):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
             else:
-                inputs = UpSampling(inputs=inputs, name=f'l{i}_{f}')
+                inputs = tf.keras.layers.UpSampling2D(size=(2, 2), data_format='channels_last', name=f'l{i}_{f}')
                 inputs = tf.keras.layers.Concatenate()(inputs, skip_connections.pop())
 
             i += 1
