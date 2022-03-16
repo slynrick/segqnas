@@ -501,7 +501,7 @@ class NetworkGraph(object):
                 inputs = self.layer_dict[f](inputs=inputs, name=f'l{i}_{f}', is_train=is_train)
             else:
                 inputs = tf.keras.layers.UpSampling2D(size=(2, 2), data_format='channels_last', name=f'l{i}_{f}')(inputs)
-                inputs = tf.keras.layers.Concatenate()(inputs, skip_connections.pop())
+                inputs = tf.keras.layers.Concatenate()([inputs, skip_connections.pop()])
 
             i += 1
 
