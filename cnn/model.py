@@ -35,7 +35,7 @@ class ConvBlock(object):
         self.batch_norm_epsilon = epsilon
         self.activation = tf.nn.relu
         self.initializer = tf.keras.initializers.he_normal
-        self.padding = 'SAME'
+        self.padding = 'same'
 
     def __call__(self, inputs, name=None, is_train=True):
         """ Convolutional block with convolution op + batch normalization op.
@@ -179,14 +179,14 @@ class ResidualV1(object):
             output tensor.
         """
 
-        padding = 'SAME'
+        padding = 'same'
 
         if strides > 1:
             pad = kernel_size - 1
             pad_beg = pad // 2
             pad_end = pad - pad_beg
             inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end], [pad_beg, pad_end], [0, 0]])
-            padding = 'VALID'
+            padding = 'valid'
 
         # return tf.compat.v1.layers.conv2d(inputs=inputs,
         #                         kernel_size=kernel_size,
@@ -245,7 +245,7 @@ class ResidualV1Pr(ResidualV1):
         return tf.keras.layers.Conv2D(kernel_size=1,
                                     filters=filters,
                                     strides=1,
-                                    padding="SAME",
+                                    padding="same",
                                     use_bias=False,
                                     data_format="channels_last",
                                     kernel_initializer=self.initializer(),
@@ -509,7 +509,7 @@ class NetworkGraph(object):
         logits =  tf.keras.layers.Conv2D(filters=self.num_classes,
                                 kernel_size=1,
                                 activation=None,
-                                padding="SAME",
+                                padding="same",
                                 strides=1,
                                 data_format="channels_last",
                                 kernel_initializer=tf.keras.initializers.he_normal(),
