@@ -5,7 +5,7 @@ dependencies:
   - python=3.7
   - pyyaml==3.13
   - mpi4py
-  - tensorflow==2.3.0
+  - tensorflow-gpu==2.3.0
   - psutil
   - pillow
   - tqdm

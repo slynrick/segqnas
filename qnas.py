@@ -225,7 +225,7 @@ class QNAS(object):
             new_pop_params = self.qpop_params.classic_crossover(new_pop=new_pop_params,
                                                                 distance=self.random)
         new_pop_net = self.qpop_net.generate_classical()
-        self.logger.info("new population created", new_pop_net)
+        #self.logger.info("new population created", new_pop_net)
         # Evaluate population
         new_fitnesses, raw_fitnesses = self.eval_pop(new_pop_params, new_pop_net)
 
