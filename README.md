@@ -4,8 +4,9 @@
 
 ```
 git clone https://github.com/GuilhermeBaldo/segqnas.git
-conda create --name segqnas python=3.7
+conda create -f environment.yml
 conda activate segqnas
+pip install tensorflow-gpu==2.3.0
 
 ssh gcarlos@ugpucluster.ele.puc-rio.br -p 22222
 python run_dataset_prep.py --data_path pascalvoc12 --output_folder pascalvoc12_trf_10000 --limit_data 10000
