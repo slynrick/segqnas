@@ -20,7 +20,7 @@ from cnn.hooks import GetBestHook, TimeOutHook
 
 
 #TRAIN_TIMEOUT = 5400
-TRAIN_TIMEOUT = 43200
+TRAIN_TIMEOUT = 86400
 
 def _model_fn(features, labels, mode, params):
     """ Returns a function that will build the model.
@@ -141,7 +141,6 @@ def _get_loss_and_grads(is_train, params, features, labels):
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
     predictions = {'classes': tf.expand_dims(tf.argmax(input=logits, axis=-1),-1),
                     'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
-
 
     one_hot_mask = []
     for _class in range(21):
