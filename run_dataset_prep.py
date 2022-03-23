@@ -12,9 +12,9 @@ import argparse
 import os
 import shutil
 import tarfile
-from time import time
 from PIL import Image
 import numpy as np
+import random
 
 VALID_DATA_RATIO = 0.1
 TRAIN_EX = 50000
@@ -115,12 +115,26 @@ def load_pascalvoc12(data_path):
             dataset['val']['masks'], 
             dataset['test']['imgs'])
 
+
 def main(data_path, output_folder, limit_data, random_seed):
     
     info_dict = {'dataset': f'PascalVOC12'}
 
     # Download dataset and load train, val and test dataset
     train_imgs, train_masks, val_imgs, val_masks, test_imgs = load_pascalvoc12(data_path)
+
+    if(limit_data):
+        train_limit_data = int(limit_data / 2)
+        val_limit_data = int(limit_data / 2)
+
+        train_data = list(zip(train_imgs, train_masks))
+        val_data = list(zip(val_imgs, val_masks))
+
+        train_data = random.sample(train_data, train_limit_data)
+        val_data = random.sample(val_data, val_limit_data)
+
+        train_imgs, train_masks = zip(*train_data)
+        val_imgs, val_masks = zip(*val_data)
 
     # Calculate mean of training dataset (does not include validation!)
     train_img_mean, train_img_std = util.calculate_stats(train_imgs)
@@ -156,6 +170,7 @@ def main(data_path, output_folder, limit_data, random_seed):
 
     print('Done! =)')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, required=True,
@@ -167,7 +182,7 @@ if __name__ == '__main__':
                         help='If zero, all training data is used to generate train and '
                             'validation datasets. Otherwise, the train and validation '
                             'sets will be generated from a subset of *limit_data* examples.')
-    parser.add_argument('--random_seed', type=int, default=None,
+    parser.add_argument('--random_seed', type=int, default=42,
                         help='Random seed to be used. It affects the train/validation splitting'
                             ' and the data limitation example selection. If None, the random '
                             'seed will be the current time.')
