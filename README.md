@@ -4,17 +4,19 @@
 
 ```
 git clone https://github.com/GuilhermeBaldo/segqnas.git
-conda create -f environment.yml
-conda activate segqnas
-pip install tensorflow-gpu==2.3.0
-
-ssh gcarlos@ugpucluster.ele.puc-rio.br -p 22222
-python run_dataset_prep.py --data_path pascalvoc12 --output_folder pascalvoc12_trf_10000 --limit_data 10000
-mpirun -n 6 python run_evolution.py --experiment_path my_exp_config1 --config-file config_files/config1.txt --data_path pascalvoc12/pascalvoc12_tfr_1000 --log_level INFO
+conda create -n qnas python=3.8
+conda activate qnas
+pip3 install --upgrade pip
+pip3 install tensorflow==2.4
+conda install pyyaml=5.3.1
+conda install psutil
+conda install mpi4py=3.0.3
+conda install pandas
+conda install Pillow
+conda install -c conda-forge scikit-learn
 ```
 
-
-## Neural Architecture Search using the Q-NAS algorithm and Tensorflow.
+## Neural Architecture Search for Semantic Segmentation using the Q-NAS algorithm and Tensorflow.
 
 This repository contains code for the works presented in the following papers:
 
@@ -25,7 +27,6 @@ This repository contains code for the works presented in the following papers:
 >2. D. Szwarcman, D. Civitarese and M. Vellasco, "Q-NAS Revisited: Exploring Evolution Fitness to Improve
 >  Efficiency," 2019 8th Brazilian Conference on Intelligent Systems (BRACIS), Salvador, Brazil, 2019, pp
 >. 509-514. [DOI](https://doi.org/10.1109/BRACIS.2019.00095)
-
 
 ### Requirements
 
@@ -44,7 +45,6 @@ psultil
 
 All of our runs were executed in a multi-computer environment, with NVIDIA K80 GPUs and Power8 processors
  running Linux (Red Hat Enterprise Linux 7.4 3).
-
 
 ---
 ### Running Q-NAS
@@ -71,14 +71,13 @@ Here's an example of how to prepare the CIFAR-10 dataset limited to 10k examples
 
 ```shell script
 python run_dataset_prep.py \
-    --data_path cifar10 \
-    --output_folder cifar_tfr_10000 \
-    --num_classes 10 \
-    --limit_data 10000
+    --data_path pascalvoc12 \
+    --output_folder pascalvoc12_tfr \
 ```
 
-At the end of the process, the folder `cifar10/cifar_tfr_10000` has the following files:
->cifar_train_mean.npz  
+At the end of the process, the folder `pascalvoc12/pascalvoc12_tfr` has the following files:
+>pascalvoc12_train_mean.npz
+pascalvoc12_train_std.npz  
 data_info.txt  
 test_1.tfrecords  
 train_1.tfrecords  
@@ -87,19 +86,7 @@ valid_1.tfrecords
 The tfrecords files contains the images and labels, `data_info.txt` includes basic information about this
  dataset, and `cifar_train_mean.npz` is the numpy array with the mean of the training images.
 
-This example shows how to prepare the CIFAR-100 dataset, with all the available training examples:
-
-```shell script
-python run_dataset_prep.py \
-    --data_path cifar100 \
-    --output_folder cifar_tfr \
-    --num_classes 100 \
-    --label_mode fine \
-    --limit_data 0
-```
-
 Run `python run_dataset_prep.py --help` for additional parameter details.
-
 
 #### 2. Run architecture search
 
@@ -161,11 +148,11 @@ In summary, the files are:
 This is an example of how to run architecture search for dataset `cifar10/cifar_tfr_10000` with `config1.txt`:
 
 ```shell script
-mpirun -n 20 python run_evolution.py \
+mpirun -n 2 python run_evolution.py \
     --experiment_path my_exp_config1 \
     --config_file config_files/config1.txt \
-    --data_path cifar10/cifar_tfr_10000 \
-    --log_level INFO
+    --data_path pascalvoc12/pascalvoc12_tfr \
+    --log_level DEBUG
 ```
 
 The number of workers in the MPI execution must be equal to the number of classical individuals. In `config1.txt`,   

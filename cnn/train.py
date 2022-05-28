@@ -19,11 +19,12 @@ from cnn import model, input, hparam
 from cnn.hooks import GetBestHook, TimeOutHook
 
 
-#TRAIN_TIMEOUT = 5400
+# TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 86400
 
+
 def _model_fn(features, labels, mode, params):
-    """ Returns a function that will build the model.
+    """Returns a function that will build the model.
 
     Args:
         features: a tensor with a batch of features.
@@ -35,39 +36,51 @@ def _model_fn(features, labels, mode, params):
           A EstimatorSpec object.
     """
 
-    is_train = (mode == tf.estimator.ModeKeys.TRAIN)
+    is_train = mode == tf.estimator.ModeKeys.TRAIN
 
-    with tf.compat.v1.variable_scope('q_net'):
-        loss, grads_and_vars, predictions = _get_loss_and_grads(is_train=is_train,
-                                                                params=params,
-                                                                features=features,
-                                                                labels=labels)
+    with tf.compat.v1.variable_scope("q_net"):
+        loss, grads_and_vars, predictions = _get_loss_and_grads(
+            is_train=is_train, params=params, features=features, labels=labels
+        )
         update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
-    tf.summary.scalar('train_loss', loss)
+    tf.summary.scalar("train_loss", loss)
 
-    decay = params.decay if params.optimizer == 'RMSProp' else None
-    optimizer = _optimizer(params.optimizer, params.learning_rate,
-                           params.momentum, decay)
+    decay = params.decay if params.optimizer == "RMSProp" else None
+    optimizer = _optimizer(
+        params.optimizer, params.learning_rate, params.momentum, decay
+    )
 
     train_hooks = _train_hooks(params)
 
     # Create single grouped train op
-    train_op = [optimizer.apply_gradients(grads_and_vars,
-                                          global_step=tf.compat.v1.train.get_global_step())]
+    train_op = [
+        optimizer.apply_gradients(
+            grads_and_vars, global_step=tf.compat.v1.train.get_global_step()
+        )
+    ]
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    #metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
-    metrics = {'mean_iou': tf.compat.v1.metrics.mean_iou(labels, predictions['masks'],  predictions['masks'].shape[-1])}
+    # metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    metrics = {
+        "mean_iou": tf.compat.v1.metrics.mean_iou(
+            labels, predictions["masks"], predictions["masks"].shape[-1]
+        )
+    }
 
-    return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions, loss=loss,
-                                      train_op=train_op, training_hooks=train_hooks,
-                                      eval_metric_ops=metrics)
+    return tf.estimator.EstimatorSpec(
+        mode=mode,
+        predictions=predictions,
+        loss=loss,
+        train_op=train_op,
+        training_hooks=train_hooks,
+        eval_metric_ops=metrics,
+    )
 
 
 def _optimizer(optimizer_name, learning_rate, momentum, decay):
-    """ Create optimizer defined by *optimizer_name*.
+    """Create optimizer defined by *optimizer_name*.
 
     Args:
         optimizer_name: (str) one of 'RMSProp' or 'Momentum'.
@@ -79,18 +92,19 @@ def _optimizer(optimizer_name, learning_rate, momentum, decay):
         optimizer and list of training hooks.
     """
 
-    if optimizer_name == 'RMSProp':
-        optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate=learning_rate,
-                                              decay=decay,
-                                              momentum=momentum)
+    if optimizer_name == "RMSProp":
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(
+            learning_rate=learning_rate, decay=decay, momentum=momentum
+        )
     else:
-        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate,
-                                               momentum=momentum)
+        optimizer = tf.compat.v1.train.MomentumOptimizer(
+            learning_rate=learning_rate, momentum=momentum
+        )
     return optimizer
 
 
 def _train_hooks(params):
-    """ Create training hooks for timeout and logging. The variables to be logged during
+    """Create training hooks for timeout and logging. The variables to be logged during
         training depend on the optimizer defined by *params.optimizer*.
 
     Args:
@@ -104,15 +118,27 @@ def _train_hooks(params):
     momentum = tf.constant(params.momentum)
     w_decay = tf.constant(params.weight_decay)
 
-    if params.optimizer == 'RMSProp':
+    if params.optimizer == "RMSProp":
         decay = tf.constant(params.decay)
-        tensors_to_log = {'decay': decay, 'learning_rate': lr, 'momentum': momentum,
-                          'weight_decay': w_decay}
+        tensors_to_log = {
+            "decay": decay,
+            "learning_rate": lr,
+            "momentum": momentum,
+            "weight_decay": w_decay,
+        }
     else:
-        tensors_to_log = {'learning_rate': lr, 'momentum': momentum, 'weight_decay': w_decay}
+        tensors_to_log = {
+            "learning_rate": lr,
+            "momentum": momentum,
+            "weight_decay": w_decay,
+        }
 
-    timeout_hook = TimeOutHook(timeout_sec=TRAIN_TIMEOUT, t0=params.t0, every_n_steps=100)
-    logging_hook = tf.compat.v1.train.LoggingTensorHook(tensors=tensors_to_log, every_n_iter=100)
+    timeout_hook = TimeOutHook(
+        timeout_sec=TRAIN_TIMEOUT, t0=params.t0, every_n_steps=100
+    )
+    logging_hook = tf.compat.v1.train.LoggingTensorHook(
+        tensors=tensors_to_log, every_n_iter=100
+    )
 
     train_hooks = [logging_hook, timeout_hook]
 
@@ -120,7 +146,7 @@ def _train_hooks(params):
 
 
 def _get_loss_and_grads(is_train, params, features, labels):
-    """ Create model defined by *params.net_list*, get its loss and gradients.
+    """Create model defined by *params.net_list*, get its loss and gradients.
 
     Args:
         is_train: (bool) True if the graph os for training.
@@ -133,25 +159,27 @@ def _get_loss_and_grads(is_train, params, features, labels):
         the model, and predictions.
     """
 
-    logits = params.net.create_network(inputs=features,
-                                       net_list=params.net_list,
-                                       is_train=is_train)
+    logits = params.net.create_network(
+        inputs=features, net_list=params.net_list, is_train=is_train
+    )
 
-    #predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
+    # predictions = {'masks': tf.argmax(input=pred_masks, axis=1),
     #               'probabilities': tf.nn.softmax(pred_masks, name='softmax_tensor')}
-    predictions = {'classes': tf.expand_dims(tf.argmax(input=logits, axis=-1),-1),
-                    'probabilities': tf.nn.softmax(logits, name='softmax_tensor')}
+    predictions = {
+        "classes": tf.expand_dims(tf.argmax(input=logits, axis=-1), -1),
+        "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
+    }
 
     one_hot_mask = []
     for _class in range(21):
-        class_mask = tf.reduce_all(tf.equal(predictions['classes'], _class), axis=-1)
+        class_mask = tf.reduce_all(tf.equal(predictions["classes"], _class), axis=-1)
         one_hot_mask.append(class_mask)
     one_hot_mask = tf.stack(one_hot_mask, axis=-1)
     one_hot_mask = tf.cast(one_hot_mask, tf.float32)
 
-    predictions['masks'] = one_hot_mask
+    predictions["masks"] = one_hot_mask
 
-    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
+    # loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
     loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
 
     # Apply weight decay for every trainable variable in the model
@@ -164,7 +192,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
 
 def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
-    """ Train a model and evaluate it for the last *params.epochs_to_eval*. Return the maximum
+    """Train a model and evaluate it for the last *params.epochs_to_eval*. Return the maximum
         accuracy.
 
     Args:
@@ -183,34 +211,32 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     # Calculate max_steps based on epochs_to_eval.
     train_steps = params.max_steps - params.epochs_to_eval * int(params.steps_per_epoch)
 
-
     # Create estimator.
-    segmentation_model = tf.estimator.Estimator(model_fn=_model_fn,
-                                        config=run_config,
-                                        params=params)
+    segmentation_model = tf.estimator.Estimator(
+        model_fn=_model_fn, config=run_config, params=params
+    )
 
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-    #eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
-    eval_hook = GetBestHook(name='mean_iou/mean_iou:0', best_metric=best_acc)
+    # eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
+    eval_hook = GetBestHook(name="mean_iou/mean_iou:0", best_metric=best_acc)
 
     # Run the last steps_to_eval to complete training and also record validation accuracy.
     # Evaluate 1 time per epoch.
     for _ in range(params.epochs_to_eval):
         train_steps += int(params.steps_per_epoch)
-        segmentation_model.train(input_fn=train_input_fn,
-                         max_steps=train_steps)
+        segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-        segmentation_model.evaluate(input_fn=eval_input_fn,
-                            steps=None,
-                            hooks=[eval_hook])
+        segmentation_model.evaluate(
+            input_fn=eval_input_fn, steps=None, hooks=[eval_hook]
+        )
 
     return best_acc[0]
 
 
 def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
-    """ Train and evaluate a model using evolved parameters.
+    """Train and evaluate a model using evolved parameters.
 
     Args:
         id_num: string identifying the generation number and the individual number.
@@ -224,86 +250,110 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         accuracy of the model for the validation set.
     """
 
-    os.environ['TF_SYNC_ON_FINISH'] = '0'
-    os.environ['TF_ENABLE_WINOGRAD_NONFUSED'] = '1'
-    if params['log_level'] == 'INFO':
-        addLevelName(25, 'INFO1')
+    os.environ["TF_SYNC_ON_FINISH"] = "0"
+    os.environ["TF_ENABLE_WINOGRAD_NONFUSED"] = "1"
+    if params["log_level"] == "INFO":
+        addLevelName(25, "INFO1")
         tf.compat.v1.logging.set_verbosity(25)
-    elif params['log_level'] == 'DEBUG':
+    elif params["log_level"] == "DEBUG":
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
-    model_path = os.path.join(params['experiment_path'], id_num)
+    model_path = os.path.join(params["experiment_path"], id_num)
 
     # Session configuration.
-    sess_config = tf.compat.v1.ConfigProto(allow_soft_placement=True,
-                                 intra_op_parallelism_threads=params['threads'],
-                                 inter_op_parallelism_threads=params['threads'],
-                                 gpu_options=tf.compat.v1.GPUOptions(force_gpu_compatible=True,
-                                                           allow_growth=True))
+    sess_config = tf.compat.v1.ConfigProto(
+        allow_soft_placement=True,
+        intra_op_parallelism_threads=params["threads"],
+        inter_op_parallelism_threads=params["threads"],
+        gpu_options=tf.compat.v1.GPUOptions(
+            force_gpu_compatible=True, allow_growth=True
+        ),
+    )
 
-    config = tf.estimator.RunConfig(session_config=sess_config,
-                                    model_dir=model_path,
-                                    save_checkpoints_steps=params['save_checkpoints_steps'],
-                                    save_summary_steps=params['save_summary_steps'],
-                                    save_checkpoints_secs=None,
-                                    keep_checkpoint_max=1)
+    config = tf.estimator.RunConfig(
+        session_config=sess_config,
+        model_dir=model_path,
+        save_checkpoints_steps=params["save_checkpoints_steps"],
+        save_summary_steps=params["save_summary_steps"],
+        save_checkpoints_secs=None,
+        keep_checkpoint_max=1,
+    )
 
     net = model.NetworkGraph(num_classes=data_info.num_classes, mu=0.99)
     filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     net.create_functions(fn_dict=filtered_dict)
 
-    params['net'] = net
-    params['net_list'] = net_list
+    params["net"] = net
+    params["net_list"] = net_list
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to classifier.train(). Otherwise, it would be restarted.
-    params['t0'] = time.time()
+    params["t0"] = time.time()
     tf.compat.v1.disable_v2_behavior()
 
     hparams = hparam.HParams(**params)
 
-    train_input_fn = functools.partial(input.input_fn, data_info=data_info,
-                                       dataset_type='train',
-                                       batch_size=hparams.batch_size,
-                                       data_aug=hparams.data_augmentation,
-                                       subtract_mean=hparams.subtract_mean,
-                                       process_for_training=True,
-                                       threads=hparams.threads)
+    train_input_fn = functools.partial(
+        input.input_fn,
+        data_info=data_info,
+        dataset_type="train",
+        batch_size=hparams.batch_size,
+        data_aug=hparams.data_augmentation,
+        subtract_mean=hparams.subtract_mean,
+        process_for_training=True,
+        threads=hparams.threads,
+    )
 
-    eval_input_fn = functools.partial(input.input_fn, data_info=data_info,
-                                      dataset_type='valid',
-                                      batch_size=hparams.eval_batch_size,
-                                      data_aug=False,
-                                      subtract_mean=hparams.subtract_mean,
-                                      process_for_training=False,
-                                      threads=hparams.threads)
+    eval_input_fn = functools.partial(
+        input.input_fn,
+        data_info=data_info,
+        dataset_type="valid",
+        batch_size=hparams.eval_batch_size,
+        data_aug=False,
+        subtract_mean=hparams.subtract_mean,
+        process_for_training=False,
+        threads=hparams.threads,
+    )
     node = platform.uname()[1]
 
-    tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                   msg=f'I am node {node}! Running fitness calculation of {id_num} with '
-                       f'structure:\n{net_list}')
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"I am node {node}! Running fitness calculation of {id_num} with "
+        f"structure:\n{net_list}",
+    )
 
     try:
-        accuracy = train_and_eval(params=hparams, run_config=config,
-                                  train_input_fn=train_input_fn,
-                                  eval_input_fn=eval_input_fn)
+        accuracy = train_and_eval(
+            params=hparams,
+            run_config=config,
+            train_input_fn=train_input_fn,
+            eval_input_fn=eval_input_fn,
+        )
     except tf.compat.v1.train.NanLossDuringTrainingError:
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                       msg=f'Model diverged with NaN loss...')
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"Model diverged with NaN loss...",
+        )
         return 0
     except ValueError as e:
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                       msg=f'Model is possibly incorrect in dimensions. '
-                           f'Negative dimensions are not allowed {e}')
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"Model is possibly incorrect in dimensions. "
+            f"Negative dimensions are not allowed {e}",
+        )
         return 0
     except TimeoutError:
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                       msg=f'Model {id_num} took too long to train! '
-                       f'Timeout = {TRAIN_TIMEOUT:,} seconds.')
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"Model {id_num} took too long to train! "
+            f"Timeout = {TRAIN_TIMEOUT:,} seconds.",
+        )
         return 0
     except tf.errors.ResourceExhaustedError:
-        tf.compat.v1.logging.log(level=tf.compat.v1.logging.get_verbosity(),
-                       msg=f'Model is probably too large... Resource Exhausted Error!')
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"Model is probably too large... Resource Exhausted Error!",
+        )
         return 0
 
     return accuracy

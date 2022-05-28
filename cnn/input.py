@@ -15,11 +15,13 @@ import numpy as np
 import tensorflow as tf
 import platform
 import psutil
+
 tf.compat.v1.disable_v2_behavior()
+
 
 class DataSet(object):
     def __init__(self, data_info, data_aug, subtract_mean, process_for_training):
-        """ Initialize DataSet base class.
+        """Initialize DataSet base class.
 
         Args:
             data_info: only PascalVOCInfo object supported so far.
@@ -36,7 +38,7 @@ class DataSet(object):
         self.subtract_mean = subtract_mean
 
     def get_file_list(self, dataset_type):
-        """ Get the file list corresponding to the *mode*.
+        """Get the file list corresponding to the *mode*.
 
         Args:
             dataset_type: (str) one of 'train', 'valid' or 'test'.
@@ -45,15 +47,15 @@ class DataSet(object):
             list of files with examples.
         """
 
-        if dataset_type == 'train':
+        if dataset_type == "train":
             return self.info.train_files
-        elif dataset_type == 'valid':
+        elif dataset_type == "valid":
             return self.info.valid_files
-        elif dataset_type == 'test':
+        elif dataset_type == "test":
             return self.info.test_files
 
     def _one_hot_encode_mask(self, mask):
-        """ One hot encode the mask tensor.
+        """One hot encode the mask tensor.
 
         Args:
             mask: tensor tf.uint8 with shape = [height, width, 1] and pallete encoding of classes.
@@ -68,12 +70,12 @@ class DataSet(object):
             one_hot_mask.append(class_mask)
         one_hot_mask = tf.stack(one_hot_mask, axis=-1)
         one_hot_mask = tf.cast(one_hot_mask, tf.float32)
-        
+
         # mask (height, width, num_classes)
         return one_hot_mask
 
     def rec_parser(self, serialized_example):
-        """ Parse a single tf.Example into image and mask tensors.
+        """Parse a single tf.Example into image and mask tensors.
 
         Args:
             serialized_example: tfrecords example.
@@ -85,17 +87,22 @@ class DataSet(object):
 
         features = tf.compat.v1.parse_single_example(
             serialized_example,
-            features={'height': tf.compat.v1.FixedLenFeature([], tf.int64),
-                      'width': tf.compat.v1.FixedLenFeature([], tf.int64),
-                      'channels': tf.compat.v1.FixedLenFeature([], tf.int64),
-                      'mask_raw': tf.compat.v1.FixedLenFeature([], tf.string),
-                      'image_raw': tf.compat.v1.FixedLenFeature([], tf.string)})
+            features={
+                "height": tf.compat.v1.FixedLenFeature([], tf.int64),
+                "width": tf.compat.v1.FixedLenFeature([], tf.int64),
+                "channels": tf.compat.v1.FixedLenFeature([], tf.int64),
+                "mask_raw": tf.compat.v1.FixedLenFeature([], tf.string),
+                "image_raw": tf.compat.v1.FixedLenFeature([], tf.string),
+            },
+        )
 
-        image = tf.compat.v1.decode_raw(features['image_raw'], tf.uint8)
-        image = tf.reshape(image, (features['height'], features['width'], features['channels']))
+        image = tf.compat.v1.decode_raw(features["image_raw"], tf.uint8)
+        image = tf.reshape(
+            image, (features["height"], features["width"], features["channels"])
+        )
 
-        mask = tf.compat.v1.decode_raw(features['mask_raw'], tf.uint8)
-        mask = tf.reshape(mask, (features['height'], features['width'], 1))
+        mask = tf.compat.v1.decode_raw(features["mask_raw"], tf.uint8)
+        mask = tf.reshape(mask, (features["height"], features["width"], 1))
 
         # Rescale the values of the image and the mask from the range [0, 255] to [0, 1.0]
         image = tf.divide(tf.cast(image, tf.float32), 255.0)
@@ -105,14 +112,14 @@ class DataSet(object):
 
         # Subtract mean_img from image
         if self.subtract_mean:
-            image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
+            image = tf.subtract(image, self.info.mean_image, name="mean_subtraction")
 
         image, mask = self.preprocess(image, mask)
 
         return image, mask
 
     def make_batch(self, batch_size, dataset_type, threads=0):
-        """ Read the images and masks from files corresponding to *dataset_type* and prepare a
+        """Read the images and masks from files corresponding to *dataset_type* and prepare a
             batch of them.
 
         Args:
@@ -126,9 +133,9 @@ class DataSet(object):
         """
 
         if not threads:
-            if os.uname().sysname == 'Linux':
+            if os.uname().sysname == "Linux":
                 threads = len(os.sched_getaffinity(0))
-            elif platform.system() == 'Windows':
+            elif platform.system() == "Windows":
                 threads = len(psutil.Process().cpu_affinity())
             else:
                 threads = os.cpu_count()
@@ -142,7 +149,9 @@ class DataSet(object):
             # Ensure that the capacity is sufficiently large to provide good random shuffling.
             buffer_size = int(0.4 * self.info.num_train_ex)
             # Shuffle dataset every new iteration (epoch)
-            dataset = dataset.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
+            dataset = dataset.shuffle(
+                buffer_size=buffer_size, reshuffle_each_iteration=True
+            )
             dataset = dataset.repeat()
 
         # Batch results by up to batch_size, and then fetch the tuple from the iterator.
@@ -154,7 +163,7 @@ class DataSet(object):
         return images, masks
 
     def preprocess(self, image, mask):
-        """ Resize an image with shape = [height, width, channels] and a mask with shape = [height, width, classes].
+        """Resize an image with shape = [height, width, channels] and a mask with shape = [height, width, classes].
         Args:
             image: raw image (tf.float32 [0, 1] and shape = [height, width, channels]).
             mask: raw mask (tf.float32 [0, 1] and shape = [height, width, num_classes]).
@@ -167,15 +176,16 @@ class DataSet(object):
         mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
 
         # TODO augmentation for image and masks
-        #image = tf.image.random_flip_left_right(image)
-        if(self.data_augmentation):
+        # image = tf.image.random_flip_left_right(image)
+        if self.data_augmentation:
             pass
 
         return image, mask
 
+
 class PascalVOC12Info(object):
     def __init__(self, data_path, validation=True):
-        """ Pascal VOC 2012 dataset information.
+        """Pascal VOC 2012 dataset information.
 
             Info in http://host.robots.ox.ac.uk/pascal/VOC/voc2012/.
 
@@ -185,20 +195,33 @@ class PascalVOC12Info(object):
         """
 
         self.data_path = data_path
-        self.height = 448 # after preprocessing
-        self.width = 448 # after preprocessing
+        self.height = 448  # after preprocessing
+        self.width = 448  # after preprocessing
         self.num_channels = 3
-        self.mean_image = np.load(os.path.join(self.data_path, 'pascalvoc12_train_mean.npz'))['train_img_mean']
-        self.std_image = np.load(os.path.join(self.data_path, 'pascalvoc12_train_std.npz'))['train_img_std']
+        self.mean_image = np.load(
+            os.path.join(self.data_path, "pascalvoc12_train_mean.npz")
+        )["train_img_mean"]
+        self.std_image = np.load(
+            os.path.join(self.data_path, "pascalvoc12_train_std.npz")
+        )["train_img_std"]
         self.num_classes = 21
-        #self.pad = 4
+        # self.pad = 4
 
-        self.train_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
-                            if f.startswith('train')]
-        self.valid_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
-                            if f.startswith('valid')]
-        self.test_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
-                           if f.startswith('test')]
+        self.train_files = [
+            os.path.join(self.data_path, f)
+            for f in os.listdir(self.data_path)
+            if f.startswith("train")
+        ]
+        self.valid_files = [
+            os.path.join(self.data_path, f)
+            for f in os.listdir(self.data_path)
+            if f.startswith("valid")
+        ]
+        self.test_files = [
+            os.path.join(self.data_path, f)
+            for f in os.listdir(self.data_path)
+            if f.startswith("test")
+        ]
 
         # if user wants to train using all images
         if not validation:
@@ -209,8 +232,9 @@ class PascalVOC12Info(object):
         self.num_valid_ex = count_records(self.valid_files)
         self.num_test_ex = count_records(self.test_files)
 
+
 def count_records(file_list):
-    """ Count total number of records in a file list.
+    """Count total number of records in a file list.
 
     Args:
         file_list: list of tfrecords files.
@@ -226,9 +250,16 @@ def count_records(file_list):
     return c
 
 
-def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, process_for_training,
-             threads=0):
-    """ Create input function for model.
+def input_fn(
+    data_info,
+    dataset_type,
+    batch_size,
+    data_aug,
+    subtract_mean,
+    process_for_training,
+    threads=0,
+):
+    """Create input function for model.
 
     Args:
         data_info: PascalVOC12 supported.
@@ -247,7 +278,7 @@ def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, proce
         batch of masks (shape = (batch_size, height, width, classes)).
     """
 
-    with tf.device('/cpu:0'):
+    with tf.device("/cpu:0"):
         dataset = DataSet(data_info, data_aug, subtract_mean, process_for_training)
         image_batch, mask_batch = dataset.make_batch(batch_size, dataset_type, threads)
 

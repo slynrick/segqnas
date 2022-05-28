@@ -11,12 +11,18 @@ from tensorflow.python.ops import state_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import gen_math_ops
 
+
 def m_switch(pred, tensor_a, tensor_b):
-    '''
+    """
     Use cleaner API to replace m_switch to accelerate computation.
-    '''
-    def f_true(): return tensor_a
-    def f_false(): return tensor_b
+    """
+
+    def f_true():
+        return tensor_a
+
+    def f_false():
+        return tensor_b
+
     return control_flow_ops.cond(pred, f_true, f_false, strict=True)
 
 
@@ -64,22 +70,24 @@ class SWATS(optimizers.Optimizer):
             https://github.com/sloth2012/scalaML
     """
 
-    def __init__(self,
-                 lr=0.001,
-                 lr_boost=10.0,
-                 beta_1=0.9,
-                 beta_2=0.999,
-                 epsilon=1e-8,
-                 decay=0.,
-                 amsgrad=False,
-                 **kwargs):
+    def __init__(
+        self,
+        lr=0.001,
+        lr_boost=10.0,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=1e-8,
+        decay=0.0,
+        amsgrad=False,
+        **kwargs
+    ):
         super(SWATS, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
-            self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(lr, name='lr')
-            self.beta_1 = K.variable(beta_1, name='beta_1')
-            self.beta_2 = K.variable(beta_2, name='beta_2')
-            self.decay = K.variable(decay, name='decay')
+            self.iterations = K.variable(0, dtype="int64", name="iterations")
+            self.lr = K.variable(lr, name="lr")
+            self.beta_1 = K.variable(beta_1, name="beta_1")
+            self.beta_2 = K.variable(beta_2, name="beta_2")
+            self.decay = K.variable(decay, name="decay")
         if epsilon is None:
             epsilon = K.epsilon()
         self.epsilon = epsilon
@@ -92,26 +100,36 @@ class SWATS(optimizers.Optimizer):
 
         lr = self.lr
         if self.initial_decay > 0:
-            lr = lr * (1. / (1. + self.decay * math_ops.cast(self.iterations, K.dtype(self.decay))))
+            lr = lr * (
+                1.0
+                / (
+                    1.0
+                    + self.decay * math_ops.cast(self.iterations, K.dtype(self.decay))
+                )
+            )
 
         with ops.control_dependencies([state_ops.assign_add(self.iterations, 1)]):
             t = math_ops.cast(self.iterations, K.floatx())
-        lr_bc = gen_math_ops.sqrt(1. - math_ops.pow(self.beta_2, t)) / (1. - math_ops.pow(self.beta_1, t))
+        lr_bc = gen_math_ops.sqrt(1.0 - math_ops.pow(self.beta_2, t)) / (
+            1.0 - math_ops.pow(self.beta_1, t)
+        )
 
         ms = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         vs = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         lams = [K.zeros(1, dtype=K.dtype(p)) for p in params]
-        conds = [K.variable(False, dtype='bool') for p in params]
+        conds = [K.variable(False, dtype="bool") for p in params]
         if self.amsgrad:
             vhats = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         else:
             vhats = [K.zeros(1) for _ in params]
         self.weights = [self.iterations] + ms + vs + vhats + lams + conds
 
-        for p, g, m, v, vhat, lam, cond in zip(params, grads, ms, vs, vhats, lams, conds):
+        for p, g, m, v, vhat, lam, cond in zip(
+            params, grads, ms, vs, vhats, lams, conds
+        ):
             beta_g = m_switch(cond, 1.0, 1.0 - self.beta_1)
             m_t = (self.beta_1 * m) + beta_g * g
-            v_t = (self.beta_2 * v) + (1. - self.beta_2) * math_ops.square(g)
+            v_t = (self.beta_2 * v) + (1.0 - self.beta_2) * math_ops.square(g)
             if self.amsgrad:
                 vhat_t = math_ops.maximum(vhat, v_t)
                 p_t_ada = lr_bc * m_t / (gen_math_ops.sqrt(vhat_t) + self.epsilon)
@@ -119,20 +137,27 @@ class SWATS(optimizers.Optimizer):
             else:
                 p_t_ada = lr_bc * m_t / (gen_math_ops.sqrt(v_t) + self.epsilon)
             gamma_den = math_ops.reduce_sum(p_t_ada * g)
-            gamma = math_ops.reduce_sum(gen_math_ops.square(p_t_ada)) / (math_ops.abs(gamma_den) + self.epsilon) * (
-                        gen_math_ops.sign(gamma_den) + self.epsilon)
-            lam_t = (self.beta_2 * lam) + (1. - self.beta_2) * gamma
-            lam_prime = lam / (1. - math_ops.pow(self.beta_2, t))
-            lam_t_prime = lam_t / (1. - math_ops.pow(self.beta_2, t))
+            gamma = (
+                math_ops.reduce_sum(gen_math_ops.square(p_t_ada))
+                / (math_ops.abs(gamma_den) + self.epsilon)
+                * (gen_math_ops.sign(gamma_den) + self.epsilon)
+            )
+            lam_t = (self.beta_2 * lam) + (1.0 - self.beta_2) * gamma
+            lam_prime = lam / (1.0 - math_ops.pow(self.beta_2, t))
+            lam_t_prime = lam_t / (1.0 - math_ops.pow(self.beta_2, t))
             lg_err = math_ops.abs(lam_t_prime - gamma)
             cond_update = gen_math_ops.logical_or(
-                gen_math_ops.logical_and(gen_math_ops.logical_and(self.iterations > 1, lg_err < 1e-5), lam_t > 0),
-                cond)[0]
+                gen_math_ops.logical_and(
+                    gen_math_ops.logical_and(self.iterations > 1, lg_err < 1e-5),
+                    lam_t > 0,
+                ),
+                cond,
+            )[0]
             lam_update = m_switch(cond_update, lam, lam_t)
             self.updates.append(state_ops.assign(lam, lam_update))
             self.updates.append(state_ops.assign(cond, cond_update))
 
-            p_t_sgd = (1. - self.beta_1) * lam_prime * m_t
+            p_t_sgd = (1.0 - self.beta_1) * lam_prime * m_t
 
             self.updates.append(state_ops.assign(m, m_t))
             self.updates.append(state_ops.assign(v, v_t))
@@ -140,7 +165,7 @@ class SWATS(optimizers.Optimizer):
             new_p = m_switch(cond, p - lr * p_t_sgd, p - lr * p_t_ada)
 
             # Apply constraints.
-            if getattr(p, 'constraint', None) is not None:
+            if getattr(p, "constraint", None) is not None:
                 new_p = p.constraint(new_p)
 
             self.updates.append(state_ops.assign(p, new_p))
@@ -148,15 +173,16 @@ class SWATS(optimizers.Optimizer):
 
     def get_config(self):
         config = {
-            'lr': float(K.get_value(self.lr)),
-            'beta_1': float(K.get_value(self.beta_1)),
-            'beta_2': float(K.get_value(self.beta_2)),
-            'decay': float(K.get_value(self.decay)),
-            'epsilon': self.epsilon,
-            'amsgrad': self.amsgrad
+            "lr": float(K.get_value(self.lr)),
+            "beta_1": float(K.get_value(self.beta_1)),
+            "beta_2": float(K.get_value(self.beta_2)),
+            "decay": float(K.get_value(self.decay)),
+            "epsilon": self.epsilon,
+            "amsgrad": self.amsgrad,
         }
         base_config = super(SWATS, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
 
 class Adam2SGD(optimizers.Optimizer):
     """Adam optimizer -> SGD optimizer.
@@ -187,28 +213,30 @@ class Adam2SGD(optimizers.Optimizer):
             start with Adam/Amsgrad, otherwise start with SGD.
     """
 
-    def __init__(self,
-                 lr=0.001,
-                 lr_boost=10.0,
-                 beta_1=0.9,
-                 beta_2=0.999,
-                 epsilon=None,
-                 decay=0.,
-                 amsgrad=False,
-                 switch_flag=False,
-                 **kwargs):
+    def __init__(
+        self,
+        lr=0.001,
+        lr_boost=10.0,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=None,
+        decay=0.0,
+        amsgrad=False,
+        switch_flag=False,
+        **kwargs
+    ):
         super(Adam2SGD, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
-            self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(lr, name='lr')
-            self.beta_1 = K.variable(beta_1, name='beta_1')
+            self.iterations = K.variable(0, dtype="int64", name="iterations")
+            self.lr = K.variable(lr, name="lr")
+            self.beta_1 = K.variable(beta_1, name="beta_1")
             if switch_flag:  # using SGD
-                self.beta_g = K.variable(1.0, name='beta_g')
+                self.beta_g = K.variable(1.0, name="beta_g")
             else:  # using Adam
-                self.beta_g = K.variable(1.0 - beta_1, name='beta_g')
-            self.beta_2 = K.variable(beta_2, name='beta_2')
-            self.decay = K.variable(decay, name='decay')
-            self.switch_flag = K.variable(switch_flag, dtype='bool', name='switch_flag')
+                self.beta_g = K.variable(1.0 - beta_1, name="beta_g")
+            self.beta_2 = K.variable(beta_2, name="beta_2")
+            self.decay = K.variable(decay, name="decay")
+            self.switch_flag = K.variable(switch_flag, dtype="bool", name="switch_flag")
         if epsilon is None:
             epsilon = K.epsilon()
         self.epsilon = epsilon
@@ -217,13 +245,13 @@ class Adam2SGD(optimizers.Optimizer):
         self.lr_boost = lr_boost
 
     def switch(self, switch_flag=None):
-        '''
+        """
         Switch the phase of the optimizer.
         Arguments:
             switch_flag: if set `True`, use SGD with momentum; Otherwise, use
             Adam/Amsgrad. If set None, it would switch the phase according to
             the current phase.
-        '''
+        """
         if switch_flag is None:
             switch_flag = not bool(K.get_value(self.switch_flag))
         else:
@@ -240,11 +268,20 @@ class Adam2SGD(optimizers.Optimizer):
 
         lr = self.lr
         if self.initial_decay > 0:
-            lr = lr * (1. / (1. + self.decay * math_ops.cast(self.iterations, K.dtype(self.decay))))
+            lr = lr * (
+                1.0
+                / (
+                    1.0
+                    + self.decay * math_ops.cast(self.iterations, K.dtype(self.decay))
+                )
+            )
 
         with ops.control_dependencies([state_ops.assign_add(self.iterations, 1)]):
             t = math_ops.cast(self.iterations, K.floatx())
-        lr_t = lr * (gen_math_ops.sqrt(1. - math_ops.pow(self.beta_2, t)) / (1. - math_ops.pow(self.beta_1, t)))
+        lr_t = lr * (
+            gen_math_ops.sqrt(1.0 - math_ops.pow(self.beta_2, t))
+            / (1.0 - math_ops.pow(self.beta_1, t))
+        )
 
         ms = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
         vs = [K.zeros(K.int_shape(p), dtype=K.dtype(p)) for p in params]
@@ -256,7 +293,7 @@ class Adam2SGD(optimizers.Optimizer):
 
         for p, g, m, v, vhat in zip(params, grads, ms, vs, vhats):
             m_t = (self.beta_1 * m) + self.beta_g * g
-            v_t = (self.beta_2 * v) + (1. - self.beta_2) * math_ops.square(g)
+            v_t = (self.beta_2 * v) + (1.0 - self.beta_2) * math_ops.square(g)
             if self.amsgrad:
                 vhat_t = math_ops.maximum(vhat, v_t)
                 p_t_ada = p - lr_t * m_t / (gen_math_ops.sqrt(vhat_t) + self.epsilon)
@@ -271,7 +308,7 @@ class Adam2SGD(optimizers.Optimizer):
             new_p = m_switch(self.switch_flag, p_t_sgd, p_t_ada)
 
             # Apply constraints.
-            if getattr(p, 'constraint', None) is not None:
+            if getattr(p, "constraint", None) is not None:
                 new_p = p.constraint(new_p)
 
             self.updates.append(state_ops.assign(p, new_p))
@@ -279,14 +316,14 @@ class Adam2SGD(optimizers.Optimizer):
 
     def get_config(self):
         config = {
-            'lr': float(K.get_value(self.lr)),
-            'lr_boost': self.lr_boost,
-            'beta_1': float(K.get_value(self.beta_1)),
-            'beta_2': float(K.get_value(self.beta_2)),
-            'decay': float(K.get_value(self.decay)),
-            'epsilon': self.epsilon,
-            'amsgrad': self.amsgrad,
-            'switch_flag': bool(K.get_value(self.switch_flag))
+            "lr": float(K.get_value(self.lr)),
+            "lr_boost": self.lr_boost,
+            "beta_1": float(K.get_value(self.beta_1)),
+            "beta_2": float(K.get_value(self.beta_2)),
+            "decay": float(K.get_value(self.decay)),
+            "epsilon": self.epsilon,
+            "amsgrad": self.amsgrad,
+            "switch_flag": bool(K.get_value(self.switch_flag)),
         }
         base_config = super(Adam2SGD, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

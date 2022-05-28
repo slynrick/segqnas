@@ -13,9 +13,10 @@ from cnn import train
 from util import init_log
 import random
 
+
 class EvalPopulation(object):
-    def __init__(self, params, data_info, fn_dict, new_fn_dict, log_level='INFO'):
-        """ Initialize EvalPopulation.
+    def __init__(self, params, data_info, fn_dict, new_fn_dict, log_level="INFO"):
+        """Initialize EvalPopulation.
 
         Args:
             params: dictionary with parameters.
@@ -36,7 +37,7 @@ class EvalPopulation(object):
         self.num_workers = self.size - 1
 
     def __call__(self, decoded_params, decoded_nets, generation):
-        """ Train and evaluate *decoded_nets* using the parameters defined in *decoded_params*.
+        """Train and evaluate *decoded_nets* using the parameters defined in *decoded_params*.
 
         Args:
             decoded_params: list containing the dict of values of evolved parameters
@@ -57,14 +58,15 @@ class EvalPopulation(object):
 
         try:
             self.send_data(decoded_params, decoded_nets, generation)
-            
+
             # After sending tasks, Master starts its own work...
-            evaluations[0] = train.fitness_calculation(id_num=f'{generation}_0',
-                                                       data_info=self.data_info,
-                                                       params={**self.train_params,
-                                                               **decoded_params[0]},
-                                                       fn_dict=self.fn_dict,
-                                                       net_list=decoded_nets[0])
+            evaluations[0] = train.fitness_calculation(
+                id_num=f"{generation}_0",
+                data_info=self.data_info,
+                params={**self.train_params, **decoded_params[0]},
+                fn_dict=self.fn_dict,
+                net_list=decoded_nets[0],
+            )
 
             # Master starts receiving results...
             self.receive_data(results=evaluations)
@@ -75,7 +77,7 @@ class EvalPopulation(object):
         return evaluations
 
     def check_timeout(self, t0, requests):
-        """ Check if communication has reached self.timeout and raise an error if it did.
+        """Check if communication has reached self.timeout and raise an error if it did.
 
         Args:
             t0: initial time as time.time() instance.
@@ -85,11 +87,11 @@ class EvalPopulation(object):
         t1 = time.time()
         if t1 - t0 >= self.timeout:
             pending = [i + 1 for i in range(len(requests)) if requests[i] is not None]
-            self.logger.error(f'Pending request operations: {pending}')
+            self.logger.error(f"Pending request operations: {pending}")
             raise TimeoutError()
 
     def send_data(self, decoded_params, decoded_nets, generation):
-        """ Send data to all workers.
+        """Send data to all workers.
 
         Args:
             decoded_params: list containing the dict of values of evolved parameters
@@ -102,13 +104,15 @@ class EvalPopulation(object):
         requests = [None] * self.num_workers
 
         for worker in range(1, self.size):
-            id_num = f'{generation}_{worker}'
+            id_num = f"{generation}_{worker}"
 
-            args = {'id_num': id_num,
-                    'data_info': self.data_info,
-                    'params': {**self.train_params, **decoded_params[worker]},
-                    'fn_dict': self.fn_dict,
-                    'net_list': decoded_nets[worker]}
+            args = {
+                "id_num": id_num,
+                "data_info": self.data_info,
+                "params": {**self.train_params, **decoded_params[worker]},
+                "fn_dict": self.fn_dict,
+                "net_list": decoded_nets[worker],
+            }
 
             requests[worker - 1] = self.comm.isend(args, dest=worker, tag=11)
 
@@ -120,13 +124,13 @@ class EvalPopulation(object):
                 if requests[i] is not None:
                     check_result = requests[i].test()
                     if check_result[0]:
-                        self.logger.info(f'Sent message to worker {i+1}!')
+                        self.logger.info(f"Sent message to worker {i+1}!")
                         requests[i] = None
 
             self.check_timeout(t0, requests)
 
     def receive_data(self, results):
-        """ Receive data from all workers.
+        """Receive data from all workers.
 
         Args:
             results: ndarray that will store all results.
@@ -144,11 +148,10 @@ class EvalPopulation(object):
                 if requests[i] is not None:
                     check_result = requests[i].test()
                     if check_result[0]:
-                        self.logger.info(f'Received message from worker {i+1}!')
-                        results[i+1] = check_result[1]
+                        self.logger.info(f"Received message from worker {i+1}!")
+                        results[i + 1] = check_result[1]
                         requests[i] = None
 
             self.check_timeout(t0, requests)
 
         return results
-

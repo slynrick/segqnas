@@ -13,7 +13,7 @@ import qnas
 import qnas_config as cfg
 from cnn import train
 from util import check_files, init_log
-import tensorflow as tf
+
 
 def send_stop_signal(comm):
     """ Helper function for master to send a stop message to workers, so they can finish their
@@ -59,7 +59,7 @@ def master(args, comm):
     eval_f = evaluation.EvalPopulation(params=config.train_spec,
                                        data_info=config.data_info,
                                        fn_dict=config.fn_dict,
-                                       log_level=config.train_spec['log_level'], new_fn_dict=config.fn_new_dict)
+                                       log_level=config.train_spec['log_level'])
 
     qnas_cnn = qnas.QNAS(eval_f, config.train_spec['experiment_path'],
                          log_file=config.files_spec['log_file'],
@@ -105,6 +105,7 @@ def slave(comm):
             break
 
         results = train.fitness_calculation(**params)
+        print("resultssssss", results)
         # Send results back to master.
         comm.send(results, dest=0, tag=10)
 
