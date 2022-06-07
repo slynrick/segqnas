@@ -18,7 +18,6 @@ import tensorflow as tf
 from cnn import model, input, hparam
 from cnn.hooks import GetBestHook, TimeOutHook
 
-
 # TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 86400
 
@@ -266,7 +265,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         intra_op_parallelism_threads=params["threads"],
         inter_op_parallelism_threads=params["threads"],
         gpu_options=tf.compat.v1.GPUOptions(
-            force_gpu_compatible=True, allow_growth=True
+            force_gpu_compatible=True, allow_growth=True, visible_device_list=id_num.split('_')[1],
         ),
     )
 

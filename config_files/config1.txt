@@ -2,10 +2,10 @@
 
 QNAS:
     crossover_rate: 0.5
-    max_generations: 10
-    max_num_nodes: 3
-    num_quantum_ind: 1
-    penalize_number: 2
+    max_generations: 15
+    max_num_nodes: 16
+    num_quantum_ind: 3
+    penalize_number: 6
     repetition: 1
     replace_method: best
     update_quantum_gen: 5
@@ -29,9 +29,9 @@ QNAS:
                      'no_op':        {'function': 'NoOp', 'params': {}, 'prob': 1.0/3.0}}
 
 train:
-    batch_size: 16
-    eval_batch_size: 0
-    max_epochs: 50
+    batch_size: 8
+    eval_batch_size: 8
+    max_epochs: 100
     epochs_to_eval: 5
     optimizer: RMSProp
 

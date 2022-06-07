@@ -14,7 +14,6 @@ import qnas_config as cfg
 from cnn import train
 from util import check_files, init_log
 
-
 def send_stop_signal(comm):
     """ Helper function for master to send a stop message to workers, so they can finish their
         work and stop waiting for messages.
