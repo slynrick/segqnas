@@ -182,6 +182,11 @@ def _get_loss_and_grads(is_train, params, features, labels):
     #loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
     loss = loss_function.DiceLoss()(y_true=labels, y_pred=logits)
 
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"labels {labels.shape}, logits {logits.shape}, classes {predictions['classes'].shape}, probabilities {predictions['probabilities'].shape}, masks {predictions['masks'].shape}",
+    )
+
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
     loss += params.weight_decay * tf.add_n([tf.nn.l2_loss(v) for v in model_params])
