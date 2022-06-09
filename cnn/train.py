@@ -184,7 +184,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"labels {labels.shape}, logits {logits.shape}, classes {predictions['classes'].shape}, probabilities {predictions['probabilities'].shape}, masks {predictions['masks'].shape}",
+        msg=f"labels {labels.shape}, logits {logits.shape}, classes {predictions['classes'].shape}, probabilities {predictions['probabilities'].shape}, masks {predictions['masks'].shape}, loss {loss}",
     )
 
     # Apply weight decay for every trainable variable in the model
