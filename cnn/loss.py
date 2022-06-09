@@ -1,4 +1,4 @@
-from tensorflow import tf
+import tensorflow as tf
 
 class DiceLoss(tf.keras.losses.Loss):
     def __init__(self, smooth=1e-6, gama=2):
