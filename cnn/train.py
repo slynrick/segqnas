@@ -62,11 +62,17 @@ def _model_fn(features, labels, mode, params):
     train_op = tf.group(*train_op)
 
     # metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
+    #metrics = {
+    #    "mean_iou": tf.compat.v1.metrics.mean_iou(
+    #        labels, predictions["masks"], predictions["masks"].shape[-1]
+    #    )
+    #}
     metrics = {
         "mean_iou": tf.compat.v1.metrics.mean_iou(
-            labels, predictions["masks"], predictions["masks"].shape[-1]
+            tf.expand_dims(tf.argmax(input=labels, axis=-1), -1), predictions["classes"], predictions["masks"].shape[-1]
         )
     }
+
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -179,7 +185,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
     predictions["masks"] = one_hot_mask
 
     # loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
-    #loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
+    # loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
     loss = loss_function.DiceLoss()(y_true=labels, y_pred=logits)
 
     tf.compat.v1.logging.log(
@@ -271,7 +277,9 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         intra_op_parallelism_threads=params["threads"],
         inter_op_parallelism_threads=params["threads"],
         gpu_options=tf.compat.v1.GPUOptions(
-            force_gpu_compatible=True, allow_growth=True, visible_device_list=id_num.split('_')[1],
+            force_gpu_compatible=True,
+            allow_growth=True,
+            visible_device_list=id_num.split("_")[1],
         ),
     )
 
