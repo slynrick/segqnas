@@ -15,7 +15,7 @@ from logging import addLevelName
 
 import tensorflow as tf
 
-from cnn import model, input, hparam, loss
+from cnn import loss_function, model, input, hparam
 from cnn.hooks import GetBestHook, TimeOutHook
 
 # TRAIN_TIMEOUT = 5400
