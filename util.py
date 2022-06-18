@@ -37,7 +37,7 @@ class ExtractData(object):
             output_dir: (str) path to the directory where to save the csv files.
             run_tag_dict: dict containing the runs from which data will be extracted. Example:
                 {'run_dir_name1': ['tag1', 'tag2'], 'run_dir_name2': ['tag2']}. Default is to
-                get *train_loss* from the *input_dir* and *accuracy* from the eval folder in
+                get *train_loss* from the *input_dir* and *mean iou* from the eval folder in
                 *input_dir*.
         """
 
@@ -46,7 +46,7 @@ class ExtractData(object):
         if run_tag_dict:
             self.run_tag_dict = run_tag_dict
         else:
-            self.run_tag_dict = {"": ["train_loss"], "eval": ["accuracy"]}
+            self.run_tag_dict = {"": ["train_loss"], "eval": ["mean_iou"]}
 
         self.output_dir = output_dir
 

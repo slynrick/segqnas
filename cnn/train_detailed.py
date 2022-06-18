@@ -13,7 +13,8 @@ import os
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
-#from tensorflow_addons.optimizers import CyclicalLearningRate
+
+# from tensorflow_addons.optimizers import CyclicalLearningRate
 from adam2sgd import Adam2SGD, SWATS
 import clr_callback
 
@@ -218,17 +219,15 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    #accuracy = tf.compat.v1.metrics.accuracy(labels, predictions["classes"])
-    #confusion = _confusion_matrix(labels, predictions["classes"], params.num_classes)
+    mean_iou = tf.compat.v1.metrics.mean_iou(
+        tf.expand_dims(tf.argmax(input=labels, axis=-1), -1),
+        predictions["classes"],
+        predictions["masks"].shape[-1],
+    )
 
-    #metrics = {"accuracy": accuracy, "confusion_matrix": confusion}
-    #tf.summary.scalar("accuracy", accuracy[1])
+    metrics = {"mean_iou": mean_iou}
 
-    metrics = {
-        "mean_iou": tf.compat.v1.metrics.mean_iou(
-            tf.expand_dims(tf.argmax(input=labels, axis=-1), -1), predictions["classes"], predictions["masks"].shape[-1]
-        )
-    }
+    tf.summary.scalar("mean iou", mean_iou)
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -307,10 +306,10 @@ def _get_loss_and_grads(is_train, params, features, labels):
         inputs=features, net_list=params.net_list, is_train=is_train
     )
 
-    #predictions = {
+    # predictions = {
     #    "classes": tf.argmax(input=logits, axis=1),
     #    "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
-    #}
+    # }
     predictions = {
         "classes": tf.expand_dims(tf.argmax(input=logits, axis=-1), -1),
         "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
@@ -325,10 +324,9 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     predictions["masks"] = one_hot_mask
 
-
-    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(
+    # loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(
     #    logits=logits, labels=labels
-    #)
+    # )
     loss = loss_function.DiceLoss()(y_true=labels, y_pred=logits)
 
     # Apply weight decay for every trainable variable in the model
@@ -411,20 +409,20 @@ def _confusion_matrix(labels, predictions, num_classes):
         return tf.convert_to_tensor(confusion_sum), update_op
 
 
-def _load_best_acc(model_dir):
-    """Load the best accuracy and corresponding step saved in *model_dir*/eval/events.out file
+def _load_best_mean_iou(model_dir):
+    """Load the best mean iou and corresponding step saved in *model_dir*/eval/events.out file
         if it exists. This allows the retraining to continue without erasing *best_dir*.
 
     Args:
         model_dir: (str) path to the directory containing the best model.
 
     Returns:
-        list in the format: [best_accuracy, step].
+        list in the format: [best_mean_iou, step].
     """
 
     run = "eval"
-    tag = "accuracy"
-    best_acc = [0, 0]
+    tag = "mean_iou"
+    best_mean_iou = [0, 0]
 
     run_dir = os.path.join(model_dir, run)
 
@@ -445,11 +443,11 @@ def _load_best_acc(model_dir):
         for e in iterator:
             for v in e.summary.value:
                 if v.tag == tag:
-                    if v.simple_value > best_acc[0]:
-                        best_acc[0] = v.simple_value
-                        best_acc[1] = e.step
+                    if v.simple_value > best_mean_iou[0]:
+                        best_mean_iou[0] = v.simple_value
+                        best_mean_iou[1] = e.step
 
-    return best_acc
+    return best_mean_iou
 
 
 def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_input_fn):
@@ -463,12 +461,12 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         test_input_fn: input_fn for final test using the best validation model.
 
     Returns:
-        maximum validation accuracy.
+        maximum validation mean iou.
         dict containing test results.
     """
 
-    # best_acc[0] --> best accuracy in the last epochs; best_acc[1] --> corresponding step
-    best_acc = _load_best_acc(run_config.model_dir)
+    # best_mean_iou[0] --> best mean_iou in the last epochs; best_mean_iou[1] --> corresponding step
+    best_mean_iou = _load_best_mean_iou(run_config.model_dir)
     best_dir = os.path.join(run_config.model_dir, "best")
 
     # Create estimator.
@@ -480,11 +478,8 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         classifier, "loss", 3000
     )
 
-    #eval_hook = hooks.SaveBestHook(
-    #    name="accuracy/value:0", best_metric=best_acc, checkpoint_dir=best_dir
-    #)
     eval_hook = hooks.SaveBestHook(
-        name="mean_iou/mean_iou:0", best_metric=best_acc, checkpoint_dir=best_dir
+        name="mean_iou/mean_iou:0", best_metric=best_mean_iou, checkpoint_dir=best_dir
     )
 
     train_steps = _set_train_steps(
@@ -525,13 +520,13 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         msg="Running final test using the best validation model ...",
     )
     ckpt = tf.train.latest_checkpoint(best_dir)
-    #test_results = classifier.evaluate(
+    # test_results = classifier.evaluate(
     #    input_fn=test_input_fn,
     #    steps=None,
     #    hooks=None,
     #    checkpoint_path=ckpt,
     #    name="test",
-    #)
+    # )
     test_results = classifier.evaluate(
         input_fn=eval_input_fns["valid"],
         steps=None,
@@ -540,14 +535,7 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         name="test",
     )
 
-    #return best_acc[0], {
-    #    "accuracy": test_results["accuracy"],
-    #    "confusion_matrix": test_results["confusion_matrix"],
-    #}
-
-    return best_acc[0], {
-        "mean_iou": test_results["mean_iou"],
-    }
+    return best_mean_iou[0], {"mean_iou": test_results["mean_iou"]}
 
 
 def train_and_eval(
@@ -569,7 +557,7 @@ def train_and_eval(
             set as well.
 
     Returns:
-        maximum validation accuracy (in the validation set).
+        maximum validation mean iou (in the validation set).
         dict containing test results.
     """
 
@@ -659,7 +647,7 @@ def train_and_eval(
         level=tf.compat.v1.logging.get_verbosity(), msg="Training model ..."
     )
 
-    valid_acc, test_info = train_multi_eval(
+    valid_mean_iou, test_info = train_multi_eval(
         params=hparams,
         run_config=config,
         train_input_fn=train_input_fn,
@@ -667,7 +655,7 @@ def train_and_eval(
         test_input_fn=test_input_fn,
     )
 
-    return valid_acc, test_info
+    return valid_mean_iou, test_info
 
 
 train_schemes_map = {

@@ -57,7 +57,7 @@ def master(args, comm):
     logger.info(f"Saving parameters for {config.phase} phase ...")
     config.save_params_logfile()
 
-    # Evaluation function for QNAS (train CNN and return validation accuracy)
+    # Evaluation function for QNAS (train CNN and return validation mean iou)
     eval_f = evaluation.EvalPopulation(
         params=config.train_spec,
         data_info=config.data_info,

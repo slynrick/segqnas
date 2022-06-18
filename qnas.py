@@ -37,7 +37,7 @@ class QNAS(object):
         self.data_file = data_file
         self.eval_func = eval_func
         self.experiment_path = experiment_path
-        self.fitnesses = None  # TF calculates accuracy with float32 precision
+        self.fitnesses = None  # TF calculates mean iou with float32 precision
         self.generations = None
         self.update_quantum_gen = None
         self.logger = init_log(log_level, name=__name__, file_path=log_file)
@@ -91,7 +91,7 @@ class QNAS(object):
                 if using update_center() and/or update_width_decay().
             max_num_nodes: (int) initial number of nodes in the network to be evolved (the
                 classifier fc layer is always included).
-            save_data_freq: generation frequency in which train loss and accuracy of the best
+            save_data_freq: generation frequency in which train loss and mean iou of the best
                 model (of current generation) will be extracted from events.out.tfevents file
                 and saved in a csv file.
             penalize_number: (int) defines the minimum number of reducing layers an individual
@@ -439,7 +439,7 @@ class QNAS(object):
             self.qpop_net.update_quantum(intensity=self.random)
 
     def save_train_data(self):
-        """Save loss and accuracy of best model of current generation in a csv file every
+        """Save loss and mean iou of best model of current generation in a csv file every
         *self.save_data_freq* generations.
         """
 

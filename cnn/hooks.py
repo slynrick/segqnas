@@ -123,7 +123,7 @@ class SaveBestHook(tf.compat.v1.train.SessionRunHook):
 
         Args:
             name: (str) name of the tensor that holds the metric result (ex.: name of the
-                update op tensor returned by tf.metrics.accuracy()).
+                update op tensor returned by tf.metrics.mean_iou()).
             best_metric: list of length 2, to keep track of the best metric and the
                 corresponding step.
             checkpoint_dir: (str) path to the directory where to save the best model.
@@ -188,7 +188,7 @@ class GetBestHook(tf.compat.v1.train.SessionRunHook):
 
         Args:
             name: (str) name of the tensor that holds the metric result (ex.: name of the
-                update op tensor returned by tf.metrics.accuracy()).
+                update op tensor returned by tf.metrics.mean_iou()).
             best_metric: list of length 2, to keep track of the best metric and the
                 corresponding step.
         """

@@ -123,7 +123,7 @@ train:
     batch_size:          (int) number of examples in a batch to train the networks.
     eval_batch_size:     (int) batch size for evaluation; if = 0, the number of valid image is used
     max_epochs:          (int) maximum number of epochs to train the networks.
-    epochs_to_eval:      (int) fitness is defined as the maximum accuracy in the last *epochs_to_eval*
+    epochs_to_eval:      (int) fitness is defined as the maximum mean iou in the last *epochs_to_eval*
     optimizer:           (str) RMSProp or Momentum
 
     # Dataset
@@ -167,7 +167,7 @@ log_QNAS.txt
 
 The folder `12_7` has the Tensorflow files for the best network in the evolution; in this case, is the
  individual number `7` found in generation `12`. The folder `csv_data` has csv files with training
-   information of the individuals (loss and accuracy for the best individuals in some generations). Both of
+   information of the individuals (loss and mean iou for the best individuals in some generations). Both of
     these directories are not used in later steps, they are just information that one might want to inspect.
 
 The file `data_QNAS.pkl` keeps all the evolution data (chromosomes, fitness values, number of evaluations, 

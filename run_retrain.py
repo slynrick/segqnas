@@ -46,9 +46,9 @@ def main(**args):
     # It is important to merge the dicts with the evolved_params first, as they need to be
     # overwritten in case we are using one of the special train schemes.
     train_params = {**config.evolved_params["params"], **config.train_spec}
-    
+
     logger.info(f"Starting training of model {config.evolved_params['net']}")
-    valid_acc, test_info = train.train_and_eval(
+    valid_mean_iou, test_info = train.train_and_eval(
         data_info=config.data_info,
         params=train_params,
         fn_dict=config.fn_dict,
@@ -59,9 +59,9 @@ def main(**args):
     logger.info(f"Saving parameters...")
     config.save_params_logfile()
 
-    logger.info(f"Best mean iou in validation set: {valid_acc:.5f}")
+    logger.info(f"Best mean iou in validation set: {valid_mean_iou:.5f}")
     logger.info(f"Final test mean iou: {test_info['mean_iou']:.5f}")
-    #logger.info(f"Final test confusion matrix:\n{test_info['confusion_matrix']}")
+    # logger.info(f"Final test confusion matrix:\n{test_info['confusion_matrix']}")
 
 
 if __name__ == "__main__":

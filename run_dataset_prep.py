@@ -113,9 +113,7 @@ def load_pascalvoc12(data_path):
     print(f"Loading test dataset")
 
     # test dataset doesnt have masks
-    dataset["test"] = {
-        "imgs": [],
-    }
+    dataset["test"] = {"imgs": []}
 
     dataset_descriptor_file = open(os.path.join(descriptor_files_folder, "test.txt"))
     for data_file_name in dataset_descriptor_file.read().splitlines():

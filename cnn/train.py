@@ -61,18 +61,15 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    # metrics = {'accuracy': tf.compat.v1.metrics.accuracy(labels, predictions['masks'])}
-    #metrics = {
-    #    "mean_iou": tf.compat.v1.metrics.mean_iou(
-    #        labels, predictions["masks"], predictions["masks"].shape[-1]
-    #    )
-    #}
-    metrics = {
-        "mean_iou": tf.compat.v1.metrics.mean_iou(
-            tf.expand_dims(tf.argmax(input=labels, axis=-1), -1), predictions["classes"], predictions["masks"].shape[-1]
-        )
-    }
+    mean_iou = tf.compat.v1.metrics.mean_iou(
+        tf.expand_dims(tf.argmax(input=labels, axis=-1), -1),
+        predictions["classes"],
+        predictions["masks"].shape[-1],
+    )
 
+    metrics = {"mean_iou": mean_iou}
+
+    tf.summary.scalar("mean iou", mean_iou)
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -204,7 +201,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
 def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     """Train a model and evaluate it for the last *params.epochs_to_eval*. Return the maximum
-        accuracy.
+        mean iou.
 
     Args:
         params: tf.contrib.training.HParams object with various hyperparameters.
@@ -213,11 +210,11 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
         eval_input_fn: input_fn for evaluation.
 
     Returns:
-        maximum accuracy.
+        maximum mean iou.
     """
 
-    # best_acc[0] --> best accuracy in the last epochs; best_acc[1] --> corresponding step
-    best_acc = [0, 0]
+    # best_mean_iou[0] --> best mean iou in the last epochs; best_mean_iou[1] --> corresponding step
+    best_mean_iou = [0, 0]
 
     # Calculate max_steps based on epochs_to_eval.
     train_steps = params.max_steps - params.epochs_to_eval * int(params.steps_per_epoch)
@@ -230,10 +227,9 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-    # eval_hook = GetBestHook(name='accuracy/value:0', best_metric=best_acc)
-    eval_hook = GetBestHook(name="mean_iou/mean_iou:0", best_metric=best_acc)
+    eval_hook = GetBestHook(name="mean_iou/mean_iou:0", best_metric=best_mean_iou)
 
-    # Run the last steps_to_eval to complete training and also record validation accuracy.
+    # Run the last steps_to_eval to complete training and also record validation mean iou.
     # Evaluate 1 time per epoch.
     for _ in range(params.epochs_to_eval):
         train_steps += int(params.steps_per_epoch)
@@ -243,7 +239,7 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
             input_fn=eval_input_fn, steps=None, hooks=[eval_hook]
         )
 
-    return best_acc[0]
+    return best_mean_iou[0]
 
 
 def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
@@ -258,7 +254,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         net_list: list with names of layers defining the network, in the order they appear.
 
     Returns:
-        accuracy of the model for the validation set.
+        mean iou of the model for the validation set.
     """
 
     os.environ["TF_SYNC_ON_FINISH"] = "0"
@@ -336,7 +332,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     )
 
     try:
-        accuracy = train_and_eval(
+        mean_iou = train_and_eval(
             params=hparams,
             run_config=config,
             train_input_fn=train_input_fn,
@@ -369,4 +365,4 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         )
         return 0
 
-    return accuracy
+    return mean_iou
