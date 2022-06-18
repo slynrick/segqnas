@@ -59,9 +59,9 @@ def main(**args):
     logger.info(f"Saving parameters...")
     config.save_params_logfile()
 
-    logger.info(f"Best accuracy in validation set: {valid_acc:.5f}")
-    logger.info(f"Final test accuracy: {test_info['accuracy']:.5f}")
-    logger.info(f"Final test confusion matrix:\n{test_info['confusion_matrix']}")
+    logger.info(f"Best mean iou in validation set: {valid_acc:.5f}")
+    logger.info(f"Final test mean iou: {test_info['mean_iou']:.5f}")
+    #logger.info(f"Final test confusion matrix:\n{test_info['confusion_matrix']}")
 
 
 if __name__ == "__main__":
