@@ -12,12 +12,12 @@ import functools
 import os
 
 import tensorflow as tf
-import keras.backend as K
+import tensorflow.keras.backend as K
 from tensorflow_addons.optimizers import CyclicalLearningRate
 from adam2sgd import Adam2SGD, SWATS
 import clr_callback
 
-from cnn import model, input, hooks, hparam
+from cnn import model, input, hooks, hparam, loss_function
 
 physical_devices = tf.config.list_physical_devices("GPU")
 try:
@@ -218,11 +218,17 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    accuracy = tf.compat.v1.metrics.accuracy(labels, predictions["classes"])
-    confusion = _confusion_matrix(labels, predictions["classes"], params.num_classes)
+    #accuracy = tf.compat.v1.metrics.accuracy(labels, predictions["classes"])
+    #confusion = _confusion_matrix(labels, predictions["classes"], params.num_classes)
 
-    metrics = {"accuracy": accuracy, "confusion_matrix": confusion}
-    tf.summary.scalar("accuracy", accuracy[1])
+    #metrics = {"accuracy": accuracy, "confusion_matrix": confusion}
+    #tf.summary.scalar("accuracy", accuracy[1])
+
+    metrics = {
+        "mean_iou": tf.compat.v1.metrics.mean_iou(
+            tf.expand_dims(tf.argmax(input=labels, axis=-1), -1), predictions["classes"], predictions["masks"].shape[-1]
+        )
+    }
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -301,14 +307,29 @@ def _get_loss_and_grads(is_train, params, features, labels):
         inputs=features, net_list=params.net_list, is_train=is_train
     )
 
+    #predictions = {
+    #    "classes": tf.argmax(input=logits, axis=1),
+    #    "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
+    #}
     predictions = {
-        "classes": tf.argmax(input=logits, axis=1),
+        "classes": tf.expand_dims(tf.argmax(input=logits, axis=-1), -1),
         "probabilities": tf.nn.softmax(logits, name="softmax_tensor"),
     }
 
-    loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(
-        logits=logits, labels=labels
-    )
+    one_hot_mask = []
+    for _class in range(21):
+        class_mask = tf.reduce_all(tf.equal(predictions["classes"], _class), axis=-1)
+        one_hot_mask.append(class_mask)
+    one_hot_mask = tf.stack(one_hot_mask, axis=-1)
+    one_hot_mask = tf.cast(one_hot_mask, tf.float32)
+
+    predictions["masks"] = one_hot_mask
+
+
+    #loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(
+    #    logits=logits, labels=labels
+    #)
+    loss = loss_function.DiceLoss()(y_true=labels, y_pred=logits)
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
@@ -459,8 +480,11 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         classifier, "loss", 3000
     )
 
+    #eval_hook = hooks.SaveBestHook(
+    #    name="accuracy/value:0", best_metric=best_acc, checkpoint_dir=best_dir
+    #)
     eval_hook = hooks.SaveBestHook(
-        name="accuracy/value:0", best_metric=best_acc, checkpoint_dir=best_dir
+        name="mean_iou/mean_iou:0", best_metric=best_acc, checkpoint_dir=best_dir
     )
 
     train_steps = _set_train_steps(
@@ -509,9 +533,13 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         name="test",
     )
 
+    #return best_acc[0], {
+    #    "accuracy": test_results["accuracy"],
+    #    "confusion_matrix": test_results["confusion_matrix"],
+    #}
+
     return best_acc[0], {
-        "accuracy": test_results["accuracy"],
-        "confusion_matrix": test_results["confusion_matrix"],
+        "mean_iou": test_results["mean_iou"],
     }
 
 
