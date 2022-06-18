@@ -525,8 +525,15 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         msg="Running final test using the best validation model ...",
     )
     ckpt = tf.train.latest_checkpoint(best_dir)
+    #test_results = classifier.evaluate(
+    #    input_fn=test_input_fn,
+    #    steps=None,
+    #    hooks=None,
+    #    checkpoint_path=ckpt,
+    #    name="test",
+    #)
     test_results = classifier.evaluate(
-        input_fn=test_input_fn,
+        input_fn=eval_input_fns["valid"],
         steps=None,
         hooks=None,
         checkpoint_path=ckpt,
