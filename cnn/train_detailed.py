@@ -450,7 +450,7 @@ def _load_best_mean_iou(model_dir):
     return best_mean_iou
 
 
-def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_input_fn):
+def train_multi_eval(params, run_config, train_input_fn, eval_input_fns):
     """Train a model using the learning schedule
 
     Args:
@@ -458,7 +458,6 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
         run_config: tf.Estimator.RunConfig object.
         train_input_fn: input_fn for training.
         eval_input_fns: dict of input_fn functions for evaluation.
-        test_input_fn: input_fn for final test using the best validation model.
 
     Returns:
         maximum validation mean iou.
@@ -470,12 +469,12 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
     best_dir = os.path.join(run_config.model_dir, "best")
 
     # Create estimator.
-    classifier = tf.estimator.Estimator(
+    segmentation_model = tf.estimator.Estimator(
         model_fn=_model_fn, config=run_config, params=params
     )
 
     es_hook = tf.estimator.experimental.stop_if_no_decrease_hook(
-        classifier, "loss", 3000
+        segmentation_model, "loss", 3000
     )
 
     eval_hook = hooks.SaveBestHook(
@@ -485,19 +484,19 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
     train_steps = _set_train_steps(
         max_steps=params.max_steps,
         save_checkpoints_steps=params.save_checkpoints_steps,
-        estimator=classifier,
+        estimator=segmentation_model,
     )
-    print(train_steps)
+
     for steps in train_steps:
         tf.summary.scalar("learning rate", data=params.learning_rate, step=steps)
-        classifier.train(input_fn=train_input_fn, max_steps=steps, hooks=[es_hook])
+        segmentation_model.train(input_fn=train_input_fn, max_steps=steps, hooks=[es_hook])
 
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
             msg="Running evaluation on valid dataset ...",
         )
 
-        classifier.evaluate(
+        segmentation_model.evaluate(
             input_fn=eval_input_fns["valid"], steps=None, hooks=[eval_hook]
         )
 
@@ -507,7 +506,7 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
                 msg="Running evaluation on train dataset ...",
             )
 
-            classifier.evaluate(
+            segmentation_model.evaluate(
                 input_fn=eval_input_fns["train"],
                 steps=None,
                 hooks=None,
@@ -527,12 +526,12 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns, test_in
     #    checkpoint_path=ckpt,
     #    name="test",
     # )
-    test_results = classifier.evaluate(
+    test_results = segmentation_model.evaluate(
         input_fn=eval_input_fns["valid"],
         steps=None,
         hooks=None,
         checkpoint_path=ckpt,
-        name="test",
+        name="eval",
     )
 
     return best_mean_iou[0], {"mean_iou": test_results["mean_iou"]}
@@ -621,16 +620,16 @@ def train_and_eval(
         threads=hparams.threads,
     )
 
-    test_input_fn = functools.partial(
-        input.input_fn,
-        data_info=data_info,
-        dataset_type="test",
-        batch_size=hparams.eval_batch_size,
-        data_aug=False,
-        subtract_mean=hparams.subtract_mean,
-        process_for_training=False,
-        threads=hparams.threads,
-    )
+    #test_input_fn = functools.partial(
+    #    input.input_fn,
+    #    data_info=data_info,
+    #    dataset_type="test",
+    #    batch_size=hparams.eval_batch_size,
+    #    data_aug=False,
+    #    subtract_mean=hparams.subtract_mean,
+    #    process_for_training=False,
+    #    threads=hparams.threads,
+    #)
     if run_train_eval:
         eval_input_fns["train"] = functools.partial(
             input.input_fn,
@@ -652,7 +651,7 @@ def train_and_eval(
         run_config=config,
         train_input_fn=train_input_fn,
         eval_input_fns=eval_input_fns,
-        test_input_fn=test_input_fn,
+        #test_input_fn=test_input_fn,
     )
 
     return valid_mean_iou, test_info
