@@ -227,7 +227,7 @@ def _model_fn(features, labels, mode, params):
 
     metrics = {"mean_iou": mean_iou}
 
-    tf.summary.scalar("mean iou", mean_iou)
+    tf.summary.scalar("mean iou", mean_iou[0])
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
