@@ -519,7 +519,7 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns):
         msg="Running final test using the best validation model ...",
     )
     ckpt = tf.train.latest_checkpoint(best_dir)
-    # test_results = classifier.evaluate(
+    # test_results = segmentation_model.evaluate(
     #    input_fn=test_input_fn,
     #    steps=None,
     #    hooks=None,
@@ -534,7 +534,7 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns):
         name="eval",
     )
 
-    return best_mean_iou[0], {"mean_iou": test_results["mean_iou"]}
+    return best_mean_iou[0], {"mean_iou": test_results}
 
 
 def train_and_eval(

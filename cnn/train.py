@@ -69,7 +69,7 @@ def _model_fn(features, labels, mode, params):
 
     metrics = {"mean_iou": mean_iou}
 
-    tf.summary.scalar("mean iou", mean_iou)
+    tf.summary.scalar("mean iou", mean_iou[0])
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -296,7 +296,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     params["net_list"] = net_list
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
-    # valid in the multiple calls to classifier.train(). Otherwise, it would be restarted.
+    # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
     tf.compat.v1.disable_v2_behavior()
 
