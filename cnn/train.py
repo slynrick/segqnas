@@ -67,7 +67,7 @@ def _model_fn(features, labels, mode, params):
         predictions["masks"].shape[-1],
     )
 
-    all_tensors = [tensor for op in tf.get_default_graph().get_operations() for tensor in op.values()]
+    all_tensors = [tensor for op in tf.compat.v1.get_default_graph().get_operations() for tensor in op.values()]
     tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
             msg=f"All tensors: {all_tensors}"
