@@ -67,6 +67,12 @@ def _model_fn(features, labels, mode, params):
         predictions["masks"].shape[-1],
     )
 
+    all_tensors = [tensor for op in tf.get_default_graph().get_operations() for tensor in op.values()]
+    tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"All tensors: {all_tensors}"
+        )
+
     metrics = {"mean_iou": mean_iou}
 
     tf.summary.scalar("mean iou", mean_iou[0])
