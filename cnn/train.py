@@ -61,7 +61,7 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    mean_iou = tf.compat.v1.metrics.mean_iou(
+    mean_iou, _ = tf.compat.v1.metrics.mean_iou(
         tf.expand_dims(tf.argmax(input=labels, axis=-1), -1),
         predictions["classes"],
         predictions["masks"].shape[-1],
