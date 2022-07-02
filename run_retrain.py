@@ -60,7 +60,7 @@ def main(**args):
     config.save_params_logfile()
 
     logger.info(f"Best mean iou in validation set: {valid_mean_iou:.5f}")
-    logger.info(f"Final test mean iou: {test_info['mean_iou']:.5f}")
+    logger.info(f"Final test mean iou: {test_info['mean_iou']}")
     # logger.info(f"Final test confusion matrix:\n{test_info['confusion_matrix']}")
 
 
