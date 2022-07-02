@@ -478,7 +478,7 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns):
     )
 
     eval_hook = hooks.SaveBestHook(
-        name="mean_iou/Select_1:0", best_metric=best_mean_iou, checkpoint_dir=best_dir
+        name="mean_iou/mean_iou:0", best_metric=best_mean_iou, checkpoint_dir=best_dir
     )
 
     train_steps = _set_train_steps(
