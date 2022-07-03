@@ -67,6 +67,8 @@ def _model_fn(features, labels, mode, params):
         predictions["masks"].shape[-1],
     )}
 
+    tf.summary.scalar("mean_iou_tensor_name", metrics["mean_iou"][0].name)
+
     return tf.estimator.EstimatorSpec(
         mode=mode,
         predictions=predictions,
