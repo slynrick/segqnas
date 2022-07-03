@@ -66,11 +66,6 @@ def _model_fn(features, labels, mode, params):
         predictions["classes"],
         predictions["masks"].shape[-1],
     )}
-    
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"Mean IOU tensor name: {metrics['mean_iou'][0].name}",
-    )
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -223,7 +218,7 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     # Train estimator for the first train_steps.
     segmentation_model.train(input_fn=train_input_fn, max_steps=train_steps)
 
-    eval_hook = GetBestHook(name="mean_iou/mean_iou:0", best_metric=best_mean_iou)
+    eval_hook = GetBestHook(name="mean_iou/Select_1:0", best_metric=best_mean_iou)
 
     # Run the last steps_to_eval to complete training and also record validation mean iou.
     # Evaluate 1 time per epoch.
