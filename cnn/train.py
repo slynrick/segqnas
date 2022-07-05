@@ -8,14 +8,14 @@
 
 """
 import functools
-import platform
 import os
+import platform
 import time
 from logging import addLevelName
 
 import tensorflow as tf
 
-from cnn import loss_function, model, input, hparam
+from cnn import hparam, input, loss_function, model
 from cnn.hooks import GetBestHook, TimeOutHook
 
 # TRAIN_TIMEOUT = 5400
