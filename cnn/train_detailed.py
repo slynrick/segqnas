@@ -11,14 +11,13 @@
 import functools
 import os
 
+import clr_callback
 import tensorflow as tf
 import tensorflow.keras.backend as K
-
 # from tensorflow_addons.optimizers import CyclicalLearningRate
-from adam2sgd import Adam2SGD, SWATS
-import clr_callback
+from adam2sgd import SWATS, Adam2SGD
 
-from cnn import model, input, hooks, hparam, loss_function
+from cnn import hooks, hparam, input, loss_function, model
 
 physical_devices = tf.config.list_physical_devices("GPU")
 try:
