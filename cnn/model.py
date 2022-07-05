@@ -157,11 +157,11 @@ class AvgPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return layers.AvgPooling2D(pool_size=self.pool_size,
-                                        strides=self.strides,
-                                        data_format='channels_last',
-                                        padding=self.padding,
-                                        name=name)(inputs)
+            return layers.AveragePooling2D(pool_size=self.pool_size,
+                                            strides=self.strides,
+                                            data_format='channels_last',
+                                            padding=self.padding,
+                                            name=name)(inputs)
         else:
             return inputs
 
