@@ -245,12 +245,12 @@ class NetworkGraph(object):
         for f in net_list[::-1]:
             if f == "no_op":
                 continue
-            elif isinstance(self.layer_dict[f], ConvBlock)):
+            elif isinstance(self.layer_dict[f], ConvBlock):
                 inputs = self.layer_dict[f](
                     inputs=inputs, name=f"l{i}_{f}", is_train=is_train
                 )
             else:
-                inputs = tf.compat.v1.keras.layers.UpSampling2D(
+                inputs = layers.UpSampling2D(
                     size=(2, 2), data_format="channels_last", name=f"l{i}_{f}"
                 )(inputs)
                 inputs = layers.Concatenate()([inputs, skip_connections.pop()])
@@ -268,6 +268,6 @@ class NetworkGraph(object):
             kernel_initializer=tf.keras.initializers.he_normal(),
             bias_initializer=tf.keras.initializers.he_normal(),
             name="final_conv",
-        )()
+        )(inputs)
 
         return logits
