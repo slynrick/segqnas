@@ -493,6 +493,7 @@ class NetworkGraph(object):
 
         # produces a tensor of dimensions (input height, input width, num_classes)
         logits = tf.compat.v1.layers.conv2d(
+            inputs = inputs
             filters=self.num_classes,
             kernel_size=1,
             activation=None,
@@ -502,7 +503,7 @@ class NetworkGraph(object):
             kernel_initializer=tf.keras.initializers.he_normal(),
             bias_initializer=tf.keras.initializers.he_normal(),
             name="final_conv",
-        )(inputs)
+        )
 
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
