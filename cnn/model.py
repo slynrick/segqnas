@@ -172,7 +172,7 @@ class NoOp(object):
 
 
 class SegmentationModel(Model):
-    def __init__(self, num_classes, mu=0.9, epsilon=2e-5, fn_dict):
+    def __init__(self, num_classes, fn_dict, mu=0.9, epsilon=2e-5):
         """Initialize NetworkGraph.
 
         Args:
@@ -192,7 +192,7 @@ class SegmentationModel(Model):
         self.epsilon = epsilon
         self.layer_dict = {}
 
-        for name, definition in self.fn_dict.items():
+        for name, definition in fn_dict.items():
             if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
                 definition["params"]["mu"] = self.mu
                 definition["params"]["epsilon"] = self.epsilon
