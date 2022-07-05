@@ -170,7 +170,7 @@ class NoOp(object):
     pass
 
 
-def get_segmentation_model(input_shape, num_classes, fn_dict, is_train=True, mu=0.9, epsilon=2e-5):
+def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train=True, mu=0.9, epsilon=2e-5):
 
     layer_dict = {}
     for name, definition in fn_dict.items():
@@ -185,7 +185,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, is_train=True, mu=
     inputs = Input(shape=input_shape)
     x = inputs
 
-    for i, f in enumerate(list(fn_dict.keys())):
+    for i, f in enumerate(net_list):
         if f == "no_op":
                 continue
         elif isinstance(layer_dict[f], ConvBlock):
@@ -196,7 +196,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, is_train=True, mu=
             skip_connections.append(x)
             x = layer_dict[f](inputs=x, name=f"l{i}_{f}")
     
-    for i in enumerate(list(fn_dict.keys())[::-1]):
+    for i in enumerate(net_list):
         if f == "no_op":
             continue
         elif isinstance(layer_dict[f], ConvBlock):

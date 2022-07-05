@@ -258,9 +258,9 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     model_path = os.path.join(params["experiment_path"], id_num)
 
-    filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
+    #filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
 
-    net = model.get_segmentation_model((128,128,3), 21, filtered_dict)
+    net = model.get_segmentation_model((128,128,3), 21, fn_dict, net_list)
 
     net.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                 loss=loss_function.DiceLoss(),
