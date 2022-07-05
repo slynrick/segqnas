@@ -264,7 +264,12 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         msg=f"data_info {data_info}, params {params}"
     )
 
-    net = model.get_segmentation_model((128,128,3), 21, fn_dict, net_list)
+    net = model.get_segmentation_model((data_info.height,
+                                        data_info.width,
+                                        data_info.num_channels), 
+                                        data_info.num_classes, 
+                                        fn_dict, 
+                                        net_list)
 
     net.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                 loss=loss_function.DiceLoss(),
