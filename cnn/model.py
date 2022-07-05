@@ -13,7 +13,7 @@
 from re import S
 from warnings import filters
 
-from tensorflow.keras import initializers, layers
+from tensorflow.keras import Input, Model, initializers, layers
 
 
 class ConvBlock(object):
@@ -171,18 +171,59 @@ class NoOp(object):
     pass
 
 
-def get_segmentation_model(input_shape, num_classes, fn_dict, mu=0.9, epsilon=2e-5):
+def get_segmentation_model(input_shape, num_classes, fn_dict, is_train=True, mu=0.9, epsilon=2e-5):
 
     layer_dict = {}
     for name, definition in fn_dict.items():
-        if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
+        if definition["function"] in ["ConvBlock"]:
             definition["params"]["mu"] = mu
             definition["params"]["epsilon"] = epsilon
         layer_dict[name] = globals()[definition["function"]](
             **definition["params"]
         )
     
-    return layer_dict
+    skip_connections = []
+    inputs = Input(shape=input_shape)
+    x = inputs
+
+    for i, f in enumerate(fn_dict.keys):
+        if f == "no_op":
+                continue
+        elif isinstance(layer_dict[f], ConvBlock):
+            x = layer_dict[f](
+                inputs=x, name=f"l{i}_{f}", is_train=is_train
+            )
+        else:
+            skip_connections.append(x)
+            x = layer_dict[f](inputs=x, name=f"l{i}_{f}")
+    
+    for i in enumerate(fn_dict.keys[::-1]):
+        if f == "no_op":
+            continue
+        elif isinstance(layer_dict[f], ConvBlock):
+            x = layer_dict[f](
+                inputs=x, name=f"l{i}_{f}", is_train=is_train
+            )
+        else:
+            x = layers.UpSampling2D(
+                size=(2, 2), data_format="channels_last", name=f"l{i+len(fn_dict.keys)}_{f}"
+            )(x)
+            x = layers.Concatenate()([x, skip_connections.pop()])
+
+    outputs = layers.Conv2D(
+        filters=num_classes,
+        kernel_size=1,
+        activation=None,
+        padding="same",
+        strides=1,
+        data_format="channels_last",
+        kernel_initializer="he_normal",
+        bias_initializer="he_normal",
+        name="final_conv",
+    )(x)
+
+    model = Model(inputs=inputs, outputs=outputs)
+
 
 class NetworkGraph(object):
     def __init__(self, num_classes, mu=0.9, epsilon=2e-5):
