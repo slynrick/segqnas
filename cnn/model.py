@@ -13,7 +13,7 @@
 from re import S
 from warnings import filters
 
-from tensorflow.keras import Model, initializers, layers
+from tensorflow.keras import initializers, layers
 
 
 class ConvBlock(object):
@@ -171,8 +171,19 @@ class NoOp(object):
     pass
 
 
-class SegmentationModel(Model):
-    def __init__(self, num_classes, fn_dict, mu=0.9, epsilon=2e-5):
+def get_segmentation_model(input_shape, num_classes, fn_dict, mu=0.9, epsilon=2e-5):
+
+    layer_dict = {}
+    for name, definition in fn_dict.items():
+        if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
+            definition["params"]["mu"] = mu
+            definition["params"]["epsilon"] = epsilon
+        layer_dict[name] = globals()[definition["function"]](
+            **definition["params"]
+        )
+
+class NetworkGraph(object):
+    def __init__(self, num_classes, mu=0.9, epsilon=2e-5):
         """Initialize NetworkGraph.
 
         Args:
@@ -180,17 +191,19 @@ class SegmentationModel(Model):
             mu: (float) batch normalization decay; default = 0.9
             epsilon: (float) batch normalization epsilon; default = 2e-5.
         """
+
+        self.num_classes = num_classes
+        self.mu = mu
+        self.epsilon = epsilon
+        self.layer_dict = {}
+
+    def create_functions(self, fn_dict):
         """Generate all possible functions from functions descriptions in *self.fn_dict*.
 
         Args:
             fn_dict: dict with definitions of the functions (name and parameters);
                 format --> {'fn_name': ['FNClass', {'param1': value1, 'param2': value2}]}.
         """
-        
-        self.num_classes = num_classes
-        self.mu = mu
-        self.epsilon = epsilon
-        self.layer_dict = {}
 
         for name, definition in fn_dict.items():
             if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
@@ -216,49 +229,45 @@ class SegmentationModel(Model):
 
         skip_connections = []
 
-        tensor = inputs
-
         for f in net_list:
             if f == "no_op":
                 continue
             elif isinstance(self.layer_dict[f], ConvBlock):
-                tensor = self.layer_dict[f](
-                    inputs=tensor, name=f"l{i}_{f}", is_train=is_train
+                inputs = self.layer_dict[f](
+                    inputs=inputs, name=f"l{i}_{f}", is_train=is_train
                 )
             else:
                 skip_connections.append(inputs)
-                tensor = self.layer_dict[f](inputs=tensor, name=f"l{i}_{f}")
+                inputs = self.layer_dict[f](inputs=inputs, name=f"l{i}_{f}")
 
             i += 1
 
         for f in net_list[::-1]:
             if f == "no_op":
                 continue
-            elif isinstance(self.layer_dict[f], ConvBlock):
-                tensor = self.layer_dict[f](
-                    inputs=tensor, name=f"l{i}_{f}", is_train=is_train
+            elif isinstance(self.layer_dict[f], ConvBlock)):
+                inputs = self.layer_dict[f](
+                    inputs=inputs, name=f"l{i}_{f}", is_train=is_train
                 )
             else:
-                tensor = tf.compat.v1.keras.layers.UpSampling2D(
+                inputs = tf.compat.v1.keras.layers.UpSampling2D(
                     size=(2, 2), data_format="channels_last", name=f"l{i}_{f}"
-                )(tensor)
-                tensor = layers.Concatenate()([tensor, skip_connections.pop()])
+                )(inputs)
+                inputs = layers.Concatenate()([inputs, skip_connections.pop()])
 
             i += 1
 
         # produces a tensor of dimensions (input height, input width, num_classes)
-        outputs = layers.Conv2D(
+        logits = layers.Conv2D(
             filters=self.num_classes,
             kernel_size=1,
             activation=None,
             padding="same",
             strides=1,
             data_format="channels_last",
-            kernel_initializer=initializers.HeNormal(),
-            bias_initializer=initializers.HeNormal(),
+            kernel_initializer=tf.keras.initializers.he_normal(),
+            bias_initializer=tf.keras.initializers.he_normal(),
             name="final_conv",
-        )(tensor)
+        )()
 
-        model = Model(inputs=inputs, outputs=outputs)
-
-        return model
+        return logits

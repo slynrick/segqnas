@@ -257,35 +257,19 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
     model_path = os.path.join(params["experiment_path"], id_num)
-
-    # Session configuration.
-    sess_config = tf.compat.v1.ConfigProto(
-        allow_soft_placement=True,
-        intra_op_parallelism_threads=params["threads"],
-        inter_op_parallelism_threads=params["threads"],
-        gpu_options=tf.compat.v1.GPUOptions(
-            force_gpu_compatible=True,
-            allow_growth=True,
-            visible_device_list=id_num.split("_")[1],
-        ),
-    )
-
-    config = tf.estimator.RunConfig(
-        session_config=sess_config,
-        model_dir=model_path,
-        save_checkpoints_steps=params["save_checkpoints_steps"],
-        save_summary_steps=params["save_summary_steps"],
-        save_checkpoints_secs=None,
-        keep_checkpoint_max=1,
-    )
-
+    
     filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"net_list {net_list}"
+    )
+
     net = model.SegmentationModel(num_classes=data_info.num_classes, fn_dict=filtered_dict)
 
-    params["net"] = net.layer_dict()
+    params["net"] = net
     params["net_list"] = net_list
 
-    print(params["net"])
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
