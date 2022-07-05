@@ -93,8 +93,7 @@ class ConvBlock(object):
         return layers.BatchNormalization(axis=-1,
                                         momentum=self.batch_norm_mu,
                                         epsilon=self.batch_norm_epsilon,
-                                        training=is_train,
-                                        name=name)(inputs)
+                                        name=name)(inputs=inputs, training=is_train)
 
 class MaxPooling(object):
     def __init__(self, kernel, strides):
