@@ -224,6 +224,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, is_train=True, mu=
 
     model = Model(inputs=inputs, outputs=outputs)
 
+    return model
 
 class NetworkGraph(object):
     def __init__(self, num_classes, mu=0.9, epsilon=2e-5):
