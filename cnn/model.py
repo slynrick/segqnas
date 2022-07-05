@@ -196,7 +196,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train
             skip_connections.append(x)
             x = layer_dict[f](inputs=x, name=f"l{i}_{f}")
     
-    for i in enumerate(net_list):
+    for i in enumerate(net_list[::-1]):
         if f == "no_op":
             continue
         elif isinstance(layer_dict[f], ConvBlock):
@@ -205,7 +205,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train
             )
         else:
             x = layers.UpSampling2D(
-                size=(2, 2), data_format="channels_last", name=f"l{i+len(fn_dict.keys)}_{f}"
+                size=(2, 2), data_format="channels_last", name=f"l{i+len(net_list)}_{f}"
             )(x)
             x = layers.Concatenate()([x, skip_connections.pop()])
 
