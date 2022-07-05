@@ -51,8 +51,8 @@ class ConvBlock(object):
             output tensor.
         """
 
-        tensor = self._conv2d(inputs, name="conv_" + name)
-        tensor = self._batch_norm(tensor, is_train, name="bn" + name)
+        tensor = self._conv2d(inputs, name=name + '_conv')
+        tensor = self._batch_norm(tensor, is_train, name=name + '_bn')
         tensor = self.activation(tensor)
 
         return tensor
@@ -294,7 +294,7 @@ class NetworkGraph(object):
                 )
             else:
                 inputs = layers.UpSampling2D(
-                    size=(2, 2), data_format="channels_last", name=f"l{i}_{f}"
+                    size=(2, 2), data_format="channels_last", name=f"l{i}_upsampling"
                 )(inputs)
                 inputs = layers.Concatenate()([inputs, skip_connections.pop()])
 
