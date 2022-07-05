@@ -262,12 +262,16 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     net = model.get_segmentation_model((128,128,3), 21, filtered_dict)
 
+    net.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                loss=loss_function.DiceLoss(),
+                metrics=[tf.keras.metrics.MeanIoU(21, name="mean_iou")])
+
     params["net"] = net
     params["net_list"] = net_list
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"filtered_dict {filtered_dict}, net {net}"
+        msg=f"net_list {net_list}, net {net.summary()}"
     )
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
