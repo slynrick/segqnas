@@ -493,7 +493,7 @@ class NetworkGraph(object):
 
         # produces a tensor of dimensions (input height, input width, num_classes)
         logits = tf.compat.v1.layers.conv2d(
-            inputs = inputs
+            inputs = inputs,
             filters=self.num_classes,
             kernel_size=1,
             activation=None,
