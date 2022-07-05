@@ -171,10 +171,6 @@ class DataSet(object):
         Returns:
             preprocessed image, with same shape.
         """
-        tf.compat.v1.logging.log(
-            level=tf.compat.v1.logging.get_verbosity(),
-            msg=f"image/mask size: {self.info.height}, {self.info.width}",
-        )
 
         image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
         mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
@@ -199,8 +195,8 @@ class PascalVOC12Info(object):
         """
 
         self.data_path = data_path
-        self.height = 448  # after preprocessing
-        self.width = 448  # after preprocessing
+        self.height = 112  # after preprocessing
+        self.width = 112  # after preprocessing
         self.num_channels = 3
         self.mean_image = np.load(
             os.path.join(self.data_path, "pascalvoc12_train_mean.npz")
