@@ -282,7 +282,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     net = model.SegmentationModel(num_classes=data_info.num_classes, fn_dict=filtered_dict)
 
-    params["net"] = net.get_net_list()
+    params["net"] = net.layer_dict()
     params["net_list"] = net_list
 
     print(params["net"])

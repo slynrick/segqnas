@@ -192,7 +192,7 @@ class SegmentationModel(Model):
         self.epsilon = epsilon
         self.layer_dict = {}
 
-        for name, definition in fn_dict.items():
+        for name, definition in self.fn_dict.items():
             if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
                 definition["params"]["mu"] = self.mu
                 definition["params"]["epsilon"] = self.epsilon
@@ -261,7 +261,4 @@ class SegmentationModel(Model):
 
         model = Model(inputs=inputs, outputs=outputs)
 
-
-        return logits
-
-class SegmentationModel(Model):
+        return model
