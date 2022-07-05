@@ -262,7 +262,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"net_list {net_list}"
+        msg=f"net_list {net_list}, filtered_dict {filtered_dict}"
     )
 
     net = 0#model.SegmentationModel(num_classes=data_info.num_classes, fn_dict=filtered_dict)
