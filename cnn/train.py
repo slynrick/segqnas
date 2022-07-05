@@ -271,7 +271,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"filtered_dict {filtered_dict}, net {net.summary()}"
+        msg=f"filtered_dict {fn_dict}, net {net.summary()}"
     )
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
