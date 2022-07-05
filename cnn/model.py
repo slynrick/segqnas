@@ -196,7 +196,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, is_train=True, mu=
             skip_connections.append(x)
             x = layer_dict[f](inputs=x, name=f"l{i}_{f}")
     
-    for i in enumerate(list(fn_dict.keys()[::-1])):
+    for i in enumerate(list(fn_dict.keys())[::-1]):
         if f == "no_op":
             continue
         elif isinstance(layer_dict[f], ConvBlock):
