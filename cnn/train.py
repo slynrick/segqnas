@@ -257,7 +257,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
     model_path = os.path.join(params["experiment_path"], id_num)
-    
+
     filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
 
     tf.compat.v1.logging.log(
@@ -265,7 +265,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         msg=f"net_list {net_list}"
     )
 
-    net = model.SegmentationModel(num_classes=data_info.num_classes, fn_dict=filtered_dict)
+    net = 0#model.SegmentationModel(num_classes=data_info.num_classes, fn_dict=filtered_dict)
 
     params["net"] = net
     params["net_list"] = net_list
