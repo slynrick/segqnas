@@ -195,8 +195,8 @@ class PascalVOC12Info(object):
         """
 
         self.data_path = data_path
-        self.height = 112  # after preprocessing
-        self.width = 112  # after preprocessing
+        self.height = 128  # after preprocessing
+        self.width = 128  # after preprocessing
         self.num_channels = 3
         self.mean_image = np.load(
             os.path.join(self.data_path, "pascalvoc12_train_mean.npz")
