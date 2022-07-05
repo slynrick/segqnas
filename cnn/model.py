@@ -13,7 +13,7 @@
 from re import S
 from warnings import filters
 
-from tensorflow.keras import initializers, layers
+from tensorflow.keras import Model, initializers, layers
 
 
 class ConvBlock(object):
@@ -171,8 +171,8 @@ class NoOp(object):
     pass
 
 
-class NetworkGraph(object):
-    def __init__(self, num_classes, mu=0.9, epsilon=2e-5):
+class SegmentationModel(Model):
+    def __init__(self, num_classes, mu=0.9, epsilon=2e-5, fn_dict):
         """Initialize NetworkGraph.
 
         Args:
@@ -180,19 +180,17 @@ class NetworkGraph(object):
             mu: (float) batch normalization decay; default = 0.9
             epsilon: (float) batch normalization epsilon; default = 2e-5.
         """
-
-        self.num_classes = num_classes
-        self.mu = mu
-        self.epsilon = epsilon
-        self.layer_dict = {}
-
-    def create_functions(self, fn_dict):
         """Generate all possible functions from functions descriptions in *self.fn_dict*.
 
         Args:
             fn_dict: dict with definitions of the functions (name and parameters);
                 format --> {'fn_name': ['FNClass', {'param1': value1, 'param2': value2}]}.
         """
+        
+        self.num_classes = num_classes
+        self.mu = mu
+        self.epsilon = epsilon
+        self.layer_dict = {}
 
         for name, definition in fn_dict.items():
             if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
@@ -218,16 +216,18 @@ class NetworkGraph(object):
 
         skip_connections = []
 
+        tensor = inputs
+
         for f in net_list:
             if f == "no_op":
                 continue
             elif isinstance(self.layer_dict[f], ConvBlock):
-                inputs = self.layer_dict[f](
-                    inputs=inputs, name=f"l{i}_{f}", is_train=is_train
+                tensor = self.layer_dict[f](
+                    inputs=tensor, name=f"l{i}_{f}", is_train=is_train
                 )
             else:
                 skip_connections.append(inputs)
-                inputs = self.layer_dict[f](inputs=inputs, name=f"l{i}_{f}")
+                tensor = self.layer_dict[f](inputs=tensor, name=f"l{i}_{f}")
 
             i += 1
 
@@ -235,19 +235,19 @@ class NetworkGraph(object):
             if f == "no_op":
                 continue
             elif isinstance(self.layer_dict[f], ConvBlock):
-                inputs = self.layer_dict[f](
-                    inputs=inputs, name=f"l{i}_{f}", is_train=is_train
+                tensor = self.layer_dict[f](
+                    inputs=tensor, name=f"l{i}_{f}", is_train=is_train
                 )
             else:
-                inputs = tf.compat.v1.keras.layers.UpSampling2D(
+                tensor = tf.compat.v1.keras.layers.UpSampling2D(
                     size=(2, 2), data_format="channels_last", name=f"l{i}_{f}"
-                )(inputs)
-                inputs = layers.Concatenate()([inputs, skip_connections.pop()])
+                )(tensor)
+                tensor = layers.Concatenate()([tensor, skip_connections.pop()])
 
             i += 1
 
         # produces a tensor of dimensions (input height, input width, num_classes)
-        logits = layers.Conv2D(
+        outputs = layers.Conv2D(
             filters=self.num_classes,
             kernel_size=1,
             activation=None,
@@ -257,6 +257,11 @@ class NetworkGraph(object):
             kernel_initializer=initializers.HeNormal(),
             bias_initializer=initializers.HeNormal(),
             name="final_conv",
-        )(inputs)
+        )(tensor)
+
+        model = Model(inputs=inputs, outputs=outputs)
+
 
         return logits
+
+class SegmentationModel(Model):
