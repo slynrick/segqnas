@@ -260,16 +260,15 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
 
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"net_list {net_list}, filtered_dict {filtered_dict}"
-    )
-
-    net = 0#model.SegmentationModel(num_classes=data_info.num_classes, fn_dict=filtered_dict)
+    net = model.get_segmentation_model((128,128,3), 21, filtered_dict)
 
     params["net"] = net
     params["net_list"] = net_list
 
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"filtered_dict {filtered_dict}, net {net}"
+    )
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.

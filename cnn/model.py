@@ -181,6 +181,8 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, mu=0.9, epsilon=2e
         layer_dict[name] = globals()[definition["function"]](
             **definition["params"]
         )
+    
+    return layer_dict
 
 class NetworkGraph(object):
     def __init__(self, num_classes, mu=0.9, epsilon=2e-5):
