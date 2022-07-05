@@ -9,12 +9,12 @@
 """
 
 import os
+import platform
 from turtle import width
 
 import numpy as np
-import tensorflow as tf
-import platform
 import psutil
+import tensorflow as tf
 
 tf.compat.v1.disable_v2_behavior()
 
@@ -171,6 +171,10 @@ class DataSet(object):
         Returns:
             preprocessed image, with same shape.
         """
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"image/mask size: {self.info.height}, {self.info.width}",
+        )
 
         image = tf.compat.v1.image.resize(image, (self.info.height, self.info.width))
         mask = tf.compat.v1.image.resize(mask, (self.info.height, self.info.width))
@@ -183,54 +187,54 @@ class DataSet(object):
         return image, mask
 
 
-class PascalVOC12Info(object):
-    def __init__(self, data_path, validation=True):
-        """Pascal VOC 2012 dataset information.
-
-            Info in http://host.robots.ox.ac.uk/pascal/VOC/voc2012/.
-
-        Args:
-            data_path: (str) path to the folder containing the tfrecords files.
-            validation: (bool) whether to use the validation dataset for validation.
-        """
-
-        self.data_path = data_path
-        self.height = 224  # after preprocessing
-        self.width = 224  # after preprocessing
-        self.num_channels = 3
-        self.mean_image = np.load(
-            os.path.join(self.data_path, "pascalvoc12_train_mean.npz")
-        )["train_img_mean"]
-        self.std_image = np.load(
-            os.path.join(self.data_path, "pascalvoc12_train_std.npz")
-        )["train_img_std"]
-        self.num_classes = 21
-        # self.pad = 4
-
-        self.train_files = [
-            os.path.join(self.data_path, f)
-            for f in os.listdir(self.data_path)
-            if f.startswith("train")
-        ]
-        self.valid_files = [
-            os.path.join(self.data_path, f)
-            for f in os.listdir(self.data_path)
-            if f.startswith("valid")
-        ]
-        self.test_files = [
-            os.path.join(self.data_path, f)
-            for f in os.listdir(self.data_path)
-            if f.startswith("test")
-        ]
-
-        # if user wants to train using all images
-        if not validation:
-            self.train_files = self.train_files + self.valid_files
-            self.valid_files = []
-
-        self.num_train_ex = count_records(self.train_files)
-        self.num_valid_ex = count_records(self.valid_files)
-        self.num_test_ex = count_records(self.test_files)
+#class PascalVOC12Info(object):
+#    def __init__(self, data_path, validation=True):
+#        """Pascal VOC 2012 dataset information.
+#
+#            Info in http://host.robots.ox.ac.uk/pascal/VOC/voc2012/.
+#
+#        Args:
+#            data_path: (str) path to the folder containing the tfrecords files.
+#            validation: (bool) whether to use the validation dataset for validation.
+#        """
+#
+#        self.data_path = data_path
+#        self.height = 224  # after preprocessing
+#        self.width = 224  # after preprocessing
+#        self.num_channels = 3
+#        self.mean_image = np.load(
+#            os.path.join(self.data_path, "pascalvoc12_train_mean.npz")
+#        )["train_img_mean"]
+#        self.std_image = np.load(
+#            os.path.join(self.data_path, "pascalvoc12_train_std.npz")
+#        )["train_img_std"]
+#        self.num_classes = 21
+#        # self.pad = 4
+#
+#        self.train_files = [
+#            os.path.join(self.data_path, f)
+#            for f in os.listdir(self.data_path)
+#            if f.startswith("train")
+#        ]
+#        self.valid_files = [
+#            os.path.join(self.data_path, f)
+#            for f in os.listdir(self.data_path)
+#            if f.startswith("valid")
+#        ]
+#        self.test_files = [
+#            os.path.join(self.data_path, f)
+#            for f in os.listdir(self.data_path)
+#            if f.startswith("test")
+#        ]
+#
+#        # if user wants to train using all images
+#        if not validation:
+#            self.train_files = self.train_files + self.valid_files
+#            self.valid_files = []
+#
+#        self.num_train_ex = count_records(self.train_files)
+#        self.num_valid_ex = count_records(self.valid_files)
+#        self.num_test_ex = count_records(self.test_files)
 
 
 def count_records(file_list):

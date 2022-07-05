@@ -13,11 +13,9 @@ import logging
 import os
 import pickle as pkl
 import re
-import tarfile
 import sys
 from shutil import rmtree
-from run_dataset_prep import VALID_DATA_RATIO
-from sklearn.model_selection import train_test_split
+
 import numpy as np
 import tensorflow as tf
 import yaml

@@ -6,17 +6,12 @@
 
 import argparse
 import os
+import random
 import shutil
 import tarfile
-from PIL import Image
-import numpy as np
-import random
 
-VALID_DATA_RATIO = 0.1
-TRAIN_EX = 50000
-TEST_EX = 10000
-NUM_BINS = 5
-NUM_CLASSES = 21  # 20 classes + 1 background
+import numpy as np
+from PIL import Image
 
 import util
 
