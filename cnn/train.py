@@ -316,15 +316,15 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         level=tf.compat.v1.logging.get_verbosity(), msg=f"net {net.summary()}"
     )
 
-    history = net.fit(train_data_generator, validation_data=val_data_generator)
+    history = net.fit(train_data_generator, 
+                    validation_data=val_data_generator,
+                    epochs=hparams.max_epochs)
 
     val_mean_iou = history.history['val_mean_iou'][0]
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
     )
-
-    return val_mean_iou
 
     params["net"] = net
     params["net_list"] = net_list
@@ -333,6 +333,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
 
+    return val_mean_iou
 
 #    #tf.compat.v1.disable_v2_behavior()
 #
