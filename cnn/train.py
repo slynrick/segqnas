@@ -288,9 +288,9 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
                                         fn_dict, 
                                         net_list)
 
-    decay = params.decay if params.optimizer == "RMSProp" else None
+    decay = hparams.decay if hparams.optimizer == "RMSProp" else None
     optimizer = _optimizer(
-        params.optimizer, params.learning_rate, params.momentum, decay
+        hparams.optimizer, hparams.learning_rate, hparams.momentum, decay
     )
 
     net.compile(optimizer=optimizer,
