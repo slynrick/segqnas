@@ -264,12 +264,12 @@ def calculate_stats(images):
         flattened_image = np.reshape(rescaled_image, (-1, image.shape[2]))
 
         pixel_sum += np.sum(flattened_image, axis=0)
-        pixel_square_sum += np.sum(flattened_image ** 2, axis=0)
+        pixel_square_sum += np.sum(flattened_image**2, axis=0)
 
         pixel_count += image.shape[0] * image.shape[1]
 
     total_mean = pixel_sum / pixel_count
-    total_var = (pixel_square_sum / pixel_count) - (total_mean ** 2)
+    total_var = (pixel_square_sum / pixel_count) - (total_mean**2)
     total_std = np.sqrt(total_var)
 
     return total_mean[0], total_std[0]

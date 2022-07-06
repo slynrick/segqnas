@@ -14,6 +14,7 @@ import os
 import clr_callback
 import tensorflow as tf
 import tensorflow.keras.backend as K
+
 # from tensorflow_addons.optimizers import CyclicalLearningRate
 from adam2sgd import SWATS, Adam2SGD
 
@@ -488,7 +489,9 @@ def train_multi_eval(params, run_config, train_input_fn, eval_input_fns):
 
     for steps in train_steps:
         tf.summary.scalar("learning rate", data=params.learning_rate, step=steps)
-        segmentation_model.train(input_fn=train_input_fn, max_steps=steps, hooks=[es_hook])
+        segmentation_model.train(
+            input_fn=train_input_fn, max_steps=steps, hooks=[es_hook]
+        )
 
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
@@ -619,7 +622,7 @@ def train_and_eval(
         threads=hparams.threads,
     )
 
-    #test_input_fn = functools.partial(
+    # test_input_fn = functools.partial(
     #    input.input_fn,
     #    data_info=data_info,
     #    dataset_type="test",
@@ -628,7 +631,7 @@ def train_and_eval(
     #    subtract_mean=hparams.subtract_mean,
     #    process_for_training=False,
     #    threads=hparams.threads,
-    #)
+    # )
     if run_train_eval:
         eval_input_fns["train"] = functools.partial(
             input.input_fn,
@@ -650,7 +653,7 @@ def train_and_eval(
         run_config=config,
         train_input_fn=train_input_fn,
         eval_input_fns=eval_input_fns,
-        #test_input_fn=test_input_fn,
+        # test_input_fn=test_input_fn,
     )
 
     return valid_mean_iou, test_info

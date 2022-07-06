@@ -32,7 +32,7 @@ class ConvBlock(object):
         self.strides = strides
         self.batch_norm_mu = mu
         self.batch_norm_epsilon = epsilon
-        self.activation = layers.Activation('relu')
+        self.activation = layers.Activation("relu")
         self.initializer = initializers.HeNormal
         self.padding = "same"
 
@@ -48,8 +48,8 @@ class ConvBlock(object):
             output tensor.
         """
 
-        tensor = self._conv2d(inputs, name=name + '_conv')
-        tensor = self._batch_norm(tensor, is_train, name=name + '_bn')
+        tensor = self._conv2d(inputs, name=name + "_conv")
+        tensor = self._batch_norm(tensor, is_train, name=name + "_bn")
         tensor = self.activation(tensor)
 
         return tensor
@@ -65,15 +65,17 @@ class ConvBlock(object):
             output tensor.
         """
 
-        return layers.Conv2D(filters=self.filters,
-                            kernel_size=self.kernel_size,
-                            activation=None,
-                            padding=self.padding,
-                            strides=self.strides,
-                            data_format='channels_last',
-                            kernel_initializer=self.initializer(),
-                            bias_initializer=self.initializer(), name=name)(inputs)
-
+        return layers.Conv2D(
+            filters=self.filters,
+            kernel_size=self.kernel_size,
+            activation=None,
+            padding=self.padding,
+            strides=self.strides,
+            data_format="channels_last",
+            kernel_initializer=self.initializer(),
+            bias_initializer=self.initializer(),
+            name=name,
+        )(inputs)
 
     def _batch_norm(self, inputs, is_train, name=None):
         """Batch normalization layer wrapper.
@@ -87,10 +89,13 @@ class ConvBlock(object):
             output tensor.
         """
 
-        return layers.BatchNormalization(axis=-1,
-                                        momentum=self.batch_norm_mu,
-                                        epsilon=self.batch_norm_epsilon,
-                                        name=name)(inputs=inputs, training=is_train)
+        return layers.BatchNormalization(
+            axis=-1,
+            momentum=self.batch_norm_mu,
+            epsilon=self.batch_norm_epsilon,
+            name=name,
+        )(inputs=inputs, training=is_train)
+
 
 class MaxPooling(object):
     def __init__(self, kernel, strides):
@@ -118,12 +123,14 @@ class MaxPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return layers.MaxPooling2D(pool_size=self.pool_size,
-                                        strides=self.strides,
-                                        data_format='channels_last',
-                                        padding=self.padding,
-                                        name=name)(inputs)
-            
+            return layers.MaxPooling2D(
+                pool_size=self.pool_size,
+                strides=self.strides,
+                data_format="channels_last",
+                padding=self.padding,
+                name=name,
+            )(inputs)
+
         else:
             return inputs
 
@@ -154,11 +161,13 @@ class AvgPooling(object):
 
         # check of the image size
         if inputs.shape[2] > 1:
-            return layers.AveragePooling2D(pool_size=self.pool_size,
-                                            strides=self.strides,
-                                            data_format='channels_last',
-                                            padding=self.padding,
-                                            name=name)(inputs)
+            return layers.AveragePooling2D(
+                pool_size=self.pool_size,
+                strides=self.strides,
+                data_format="channels_last",
+                padding=self.padding,
+                name=name,
+            )(inputs)
         else:
             return inputs
 
@@ -167,32 +176,30 @@ class NoOp(object):
     pass
 
 
-def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train=True, mu=0.9, epsilon=2e-5):
+def get_segmentation_model(
+    input_shape, num_classes, fn_dict, net_list, is_train=True, mu=0.9, epsilon=2e-5
+):
 
     layer_dict = {}
     for name, definition in fn_dict.items():
         if definition["function"] in ["ConvBlock"]:
             definition["params"]["mu"] = mu
             definition["params"]["epsilon"] = epsilon
-        layer_dict[name] = globals()[definition["function"]](
-            **definition["params"]
-        )
-    
+        layer_dict[name] = globals()[definition["function"]](**definition["params"])
+
     skip_connections = []
     inputs = Input(shape=input_shape)
     x = inputs
 
     for i, f in enumerate(net_list):
         if f == "no_op":
-                continue
+            continue
         elif isinstance(layer_dict[f], ConvBlock):
-            x = layer_dict[f](
-                inputs=x, name=f"l{i}_{f}", is_train=is_train
-            )
+            x = layer_dict[f](inputs=x, name=f"l{i}_{f}", is_train=is_train)
         else:
             skip_connections.append(x)
             x = layer_dict[f](inputs=x, name=f"l{i}_{f}")
-    
+
     for i, f in enumerate(net_list[::-1]):
         if f == "no_op":
             continue
@@ -202,14 +209,16 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train
             )
         else:
             x = layers.UpSampling2D(
-                size=(2, 2), data_format="channels_last", name=f"l{i+len(net_list)}_upsampling"
+                size=(2, 2),
+                data_format="channels_last",
+                name=f"l{i+len(net_list)}_upsampling",
             )(x)
             x = layers.Concatenate()([x, skip_connections.pop()])
 
     outputs = layers.Conv2D(
         filters=num_classes,
         kernel_size=1,
-        activation=None,
+        activation="softmax",
         padding="same",
         strides=1,
         data_format="channels_last",

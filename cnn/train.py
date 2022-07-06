@@ -62,11 +62,13 @@ def _model_fn(features, labels, mode, params):
     train_op.extend(update_ops)
     train_op = tf.group(*train_op)
 
-    metrics = {"mean_iou": tf.compat.v1.metrics.mean_iou(
-        tf.expand_dims(tf.argmax(input=labels, axis=-1), -1),
-        predictions["classes"],
-        predictions["masks"].shape[-1],
-    )}
+    metrics = {
+        "mean_iou": tf.compat.v1.metrics.mean_iou(
+            tf.expand_dims(tf.argmax(input=labels, axis=-1), -1),
+            predictions["classes"],
+            predictions["masks"].shape[-1],
+        )
+    }
 
     return tf.estimator.EstimatorSpec(
         mode=mode,
@@ -260,56 +262,64 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     model_path = os.path.join(params["experiment_path"], id_num)
 
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    tf.config.experimental.set_visible_devices(gpus[int(id_num.split('_')[-1])], 'GPU')
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    tf.config.experimental.set_visible_devices(gpus[int(id_num.split("_")[-1])], "GPU")
 
-    #filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
+    # filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"data_info {data_info}, params {params}"
+        msg=f"data_info {data_info}, params {params}",
     )
 
     hparams = hparam.HParams(**params)
 
-    train_sample_names = input.load_pascalvoc12_sample_names('pascalvoc12', 'train')
-    val_sample_names = input.load_pascalvoc12_sample_names('pascalvoc12', 'val')
+    train_sample_names = input.load_pascalvoc12_sample_names("pascalvoc12", "train")
+    val_sample_names = input.load_pascalvoc12_sample_names("pascalvoc12", "val")
 
-    train_data_generator = input.PascalVOC2012DataGenerator(sample_names = train_sample_names,
-                                                            img_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'JPEGImages'), 
-                                                            mask_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'SegmentationClass'), 
-                                                            batch_size=hparams.batch_size)
+    train_data_generator = input.PascalVOC2012DataGenerator(
+        sample_names=train_sample_names,
+        img_path=os.path.join("pascalvoc12", "VOCdevkit", "VOC2012", "JPEGImages"),
+        mask_path=os.path.join(
+            "pascalvoc12", "VOCdevkit", "VOC2012", "SegmentationClass"
+        ),
+        batch_size=hparams.batch_size,
+    )
 
-    val_data_generator = input.PascalVOC2012DataGenerator(sample_names = val_sample_names,
-                                                        img_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'JPEGImages'), 
-                                                        mask_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'SegmentationClass'), 
-                                                        batch_size=hparams.eval_batch_size)
-                                                        
-    net = model.get_segmentation_model((data_info.height,
-                                        data_info.width,
-                                        data_info.num_channels), 
-                                        data_info.num_classes, 
-                                        fn_dict, 
-                                        net_list)
+    val_data_generator = input.PascalVOC2012DataGenerator(
+        sample_names=val_sample_names,
+        img_path=os.path.join("pascalvoc12", "VOCdevkit", "VOC2012", "JPEGImages"),
+        mask_path=os.path.join(
+            "pascalvoc12", "VOCdevkit", "VOC2012", "SegmentationClass"
+        ),
+        batch_size=hparams.eval_batch_size,
+    )
+
+    net = model.get_segmentation_model(
+        (data_info.height, data_info.width, data_info.num_channels),
+        data_info.num_classes,
+        fn_dict,
+        net_list,
+    )
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
     optimizer = _optimizer(
         hparams.optimizer, hparams.learning_rate, hparams.momentum, decay
     )
 
-    net.compile(optimizer=optimizer,
-                loss=loss_function.DiceLoss(),
-                metrics=[tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")])
+    net.compile(
+        optimizer=optimizer,
+        loss=loss_function.DiceLoss(),
+        metrics=[tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")],
+    )
 
     tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"net {net.summary()}"
+        level=tf.compat.v1.logging.get_verbosity(), msg=f"net {net.summary()}"
     )
 
     history = net.fit(train_data_generator, validation_data=val_data_generator)
 
     tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"history {history()}"
+        level=tf.compat.v1.logging.get_verbosity(), msg=f"history {history()}"
     )
 
     params["net"] = net
@@ -318,9 +328,10 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
-    
+
+
 #    #tf.compat.v1.disable_v2_behavior()
-#    
+#
 #    train_input_fn = functools.partial(
 #        input.input_fn,
 #        data_info=data_info,
