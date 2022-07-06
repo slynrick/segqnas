@@ -324,6 +324,8 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
     )
 
+    return val_mean_iou
+
     params["net"] = net
     params["net_list"] = net_list
 
