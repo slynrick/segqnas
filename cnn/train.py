@@ -309,7 +309,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     net.compile(
         optimizer=optimizer,
         loss='mse',#loss_function.DiceLoss(),
-        metrics=[tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")],
+        metrics=["accuracy", tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")],
     )
 
     tf.compat.v1.logging.log(

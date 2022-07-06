@@ -252,7 +252,7 @@ def get_segmentation_model(
     # outputs
     outputs = layers.Conv2D(num_classes, 1, padding="same", activation = "sigmoid")(u9)
     # unet model with Keras Functional API
-    model = Model(inputs, outputs, name="U-Net")
+    model = Model(inputs, outputs)
 
     return model
 
