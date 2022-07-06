@@ -204,7 +204,7 @@ class PascalVOC12Info(object):
         self.std_image = np.load(
             os.path.join(self.data_path, "pascalvoc12_train_std.npz")
         )["train_img_std"]
-        self.num_classes = 21
+        self.num_classes = 20
         # self.pad = 4
 
         self.train_files = [
@@ -324,7 +324,7 @@ class PascalVOC2012DataGenerator(tf.keras.utils.Sequence):
         self.height = 128
         self.width = 128
         self.num_channels = 3
-        self.num_classes = 21
+        self.num_classes = 20
         self.sample_names = sample_names
         self.img_path = img_path
         self.mask_path = mask_path
@@ -393,13 +393,14 @@ class PascalVOC2012DataGenerator(tf.keras.utils.Sequence):
         # (height, width) => (height, width, 1)
         mask = mask[..., np.newaxis] 
 
+        print(list(set(list(mask.flatten()))))
+
         # list of classes (that will become the channels in the encoded mask)
         classes = list(range(self.num_classes))
-        #classes.append(255)
 
         # create a binary mask for each channel (class)
         one_hot_mask = []
-        for _class in classes:
+        for _class in range(1,self.num_classes+1): #remove background 0
             class_mask = np.all(np.equal(mask, _class), axis=-1)
             one_hot_mask.append(class_mask)
         one_hot_mask = np.stack(one_hot_mask, axis=-1)

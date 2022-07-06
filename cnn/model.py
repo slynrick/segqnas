@@ -9,10 +9,6 @@
     https://github.com/tensorflow/models/blob/r1.10.0/tutorials/image/cifar10_estimator/model_base.py
 
 """
-
-from re import S
-from warnings import filters
-
 import tensorflow as tf
 from tensorflow.keras import Input, Model, initializers, layers
 
@@ -225,93 +221,3 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train
     model = Model(inputs=inputs, outputs=outputs)
 
     return model
-
-class NetworkGraph(object):
-    def __init__(self, num_classes, mu=0.9, epsilon=2e-5):
-        """Initialize NetworkGraph.
-
-        Args:
-            num_classes: (int) number of classes for classification model.
-            mu: (float) batch normalization decay; default = 0.9
-            epsilon: (float) batch normalization epsilon; default = 2e-5.
-        """
-
-        self.num_classes = num_classes
-        self.mu = mu
-        self.epsilon = epsilon
-        self.layer_dict = {}
-
-    def create_functions(self, fn_dict):
-        """Generate all possible functions from functions descriptions in *self.fn_dict*.
-
-        Args:
-            fn_dict: dict with definitions of the functions (name and parameters);
-                format --> {'fn_name': ['FNClass', {'param1': value1, 'param2': value2}]}.
-        """
-
-        for name, definition in fn_dict.items():
-            if definition["function"] in ["ConvBlock", "ResidualV1", "ResidualV1Pr"]:
-                definition["params"]["mu"] = self.mu
-                definition["params"]["epsilon"] = self.epsilon
-            self.layer_dict[name] = globals()[definition["function"]](
-                **definition["params"]
-            )
-
-    def create_network(self, net_list, inputs, is_train=True):
-        """Create a Tensorflow network from a list of layer names.
-
-        Args:
-            net_list: list of layer names, representing the network layers.
-            inputs: input tensor to the network.
-            is_train: (bool) True if the model will be trained.
-
-        Returns:
-            logits tensor.
-        """
-
-        i = 0
-
-        skip_connections = []
-
-        for f in net_list:
-            if f == "no_op":
-                continue
-            elif isinstance(self.layer_dict[f], ConvBlock):
-                inputs = self.layer_dict[f](
-                    inputs=inputs, name=f"l{i}_{f}", is_train=is_train
-                )
-            else:
-                skip_connections.append(inputs)
-                inputs = self.layer_dict[f](inputs=inputs, name=f"l{i}_{f}")
-
-            i += 1
-
-        for f in net_list[::-1]:
-            if f == "no_op":
-                continue
-            elif isinstance(self.layer_dict[f], ConvBlock):
-                inputs = self.layer_dict[f](
-                    inputs=inputs, name=f"l{i}_{f}", is_train=is_train
-                )
-            else:
-                inputs = layers.UpSampling2D(
-                    size=(2, 2), data_format="channels_last", name=f"l{i}_upsampling"
-                )(inputs)
-                inputs = layers.Concatenate()([inputs, skip_connections.pop()])
-
-            i += 1
-
-        # produces a tensor of dimensions (input height, input width, num_classes)
-        logits = layers.Conv2D(
-            filters=self.num_classes,
-            kernel_size=1,
-            activation=None,
-            padding="same",
-            strides=1,
-            data_format="channels_last",
-            kernel_initializer='he_normal',
-            bias_initializer='he_normal',
-            name="final_conv",
-        )(inputs)
-
-        return logits
