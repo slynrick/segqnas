@@ -288,7 +288,6 @@ def input_fn(
 def load_pascalvoc12_sample_names(dataset_path, dataset_type):
     if(dataset_type == 'train'):
         data_descriptor_file_path = os.path.join(dataset_path, 
-                                        "VOCtrainval_11-May-2012", 
                                         "VOCdevkit", 
                                         "VOC2012", 
                                         "ImageSets", 
@@ -296,7 +295,6 @@ def load_pascalvoc12_sample_names(dataset_path, dataset_type):
                                         "train.txt")
     elif(dataset_type == 'val'):
         data_descriptor_file_path = os.path.join(dataset_path, 
-                                        "VOCtrainval_11-May-2012", 
                                         "VOCdevkit", 
                                         "VOC2012", 
                                         "ImageSets", 
@@ -304,7 +302,6 @@ def load_pascalvoc12_sample_names(dataset_path, dataset_type):
                                         "val.txt")
     elif(dataset_type == 'test'):
         data_descriptor_file_path = os.path.join(dataset_path, 
-                                        "VOC2012test", 
                                         "VOCdevkit", 
                                         "VOC2012", 
                                         "ImageSets", 
