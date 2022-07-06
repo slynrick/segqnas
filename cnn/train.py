@@ -252,7 +252,6 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     os.environ["TF_SYNC_ON_FINISH"] = "0"
     os.environ["TF_ENABLE_WINOGRAD_NONFUSED"] = "1"
-    os.environ["CUDA_VISIBLE_DEVICES"] = id_num.split('_')[-1]
     if params["log_level"] == "INFO":
         addLevelName(25, "INFO1")
         tf.compat.v1.logging.set_verbosity(25)
@@ -260,6 +259,9 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
     model_path = os.path.join(params["experiment_path"], id_num)
+
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    tf.config.experimental.set_visible_devices(gpus[int(id_num.split('_')[-1])], 'GPU')
 
     #filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     tf.compat.v1.logging.log(
