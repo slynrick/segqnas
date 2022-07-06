@@ -305,7 +305,7 @@ class NetworkGraph(object):
         logits = layers.Conv2D(
             filters=self.num_classes,
             kernel_size=1,
-            activation='softmax',
+            activation=None,
             padding="same",
             strides=1,
             data_format="channels_last",
