@@ -33,7 +33,7 @@ class ConvBlock(object):
         self.batch_norm_mu = mu
         self.batch_norm_epsilon = epsilon
         self.activation = layers.Activation("relu")
-        self.initializer = initializers.HeNormal
+        self.initializer = "he_normal"
         self.padding = "same"
 
     def __call__(self, inputs, name=None, is_train=True):
@@ -72,8 +72,8 @@ class ConvBlock(object):
             padding=self.padding,
             strides=self.strides,
             data_format="channels_last",
-            kernel_initializer=self.initializer(),
-            bias_initializer=self.initializer(),
+            kernel_initializer=self.initializer,
+            bias_initializer=self.initializer,
             name=name,
         )(inputs)
 

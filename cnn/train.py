@@ -320,7 +320,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
                     validation_data=val_data_generator,
                     epochs=hparams.max_epochs)
 
-    val_mean_iou = history.history['val_mean_iou'][0]
+    val_mean_iou = history.history['val_mean_iou'][-1]
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
