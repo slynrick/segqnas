@@ -201,11 +201,11 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train
             continue
         elif isinstance(layer_dict[f], ConvBlock):
             x = layer_dict[f](
-                inputs=x, name=f"l{i}_{f}", is_train=is_train
+                inputs=x, name=f"l{i+len(net_list)}_{f}", is_train=is_train
             )
         else:
             x = layers.UpSampling2D(
-                size=(2, 2), data_format="channels_last", name=f"l{i+len(net_list)}_{f}"
+                size=(2, 2), data_format="channels_last", name=f"l{i+len(net_list)}_upsampling}"
             )(x)
             x = layers.Concatenate()([x, skip_connections.pop()])
 

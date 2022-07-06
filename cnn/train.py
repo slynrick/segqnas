@@ -14,6 +14,7 @@ import time
 from logging import addLevelName
 
 import tensorflow as tf
+from tensorflow.keras.optimizers import RMSprop
 
 from cnn import hparam, input, loss_function, model
 from cnn.hooks import GetBestHook, TimeOutHook
@@ -91,10 +92,11 @@ def _optimizer(optimizer_name, learning_rate, momentum, decay):
     """
 
     if optimizer_name == "RMSProp":
-        optimizer = tf.compat.v1.train.RMSPropOptimizer(
+        optimizer = tf.keras.optimizers.RMSprop(
             learning_rate=learning_rate, decay=decay, momentum=momentum
         )
     else:
+        # TODO
         optimizer = tf.compat.v1.train.MomentumOptimizer(
             learning_rate=learning_rate, momentum=momentum
         )
@@ -264,6 +266,19 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         msg=f"data_info {data_info}, params {params}"
     )
 
+    train_sample_names = input.load_pascalvoc12_sample_names('pascalvoc12', 'train')
+    val_sample_names = input.load_pascalvoc12_sample_names('pascalvoc12', 'val')
+
+    train_data_generator = input.PascalVOC2012DataGenerator(sample_names = train_sample_names,
+                                                            img_path=os.path.join('pascalvoc12', 'VOCtrainval_11-May-2012', 'VOCdevkit', 'VOC2012', 'JPEGImages'), 
+                                                            mask_path=os.path.join('pascalvoc12', 'VOCtrainval_11-May-2012', 'VOCdevkit', 'VOC2012', 'SegmentationClass'), 
+                                                            batch_size=params.batch_size)
+
+    val_data_generator = input.PascalVOC2012DataGenerator(sample_names = val_sample_names,
+                                                        img_path=os.path.join('pascalvoc12', 'VOCtrainval_11-May-2012', 'VOCdevkit', 'VOC2012', 'JPEGImages'), 
+                                                        mask_path=os.path.join('pascalvoc12', 'VOCtrainval_11-May-2012', 'VOCdevkit', 'VOC2012', 'SegmentationClass'), 
+                                                        batch_size=params.eval_batch_size)
+                                                        
     net = model.get_segmentation_model((data_info.height,
                                         data_info.width,
                                         data_info.num_channels), 
@@ -271,24 +286,36 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
                                         fn_dict, 
                                         net_list)
 
-    net.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+    decay = params.decay if params.optimizer == "RMSProp" else None
+    optimizer = _optimizer(
+        params.optimizer, params.learning_rate, params.momentum, decay
+    )
+
+    net.compile(optimizer=optimizer,
                 loss=loss_function.DiceLoss(),
                 metrics=[tf.keras.metrics.MeanIoU(21, name="mean_iou")])
-
-    params["net"] = net
-    params["net_list"] = net_list
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
         msg=f"net {net.summary()}"
     )
 
+    net.fit(train_data_generator, validation_data=val_data_generator)
+
+    params["net"] = net
+    params["net_list"] = net_list
+
+
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
-    tf.compat.v1.disable_v2_behavior()
+    
+    #tf.compat.v1.disable_v2_behavior()
+
+
 
     hparams = hparam.HParams(**params)
+
 
     train_input_fn = functools.partial(
         input.input_fn,
