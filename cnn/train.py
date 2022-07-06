@@ -266,18 +266,20 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         msg=f"data_info {data_info}, params {params}"
     )
 
+    hparams = hparam.HParams(**params)
+
     train_sample_names = input.load_pascalvoc12_sample_names('pascalvoc12', 'train')
     val_sample_names = input.load_pascalvoc12_sample_names('pascalvoc12', 'val')
 
     train_data_generator = input.PascalVOC2012DataGenerator(sample_names = train_sample_names,
                                                             img_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'JPEGImages'), 
                                                             mask_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'SegmentationClass'), 
-                                                            batch_size=params.batch_size)
+                                                            batch_size=hparams.batch_size)
 
     val_data_generator = input.PascalVOC2012DataGenerator(sample_names = val_sample_names,
                                                         img_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'JPEGImages'), 
                                                         mask_path=os.path.join('pascalvoc12', 'VOCdevkit', 'VOC2012', 'SegmentationClass'), 
-                                                        batch_size=params.eval_batch_size)
+                                                        batch_size=hparams.eval_batch_size)
                                                         
     net = model.get_segmentation_model((data_info.height,
                                         data_info.width,
@@ -314,7 +316,6 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
 
 
-    hparams = hparam.HParams(**params)
 
 
     train_input_fn = functools.partial(
