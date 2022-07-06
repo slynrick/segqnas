@@ -13,6 +13,7 @@
 from re import S
 from warnings import filters
 
+import tensorflow as tf
 from tensorflow.keras import Input, Model, initializers, layers
 
 
@@ -205,7 +206,7 @@ def get_segmentation_model(input_shape, num_classes, fn_dict, net_list, is_train
             )
         else:
             x = layers.UpSampling2D(
-                size=(2, 2), data_format="channels_last", name=f"l{i+len(net_list)}_upsampling}"
+                size=(2, 2), data_format="channels_last", name=f"l{i+len(net_list)}_upsampling"
             )(x)
             x = layers.Concatenate()([x, skip_connections.pop()])
 
@@ -308,8 +309,8 @@ class NetworkGraph(object):
             padding="same",
             strides=1,
             data_format="channels_last",
-            kernel_initializer=tf.keras.initializers.he_normal(),
-            bias_initializer=tf.keras.initializers.he_normal(),
+            kernel_initializer='he_normal',
+            bias_initializer='he_normal',
             name="final_conv",
         )(inputs)
 
