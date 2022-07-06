@@ -266,7 +266,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     #filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"data_info {data_info}, params {params}, cuda visible devices {os.environ['CUDA_VISIBLE_DEVICES']}"
+        msg=f"data_info {data_info}, params {params}"
     )
 
     hparams = hparam.HParams(**params)
