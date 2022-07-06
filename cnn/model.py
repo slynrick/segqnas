@@ -218,7 +218,7 @@ def get_segmentation_model(
     outputs = layers.Conv2D(
         filters=num_classes,
         kernel_size=1,
-        activation="softmax",
+        activation="sigmoid",
         padding="same",
         strides=1,
         data_format="channels_last",
