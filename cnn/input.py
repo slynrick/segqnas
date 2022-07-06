@@ -12,7 +12,6 @@ import os
 import platform
 from random import shuffle
 
-import cv2
 import numpy as np
 import psutil
 import tensorflow as tf
@@ -365,10 +364,15 @@ class PascalVOC2012DataGenerator(tf.keras.utils.Sequence):
         return X
 
     def _load_img(self, img_path):
-        img = cv2.imread(img_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img, (self.width, self.height), interpolation = cv2.INTER_AREA)
+        img = Image.open(img_path)
+        img = img.resize((self.width, self.height), Image.ANTIALIAS)
+        img = np.array(img)
         img = img / 255
+
+        #img = cv2.imread(img_path)
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        #img = cv2.resize(img, (self.width, self.height), interpolation = cv2.INTER_AREA)
+        #img = img / 255
         return img
 
     def _generate_masks(self, indexes):
