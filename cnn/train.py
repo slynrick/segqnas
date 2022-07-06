@@ -295,90 +295,91 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     net.compile(optimizer=optimizer,
                 loss=loss_function.DiceLoss(),
-                metrics=[tf.keras.metrics.MeanIoU(21, name="mean_iou")])
+                metrics=[tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")])
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
         msg=f"net {net.summary()}"
     )
 
-    net.fit(train_data_generator, validation_data=val_data_generator)
+    history = net.fit(train_data_generator, validation_data=val_data_generator)
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"history {history()}"
+    )
 
     params["net"] = net
     params["net_list"] = net_list
-
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
     
-    #tf.compat.v1.disable_v2_behavior()
-
-
-
-
-
-    train_input_fn = functools.partial(
-        input.input_fn,
-        data_info=data_info,
-        dataset_type="train",
-        batch_size=hparams.batch_size,
-        data_aug=hparams.data_augmentation,
-        subtract_mean=hparams.subtract_mean,
-        process_for_training=True,
-        threads=hparams.threads,
-    )
-
-    eval_input_fn = functools.partial(
-        input.input_fn,
-        data_info=data_info,
-        dataset_type="valid",
-        batch_size=hparams.eval_batch_size,
-        data_aug=False,
-        subtract_mean=hparams.subtract_mean,
-        process_for_training=False,
-        threads=hparams.threads,
-    )
-    node = platform.uname()[1]
-
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"I am node {node}! Running fitness calculation of {id_num} with "
-        f"structure:\n{net_list}",
-    )
-
-    try:
-        mean_iou = train_and_eval(
-            params=hparams,
-            run_config=config,
-            train_input_fn=train_input_fn,
-            eval_input_fn=eval_input_fn,
-        )
-    except tf.compat.v1.train.NanLossDuringTrainingError:
-        tf.compat.v1.logging.log(
-            level=tf.compat.v1.logging.get_verbosity(),
-            msg=f"Model diverged with NaN loss...",
-        )
-        return 0
-    except ValueError as e:
-        tf.compat.v1.logging.log(
-            level=tf.compat.v1.logging.get_verbosity(),
-            msg=f"Model is possibly incorrect in dimensions. "
-            f"Negative dimensions are not allowed {e}",
-        )
-        return 0
-    except TimeoutError:
-        tf.compat.v1.logging.log(
-            level=tf.compat.v1.logging.get_verbosity(),
-            msg=f"Model {id_num} took too long to train! "
-            f"Timeout = {TRAIN_TIMEOUT:,} seconds.",
-        )
-        return 0
-    except tf.errors.ResourceExhaustedError:
-        tf.compat.v1.logging.log(
-            level=tf.compat.v1.logging.get_verbosity(),
-            msg=f"Model is probably too large... Resource Exhausted Error!",
-        )
-        return 0
-
-    return mean_iou
+#    #tf.compat.v1.disable_v2_behavior()
+#    
+#    train_input_fn = functools.partial(
+#        input.input_fn,
+#        data_info=data_info,
+#        dataset_type="train",
+#        batch_size=hparams.batch_size,
+#        data_aug=hparams.data_augmentation,
+#        subtract_mean=hparams.subtract_mean,
+#        process_for_training=True,
+#        threads=hparams.threads,
+#    )
+#
+#    eval_input_fn = functools.partial(
+#        input.input_fn,
+#        data_info=data_info,
+#        dataset_type="valid",
+#        batch_size=hparams.eval_batch_size,
+#        data_aug=False,
+#        subtract_mean=hparams.subtract_mean,
+#        process_for_training=False,
+#        threads=hparams.threads,
+#    )
+#    node = platform.uname()[1]
+#
+#    tf.compat.v1.logging.log(
+#        level=tf.compat.v1.logging.get_verbosity(),
+#        msg=f"I am node {node}! Running fitness calculation of {id_num} with "
+#        f"structure:\n{net_list}",
+#    )
+#
+#    try:
+#        mean_iou = train_and_eval(
+#            params=hparams,
+#            run_config=config,
+#            train_input_fn=train_input_fn,
+#            eval_input_fn=eval_input_fn,
+#        )
+#    except tf.compat.v1.train.NanLossDuringTrainingError:
+#        tf.compat.v1.logging.log(
+#            level=tf.compat.v1.logging.get_verbosity(),
+#            msg=f"Model diverged with NaN loss...",
+#        )
+#        return 0
+#    except ValueError as e:
+#        tf.compat.v1.logging.log(
+#            level=tf.compat.v1.logging.get_verbosity(),
+#            msg=f"Model is possibly incorrect in dimensions. "
+#            f"Negative dimensions are not allowed {e}",
+#        )
+#        return 0
+#    except TimeoutError:
+#        tf.compat.v1.logging.log(
+#            level=tf.compat.v1.logging.get_verbosity(),
+#            msg=f"Model {id_num} took too long to train! "
+#            f"Timeout = {TRAIN_TIMEOUT:,} seconds.",
+#        )
+#        return 0
+#    except tf.errors.ResourceExhaustedError:
+#        tf.compat.v1.logging.log(
+#            level=tf.compat.v1.logging.get_verbosity(),
+#            msg=f"Model is probably too large... Resource Exhausted Error!",
+#        )
+#        return 0
+#
+#    return mean_iou
+#
