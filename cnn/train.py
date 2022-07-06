@@ -252,7 +252,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     os.environ["TF_SYNC_ON_FINISH"] = "0"
     os.environ["TF_ENABLE_WINOGRAD_NONFUSED"] = "1"
-    #os.environ["CUDA_VISIBLE_DEVICES"] = 
+    os.environ["CUDA_VISIBLE_DEVICES"] = id_num.split('_')[-1]
     if params["log_level"] == "INFO":
         addLevelName(25, "INFO1")
         tf.compat.v1.logging.set_verbosity(25)
