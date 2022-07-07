@@ -405,7 +405,7 @@ class PascalVOC2012DataGenerator(tf.keras.utils.Sequence):
 
         # create a binary mask for each channel (class)
         one_hot_mask = []
-        for _class in range(1, self.num_classes + 1):  # remove background 0
+        for _class in range(0, self.num_classes + 1):  # remove background 0
             class_mask = np.all(np.equal(mask, _class), axis=-1)
             one_hot_mask.append(class_mask)
         one_hot_mask = np.stack(one_hot_mask, axis=-1)
