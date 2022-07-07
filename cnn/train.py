@@ -314,7 +314,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     net.compile(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         optimizer='Adam',#optimizer,
         loss=sm.losses.categorical_focal_dice_loss,
-        metrics=[sm.metrics.iou_score
+        metrics=[sm.metrics.IOUScore(threshold=0.5)
                 #UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
                 #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
                 ],
