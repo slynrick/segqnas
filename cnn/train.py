@@ -415,8 +415,15 @@ class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
     super(UpdatedMeanIoU, self).__init__(num_classes = num_classes,name=name, dtype=dtype)
 
   def update_state(self, y_true, y_pred, sample_weight=None):
-    print(y_true)
-    print(y_pred)
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(), msg=f"y_true {y_true}, y_pred {y_pred}"
+    )
+
     y_pred = tf.math.argmax(y_pred, axis=-1)
-    print(y_pred)
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(), msg=f"y_true {y_true}, y_pred {y_pred}"
+    )
+
     return super().update_state(y_true, y_pred, sample_weight)
