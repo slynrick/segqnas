@@ -437,29 +437,3 @@ def Mean_IOU(y_true, y_pred):
     legal_labels = tf.greater(iou, flag)
     iou = tf.gather(iou, indices=tf.where(legal_labels))
     return K.mean(iou)
-
-class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
-  def __init__(self,
-               y_true=None,
-               y_pred=None,
-               num_classes=None,
-               name=None,
-               dtype=None):
-    super(UpdatedMeanIoU, self).__init__(num_classes = num_classes,name=name, dtype=dtype)
-
-  def update_state(self, y_true, y_pred, sample_weight=None):
-
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(), msg=f"y_true {y_true}, y_pred {y_pred}"
-    )
-
-    y_true = tf.math.argmax(y_true, axis=-1)
-    y_pred = tf.math.argmax(y_pred, axis=-1)
-
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(), msg=f"y_true {y_true}, y_pred {y_pred}"
-    )
-
-    time.sleep(3)
-
-    return super().update_state(y_true, y_pred, sample_weight)
