@@ -263,7 +263,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     elif params["log_level"] == "DEBUG":
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
-    model_path = os.path.join(params["experiment_path"], id_num)
+    #model_path = os.path.join(params["experiment_path"], id_num)
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
     tf.config.experimental.set_visible_devices(gpus[int(id_num.split("_")[-1])], "GPU")
@@ -328,7 +328,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
                     validation_data=val_data_generator,
                     epochs=hparams.max_epochs)
 
-    val_mean_iou = history.history['val_mean_iou'][-1]
+    val_mean_iou = history.history['val_iou_score'][-1]
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
