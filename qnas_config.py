@@ -268,10 +268,7 @@ class ConfigParameters(object):
         """Get parameters that are combined/calculated the same way for all phases."""
 
         self.train_spec["data_path"] = self.args["data_path"]
-        self.data_info = self.get_data_info()
-
-        import tensorflow as tf
-
+        
         if not self.train_spec["eval_batch_size"]:
             self.train_spec["eval_batch_size"] = self.data_info.num_valid_ex
 
