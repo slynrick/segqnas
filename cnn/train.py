@@ -240,7 +240,7 @@ def train_and_eval(params, run_config, train_input_fn, eval_input_fn):
     return best_mean_iou[0]
 
 
-def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
+def fitness_calculation(id_num, params, fn_dict, net_list):
     """Train and evaluate a model using evolved parameters.
 
     Args:
@@ -271,7 +271,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     # filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"data_info {data_info}, params {params}",
+        msg=f"params {params}",
     )
 
     hparams = hparam.HParams(**params)
@@ -304,7 +304,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     #    net_list,
     #)
 
-    net = sm.Unet('resnet34', classes=data_info.num_classes, input_shape=(data_info.height, data_info.width, data_info.num_channels), activation='softmax', encoder_weights='imagenet')
+    net = sm.Unet('resnet34', classes=hparams.num_classes, input_shape=(hparams.height, hparams.width, hparams.num_channels), activation='softmax', encoder_weights='imagenet')
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
     optimizer = _optimizer(
