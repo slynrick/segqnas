@@ -18,7 +18,7 @@ from tensorflow.keras.optimizers import RMSprop
 
 from cnn import hparam, input, loss_function, model
 from cnn.hooks import GetBestHook, TimeOutHook
-from metrics import IOUScore
+from cnn.metrics import IOUScore
 
 # TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 86400
