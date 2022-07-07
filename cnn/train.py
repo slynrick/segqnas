@@ -308,7 +308,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 
     net.compile(
         optimizer=optimizer,
-        loss='mse',#loss_function.DiceLoss(),
+        loss=loss_function.DiceLoss(),
         metrics=[UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
                 #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
                 ],
