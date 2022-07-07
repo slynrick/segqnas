@@ -288,7 +288,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         height=hparams.height,
         width=hparams.width,
         num_channels=hparams.num_channels,
-        classes=hparams.num_classes,
+        num_classes=hparams.num_classes,
         batch_size=hparams.batch_size,
     )
 
@@ -301,7 +301,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         height=hparams.height,
         width=hparams.width,
         num_channels=hparams.num_channels,
-        classes=hparams.num_classes,
+        num_classes=hparams.num_classes,
         batch_size=hparams.eval_batch_size,
     )
 
