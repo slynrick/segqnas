@@ -268,7 +268,7 @@ class ConfigParameters(object):
         """Get parameters that are combined/calculated the same way for all phases."""
 
         self.train_spec["data_path"] = self.args["data_path"]
-        
+
         if not self.train_spec["eval_batch_size"]:
             self.train_spec["eval_batch_size"] = self.data_info.num_valid_ex
 
@@ -397,20 +397,12 @@ class ConfigParameters(object):
 
     def save_params_logfile(self):
         """Helper function to save the parameters in a txt file."""
-
-        data_dict = {
-            key: value
-            for key, value in self.data_info.__dict__.items()
-            if key != "mean_image"
-        }
-
         if self.train_spec["phase"] == "retrain":
             phase = "retrain"
             params_dict = {
                 "evolved_params": self.evolved_params,
                 "train": self.train_spec,
-                "files": self.files_spec,
-                "train_data_info": data_dict,
+                "files": self.files_spec
             }
         else:
             phase = "evolution"
@@ -418,8 +410,7 @@ class ConfigParameters(object):
                 "QNAS": self.QNAS_spec,
                 "train": self.train_spec,
                 "files": self.files_spec,
-                "fn_dict": self.fn_dict,
-                "train_data_info": data_dict,
+                "fn_dict": self.fn_dict
             }
 
         params_file_path = os.path.join(
