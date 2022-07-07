@@ -416,7 +416,7 @@ def Mean_IOU(y_true, y_pred):
     y_pred = K.reshape(y_pred, (-1, nb_classes))
     #y_true = tf.to_int32(K.reshape(y_true, (-1, 1))[:,0])
     y_true = tf.cast(K.reshape(y_true, (-1, 1))[:,0], tf.int32)
-    y_true = K.one_hot(y_true, nb_classes)
+    #y_true = K.one_hot(y_true, nb_classes)
     true_pixels = K.argmax(y_true, axis=-1) # exclude background
     pred_pixels = K.argmax(y_pred, axis=-1)
     iou = []
