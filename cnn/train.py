@@ -310,7 +310,8 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         optimizer=optimizer,
         loss='mse',#loss_function.DiceLoss(),
         metrics=[UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou_2'), 
-                tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")],
+                #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
+                ],
     )
 
     tf.compat.v1.logging.log(
@@ -416,5 +417,5 @@ class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
         super(UpdatedMeanIoU, self).__init__(num_classes = num_classes,name=name, dtype=dtype)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
-        y_pred = tf.math.argmax(y_pred, axis=3)
+        y_pred = tf.math.argmax(y_pred, axis=-1)
         return super().update_state(y_true, y_pred, sample_weight)
