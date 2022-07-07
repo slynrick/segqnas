@@ -16,22 +16,6 @@ from PIL import Image
 
 tf.compat.v1.disable_v2_behavior()
 
-class PascalVOC12Info(object):
-    def __init__(self, data_path, validation=True):
-        """Pascal VOC 2012 dataset information.
-
-            Info in http://host.robots.ox.ac.uk/pascal/VOC/voc2012/.
-
-        Args:
-            data_path: (str) path to the folder containing the tfrecords files.
-            validation: (bool) whether to use the validation dataset for validation.
-        """
-
-        self.data_path = data_path
-        self.height = 128  # after preprocessing
-        self.width = 128  # after preprocessing
-        self.num_channels = 3
-
 def load_pascalvoc12_sample_names(dataset_path, dataset_type):
     if dataset_type == "train":
         data_descriptor_file_path = os.path.join(

@@ -37,10 +37,8 @@ train:
 
     # Dataset
     dataset: PascalVOC12
+    heigth: 128
+    width: 128
+    num_channels: 3
+    num_classes: 21
     data_augmentation: True
-    subtract_mean: True
-
-    # Tensorflow
-    save_checkpoints_epochs: 10
-    save_summary_epochs: 0.25
-    threads: 0
