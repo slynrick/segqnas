@@ -250,7 +250,7 @@ def get_segmentation_model(
     # 9 - upsample
     u9 = upsample_block(u8, f1, 64)
     # outputs
-    outputs = layers.Conv2D(num_classes, 1, padding="same", activation = "sigmoid")(u9)
+    outputs = layers.Conv2D(num_classes, 1, padding="same", activation = "softmax")(u9)
     # unet model with Keras Functional API
     model = Model(inputs, outputs)
 
