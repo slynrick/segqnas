@@ -1,3 +1,4 @@
+import tensorflow as tf
 import tensorflow.keras.backend as K
 
 from cnn.helpers import (average, gather_channels, get_reduce_axes,
@@ -5,7 +6,77 @@ from cnn.helpers import (average, gather_channels, get_reduce_axes,
 
 SMOOTH = 1e-5
 
-class IOUScore:
+class KerasObject:
+    _backend = None
+    _models = None
+    _layers = None
+    _utils = None
+
+    def __init__(self, name=None):
+        self.backend = K
+        self.utils = tf.keras.utils
+        self.models = tf.keras.models
+        self.layers = tf.keras.layers
+        
+        if (self.backend is None or
+                self.utils is None or
+                self.models is None or
+                self.layers is None):
+            raise RuntimeError('You cannot use `KerasObjects` with None submodules.')
+
+        self._name = name
+
+    @property
+    def __name__(self):
+        if self._name is None:
+            return self.__class__.__name__
+        return self._name
+
+    @property
+    def name(self):
+        return self.__name__
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @classmethod
+    def set_submodules(cls, backend, layers, models, utils):
+        cls._backend = backend
+        cls._layers = layers
+        cls._models = models
+        cls._utils = utils
+
+    @property
+    def submodules(self):
+        return {
+            'backend': self.backend,,
+            'layers': self.layers,
+            'models': self.models,
+            'utils': self.utils,
+        }
+
+    @property
+    def backend(self):
+        return self._backend
+
+    @property
+    def layers(self):
+        return self._layers
+
+    @property
+    def models(self):
+        return self._models
+
+    @property
+    def utils(self):
+        return self._utils
+
+
+class Metric(KerasObject):
+    pass
+
+class IOUScore(Metric):
     r"""The `Jaccard index`_, also known as Intersection over Union and the Jaccard similarity coefficient
     (originally coined coefficient de communauté by Paul Jaccard), is a statistic used for comparing the
     similarity and diversity of sample sets. The Jaccard coefficient measures similarity between finite sample sets,
@@ -44,6 +115,7 @@ class IOUScore:
         name=None,
     ):
         name = name or "iou_score"
+        super().__init__(name=name)
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.threshold = threshold
@@ -111,7 +183,7 @@ def iou_score(
     return score
 
 
-class FScore:
+class FScore(Metric):
     r"""The F-score (Dice coefficient) can be interpreted as a weighted average of the precision and recall,
     where an F-score reaches its best value at 1 and worst score at 0.
     The relative contribution of ``precision`` and ``recall`` to the F1-score are equal.
@@ -161,6 +233,7 @@ class FScore:
         name=None,
     ):
         name = name or "f{}-score".format(beta)
+        super().__init__(name=name)
         self.beta = beta
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
@@ -243,7 +316,7 @@ def f_score(
     return score
 
 
-class Precision:
+class Precision(Metric):
     r"""Creates a criterion that measures the Precision between the
     ground truth (gt) and the prediction (pr).
 
@@ -283,6 +356,7 @@ class Precision:
         name=None,
     ):
         name = name or "precision"
+        super().__init__(name=name)
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.threshold = threshold
@@ -348,7 +422,7 @@ def precision(
     return score
 
 
-class Recall:
+class Recall(Metric):
     r"""Creates a criterion that measures the Precision between the
     ground truth (gt) and the prediction (pr).
 
@@ -388,6 +462,7 @@ class Recall:
         name=None,
     ):
         name = name or "recall"
+        super().__init__(name=name)
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.threshold = threshold
