@@ -416,4 +416,5 @@ class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred = tf.math.argmax(y_pred, axis=-1)
+        y_pred = tf.keras.utils.to_categorical(y_pred, num_classes=self.num_classes, dtype='int32')
         return super().update_state(y_true, y_pred, sample_weight)
