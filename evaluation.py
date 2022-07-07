@@ -14,19 +14,17 @@ from util import init_log
 
 
 class EvalPopulation(object):
-    def __init__(self, params, data_info, fn_dict, log_level="INFO"):
+    def __init__(self, params, fn_dict, log_level="INFO"):
         """Initialize EvalPopulation.
 
         Args:
             params: dictionary with parameters.
-            data_info: one of input.*Info objects.
             fn_dict: dict with definitions of the functions (name and parameters);
                 format --> {'fn_name': ['FNClass', {'param1': value1, 'param2': value2}]}.
             log_level: (str) one of "INFO", "DEBUG" or "NONE".
         """
 
         self.train_params = params
-        self.data_info = data_info
         self.fn_dict = fn_dict
         self.timeout = 9000
         self.logger = init_log(log_level, name=__name__)
@@ -105,7 +103,6 @@ class EvalPopulation(object):
 
             args = {
                 "id_num": id_num,
-                "data_info": self.data_info,
                 "params": {**self.train_params, **decoded_params[worker]},
                 "fn_dict": self.fn_dict,
                 "net_list": decoded_nets[worker],
