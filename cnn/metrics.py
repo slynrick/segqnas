@@ -44,7 +44,6 @@ class IOUScore:
         name=None,
     ):
         name = name or "iou_score"
-        super().__init__(name=name)
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.threshold = threshold
@@ -112,7 +111,7 @@ def iou_score(
     return score
 
 
-class FScore(Metric):
+class FScore:
     r"""The F-score (Dice coefficient) can be interpreted as a weighted average of the precision and recall,
     where an F-score reaches its best value at 1 and worst score at 0.
     The relative contribution of ``precision`` and ``recall`` to the F1-score are equal.
@@ -162,7 +161,6 @@ class FScore(Metric):
         name=None,
     ):
         name = name or "f{}-score".format(beta)
-        super().__init__(name=name)
         self.beta = beta
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
@@ -245,7 +243,7 @@ def f_score(
     return score
 
 
-class Precision(Metric):
+class Precision:
     r"""Creates a criterion that measures the Precision between the
     ground truth (gt) and the prediction (pr).
 
@@ -285,7 +283,6 @@ class Precision(Metric):
         name=None,
     ):
         name = name or "precision"
-        super().__init__(name=name)
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.threshold = threshold
@@ -351,7 +348,7 @@ def precision(
     return score
 
 
-class Recall(Metric):
+class Recall:
     r"""Creates a criterion that measures the Precision between the
     ground truth (gt) and the prediction (pr).
 
@@ -391,7 +388,6 @@ class Recall(Metric):
         name=None,
     ):
         name = name or "recall"
-        super().__init__(name=name)
         self.class_weights = class_weights if class_weights is not None else 1
         self.class_indexes = class_indexes
         self.threshold = threshold
