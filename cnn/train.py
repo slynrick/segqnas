@@ -16,9 +16,8 @@ from logging import addLevelName
 import tensorflow as tf
 from tensorflow.keras.optimizers import RMSprop
 
-from cnn import hparam, input, loss_function, model
+from cnn import hparam, input, loss_function, metrics, model
 from cnn.hooks import GetBestHook, TimeOutHook
-from cnn.metrics import IOUScore
 
 # TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 86400
@@ -307,10 +306,10 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         hparams.optimizer, hparams.learning_rate, hparams.momentum, decay
     )
 
-    net.compile(
+    net.compile(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         optimizer=optimizer,
         loss=loss_function.DiceLoss(),
-        metrics=[IOUScore(threshold=0.5)
+        metrics=[metrics.iou_score                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      (threshold=0.5)
                 #UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
                 #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
                 ],
