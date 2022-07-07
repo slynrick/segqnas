@@ -60,7 +60,6 @@ class EvalPopulation(object):
             # After sending tasks, Master starts its own work...
             evaluations[0] = train.fitness_calculation(
                 id_num=f"{generation}_0",
-                data_info=self.data_info,
                 params={**self.train_params, **decoded_params[0]},
                 fn_dict=self.fn_dict,
                 net_list=decoded_nets[0],
