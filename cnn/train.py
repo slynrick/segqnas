@@ -18,6 +18,7 @@ from tensorflow.keras.optimizers import RMSprop
 
 from cnn import hparam, input, loss_function, model
 from cnn.hooks import GetBestHook, TimeOutHook
+from metrics import IOUScore
 
 # TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 86400
@@ -309,7 +310,8 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     net.compile(
         optimizer=optimizer,
         loss=loss_function.DiceLoss(),
-        metrics=[UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
+        metrics=[IOUScore(threshold=0.5)
+                #UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
                 #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
                 ],
     )
