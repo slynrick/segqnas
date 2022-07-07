@@ -205,7 +205,7 @@ class PascalVOC12Info(object):
         self.std_image = np.load(
             os.path.join(self.data_path, "pascalvoc12_train_std.npz")
         )["train_img_std"]
-        self.num_classes = 20
+        self.num_classes = 21
         # self.pad = 4
 
         self.train_files = [
