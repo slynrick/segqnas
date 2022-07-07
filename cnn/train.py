@@ -312,7 +312,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     )
 
     net.compile(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-        optimizer=optimizer,
+        optimizer='Adam',#optimizer,
         loss=sm.losses.bce_jaccard_loss,
         metrics=[sm.metrics.iou_score
                 #UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
