@@ -60,7 +60,6 @@ def master(args, comm):
     # Evaluation function for QNAS (train CNN and return validation mean iou)
     eval_f = evaluation.EvalPopulation(
         params=config.train_spec,
-        data_info=config.data_info,
         fn_dict=config.fn_dict,
         log_level=config.train_spec["log_level"],
     )
@@ -114,7 +113,7 @@ def slave(comm):
             break
 
         results = train.fitness_calculation(**params)
-        print("resultssssss", results)
+        print("results", results)
         # Send results back to master.
         comm.send(results, dest=0, tag=10)
 

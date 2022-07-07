@@ -31,7 +31,6 @@ class ConfigParameters(object):
         self.files_spec = {}
         self.fn_dict = {}
         self.previous_params_file = None
-        self.data_info = None
         self.evolved_params = None
 
     def _check_vars(self, config_file):
@@ -270,7 +269,7 @@ class ConfigParameters(object):
         self.train_spec["data_path"] = self.args["data_path"]
 
         if not self.train_spec["eval_batch_size"]:
-            self.train_spec["eval_batch_size"] = self.data_info.num_valid_ex
+            self.train_spec["eval_batch_size"] = self.train_spec["batch_size"]
 
         self.train_spec["phase"] = self.phase
         self.train_spec["log_level"] = self.args["log_level"]
@@ -295,13 +294,6 @@ class ConfigParameters(object):
             self._get_retrain_params()
 
         self._get_common_params()
-
-    def get_data_info(self):
-        """Get input.*Info object based on the name in *self.train_spec['dataset']*."""
-
-        name = self.train_spec["dataset"] + "Info"
-
-        return getattr(input, name)(self.train_spec["data_path"], validation=True)
 
     def load_old_params(self):
         """Load parameters from *self.files_spec['previous_QNAS_params']* and replace

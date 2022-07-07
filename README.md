@@ -78,7 +78,6 @@ python run_dataset_prep.py \
 At the end of the process, the folder `pascalvoc12/pascalvoc12_tfr` has the following files:
 >pascalvoc12_train_mean.npz
 pascalvoc12_train_std.npz  
-data_info.txt  
 test_1.tfrecords  
 train_1.tfrecords  
 valid_1.tfrecords  
@@ -129,7 +128,6 @@ train:
     # Dataset
     dataset:             (str) Cifar10 or CIFAR100
     data_augmentation:   (bool) True if data augmentation methods should be applied
-    subtract_mean:       (bool) True if the dataset mean image should be subtracted from images
 
     # Tensorflow
     save_checkpoints_epochs: (int) number of epochs to save a new checkpoint.

@@ -245,7 +245,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     Args:
         id_num: string identifying the generation number and the individual number.
-        data_info: one of input.*Info objects.
         params: dictionary with parameters necessary for training, including the evolved
             hyperparameters.
         fn_dict: dict with definitions of the possible layers (name and parameters).
