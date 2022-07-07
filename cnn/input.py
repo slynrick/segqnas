@@ -393,9 +393,7 @@ class PascalVOC2012DataGenerator(tf.keras.utils.Sequence):
         mask = Image.open(mask_path)
         mask = mask.resize((self.width, self.height), Image.ANTIALIAS)
         mask = np.array(mask)
-        #mask = tf.keras.utils.to_categorical(mask, num_classes=self.num_classes)
         mask = self._one_hot_encode_mask(mask)
-        #print(mask)
         return mask
 
     def _one_hot_encode_mask(self, mask):
@@ -405,11 +403,11 @@ class PascalVOC2012DataGenerator(tf.keras.utils.Sequence):
 
         # create a binary mask for each channel (class)
         one_hot_mask = []
-        for _class in range(0, self.num_classes):  # remove background 0
+        for _class in range(0, self.num_classes):
             class_mask = np.all(np.equal(mask, _class), axis=-1)
             one_hot_mask.append(class_mask)
         one_hot_mask = np.stack(one_hot_mask, axis=-1)
-        one_hot_mask = one_hot_mask.astype("int64")
+        one_hot_mask = one_hot_mask.astype("int32")
 
         return one_hot_mask
 
