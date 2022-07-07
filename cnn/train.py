@@ -304,7 +304,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     #    net_list,
     #)
 
-    net = sm.Unet('resnet34', classes=data_info.num_classes, input_shape=(data_info.height, data_info.width, data_info.num_channels), activation='softmax')
+    net = sm.Unet('resnet34', classes=data_info.num_classes, input_shape=(data_info.height, data_info.width, data_info.num_channels), activation='softmax', encoder_weights='imagenet')
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
     optimizer = _optimizer(
