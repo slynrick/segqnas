@@ -13,7 +13,7 @@ class KerasObject:
     _utils = None
 
     def __init__(self, name=None):
-        self.backend = K
+        self.backend = tf.keras.backend
         self.utils = tf.keras.utils
         self.models = tf.keras.models
         self.layers = tf.keras.layers
