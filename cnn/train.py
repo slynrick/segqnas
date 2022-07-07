@@ -309,8 +309,7 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
     net.compile(
         optimizer=optimizer,
         loss='mse',#loss_function.DiceLoss(),
-        metrics=[Mean_IOU,
-                #UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
+        metrics=[UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
                 #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
                 ],
     )
@@ -406,34 +405,15 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 #    return mean_iou
 #
 
-import time
+class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
+    def __init__(self,
+                 y_true=None,
+                 y_pred=None,
+                 num_classes=None,
+                 name=None,
+                 dtype=None):
+        super(UpdatedMeanIoU, self).__init__(num_classes=num_classes, name=name, dtype=dtype)
 
-import tensorflow.keras.backend as K
-
-
-def Mean_IOU(y_true, y_pred):
-    nb_classes = K.int_shape(y_pred)[-1]
-    y_pred = K.reshape(y_pred, (-1, nb_classes))
-    #y_true = tf.to_int32(K.reshape(y_true, (-1, 1))[:,0])
-    y_true = tf.cast(K.reshape(y_true, (-1, 1))[:,0], tf.int32)
-    #y_true = K.one_hot(y_true, nb_classes)
-    true_pixels = K.argmax(y_true, axis=-1) # exclude background
-    pred_pixels = K.argmax(y_pred, axis=-1)
-    iou = []
-    flag = tf.convert_to_tensor(-1, dtype='float64')
-    for i in range(nb_classes-1):
-        true_labels = K.equal(true_pixels, i)
-        pred_labels = K.equal(pred_pixels, i)
-        #inter = tf.to_int32(true_labels & pred_labels)
-        inter = tf.cast(true_labels & pred_labels, tf.int32)
-        #union = tf.to_int32(true_labels | pred_labels)
-        union = tf.cast(true_labels | pred_labels, tf.int32)
-        #cond = (K.sum(union) > 0) & (K.sum(tf.to_int32(true_labels)) > 0)
-        cond = (K.sum(union) > 0) & (K.sum(tf.cast(true_labels, tf.int32)) > 0)
-        
-        res = tf.cond(cond, lambda: K.sum(inter)/K.sum(union), lambda: flag)
-        iou.append(res)
-    iou = tf.stack(iou)
-    legal_labels = tf.greater(iou, flag)
-    iou = tf.gather(iou, indices=tf.where(legal_labels))
-    return K.mean(iou)
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        #y_pred = tf.math.argmax(y_pred, axis=-1)
+        return super().update_state(y_true, y_pred, sample_weight)
