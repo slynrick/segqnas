@@ -11,8 +11,8 @@ from collections import OrderedDict
 import numpy as np
 
 from chromosome import QChromosomeNetwork, QChromosomeParams
-from cnn import model, input
-from util import load_yaml, load_pkl, natural_key
+from cnn import input, model
+from util import load_pkl, load_yaml, natural_key
 
 
 class ConfigParameters(object):
@@ -143,23 +143,6 @@ class ConfigParameters(object):
 
         if config_file["train"]["epochs_to_eval"] >= config_file["train"]["max_epochs"]:
             raise ValueError("Invalid epochs_to_eval! It should be < max_epochs.")
-
-    def _calculate_step_params(self):
-        """Calculate the step version of epoch based parameters and add to *self.train_spec*."""
-
-        self.train_spec["steps_per_epoch"] = int(
-            self.data_info.num_train_ex / self.train_spec["batch_size"]
-        )
-        self.train_spec["max_steps"] = int(
-            self.train_spec["max_epochs"] * self.train_spec["steps_per_epoch"]
-        )
-        self.train_spec["save_checkpoints_steps"] = int(
-            self.train_spec["save_checkpoints_epochs"]
-            * self.train_spec["steps_per_epoch"]
-        )
-        self.train_spec["save_summary_steps"] = int(
-            self.train_spec["save_summary_epochs"] * self.train_spec["steps_per_epoch"]
-        )
 
     def _get_evolution_params(self):
         """Get specific parameters for the evolution phase."""
@@ -292,9 +275,6 @@ class ConfigParameters(object):
         if not self.train_spec["eval_batch_size"]:
             self.train_spec["eval_batch_size"] = self.data_info.num_valid_ex
 
-        # Calculating parameters based on steps
-        self._calculate_step_params()
-
         self.train_spec["phase"] = self.phase
         self.train_spec["log_level"] = self.args["log_level"]
 
@@ -382,9 +362,6 @@ class ConfigParameters(object):
         """
 
         self.train_spec.update(new_params_dict)
-
-        # Recalculating parameters based on steps
-        self._calculate_step_params()
 
     def params_to_logfile(self, params, text_file, nested_level=0):
         """Print dictionary *params* to a txt file with nested level formatting.
