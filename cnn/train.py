@@ -17,7 +17,7 @@ import segmentation_models as sm
 import tensorflow as tf
 from tensorflow.keras.optimizers import RMSprop
 
-from cnn import hparam, input, loss_function, metrics, model
+from cnn import hparam, input, model
 from cnn.hooks import GetBestHook, TimeOutHook
 
 sm.set_framework('tf.keras')
