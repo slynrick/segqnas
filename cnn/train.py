@@ -405,6 +405,9 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
 #    return mean_iou
 #
 
+import time
+
+
 class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
   def __init__(self,
                y_true=None,
@@ -425,5 +428,7 @@ class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"y_true {y_true}, y_pred {y_pred}"
     )
+
+    time.sleep(3)
 
     return super().update_state(y_true, y_pred, sample_weight)
