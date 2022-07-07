@@ -50,7 +50,7 @@ class KerasObject:
     @property
     def submodules(self):
         return {
-            'backend': self.backend,,
+            'backend': self.backend,
             'layers': self.layers,
             'models': self.models,
             'utils': self.utils,
