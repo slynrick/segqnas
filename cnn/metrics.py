@@ -1,6 +1,7 @@
 import tensorflow.keras.backend as K
 
-from helpers import average, gather_channels, get_reduce_axes, round_if_needed
+from cnn.helpers import (average, gather_channels, get_reduce_axes,
+                         round_if_needed)
 
 SMOOTH = 1e-5
 
