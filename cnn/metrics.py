@@ -81,7 +81,6 @@ class IOUScore(Metric):
             smooth=self.smooth,
             per_image=self.per_image,
             threshold=self.threshold,
-            **self.submodules
         )
 
 
@@ -93,7 +92,6 @@ def iou_score(
     smooth=SMOOTH,
     per_image=False,
     threshold=None,
-    **kwargs
 ):
     r"""The `Jaccard index`_, also known as Intersection over Union and the Jaccard similarity coefficient
     (originally coined coefficient de communauté by Paul Jaccard), is a statistic used for comparing the
@@ -119,16 +117,16 @@ def iou_score(
 
     """
 
-    gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
-    pr = round_if_needed(pr, threshold, **kwargs)
-    axes = get_reduce_axes(per_image, **kwargs)
+    gt, pr = gather_channels(gt, pr, indexes=class_indexes)
+    pr = round_if_needed(pr, threshold)
+    axes = get_reduce_axes(per_image)
 
     # score calculation
     intersection = K.sum(gt * pr, axis=axes)
     union = K.sum(gt + pr, axis=axes) - intersection
 
     score = (intersection + smooth) / (union + smooth)
-    score = average(score, per_image, class_weights, **kwargs)
+    score = average(score, per_image, class_weights)
 
     return score
 
@@ -192,7 +190,7 @@ class FScore(Metric):
         self.smooth = smooth
 
     def __call__(self, gt, pr):
-        return F.f_score(
+        return f_score(
             gt,
             pr,
             beta=self.beta,
@@ -201,7 +199,6 @@ class FScore(Metric):
             smooth=self.smooth,
             per_image=self.per_image,
             threshold=self.threshold,
-            **self.submodules
         )
 
 
@@ -214,7 +211,6 @@ def f_score(
     smooth=SMOOTH,
     per_image=False,
     threshold=None,
-    **kwargs
 ):
     r"""The F-score (Dice coefficient) can be interpreted as a weighted average of the precision and recall,
     where an F-score reaches its best value at 1 and worst score at 0.
@@ -249,9 +245,9 @@ def f_score(
         F-score in range [0, 1]
 
     """
-    gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
-    pr = round_if_needed(pr, threshold, **kwargs)
-    axes = get_reduce_axes(per_image, **kwargs)
+    gt, pr = gather_channels(gt, pr, indexes=class_indexes)
+    pr = round_if_needed(pr, threshold)
+    axes = get_reduce_axes(per_image)
 
     # calculate score
     tp = K.sum(gt * pr, axis=axes)
@@ -261,7 +257,7 @@ def f_score(
     score = ((1 + beta**2) * tp + smooth) / (
         (1 + beta**2) * tp + beta**2 * fn + fp + smooth
     )
-    score = average(score, per_image, class_weights, **kwargs)
+    score = average(score, per_image, class_weights)
 
     return score
 
@@ -314,7 +310,7 @@ class Precision(Metric):
         self.smooth = smooth
 
     def __call__(self, gt, pr):
-        return F.precision(
+        return precision(
             gt,
             pr,
             class_weights=self.class_weights,
@@ -322,7 +318,6 @@ class Precision(Metric):
             smooth=self.smooth,
             per_image=self.per_image,
             threshold=self.threshold,
-            **self.submodules
         )
 
 
@@ -334,7 +329,6 @@ def precision(
     smooth=SMOOTH,
     per_image=False,
     threshold=None,
-    **kwargs
 ):
     r"""Calculate precision between the ground truth (gt) and the prediction (pr).
 
@@ -358,16 +352,16 @@ def precision(
     Returns:
         float: precision score
     """
-    gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
-    pr = round_if_needed(pr, threshold, **kwargs)
-    axes = get_reduce_axes(per_image, **kwargs)
+    gt, pr = gather_channels(gt, pr, indexes=class_indexes)
+    pr = round_if_needed(pr, threshold)
+    axes = get_reduce_axes(per_image)
 
     # score calculation
     tp = K.sum(gt * pr, axis=axes)
     fp = K.sum(pr, axis=axes) - tp
 
     score = (tp + smooth) / (tp + fp + smooth)
-    score = average(score, per_image, class_weights, **kwargs)
+    score = average(score, per_image, class_weights)
 
     return score
 
@@ -428,7 +422,6 @@ class Recall(Metric):
             smooth=self.smooth,
             per_image=self.per_image,
             threshold=self.threshold,
-            **self.submodules
         )
 
 
@@ -440,7 +433,6 @@ def recall(
     smooth=SMOOTH,
     per_image=False,
     threshold=None,
-    **kwargs
 ):
     r"""Calculate recall between the ground truth (gt) and the prediction (pr).
 
@@ -464,14 +456,14 @@ def recall(
     Returns:
         float: recall score
     """
-    gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
-    pr = round_if_needed(pr, threshold, **kwargs)
-    axes = get_reduce_axes(per_image, **kwargs)
+    gt, pr = gather_channels(gt, pr, indexes=class_indexes)
+    pr = round_if_needed(pr, threshold)
+    axes = get_reduce_axes(per_image)
 
     tp = K.sum(gt * pr, axis=axes)
     fn = K.sum(gt, axis=axes) - tp
 
     score = (tp + smooth) / (tp + fn + smooth)
-    score = average(score, per_image, class_weights, **kwargs)
+    score = average(score, per_image, class_weights)
 
     return score
