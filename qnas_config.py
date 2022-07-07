@@ -122,7 +122,6 @@ class ConfigParameters(object):
                 ("num_channels", int),
                 ("num_classes", int),
                 ("data_augmentation", bool),
-                ("threads", int),
             ],
         }
 
