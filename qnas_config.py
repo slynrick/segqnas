@@ -122,7 +122,6 @@ class ConfigParameters(object):
                 ("num_channels", int),
                 ("num_classes", int),
                 ("data_augmentation", bool),
-                ("subtract_mean", bool),
                 ("save_checkpoints_epochs", int),
                 ("save_summary_epochs", float),
                 ("threads", int),
