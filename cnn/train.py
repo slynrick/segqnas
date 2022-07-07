@@ -297,12 +297,14 @@ def fitness_calculation(id_num, data_info, params, fn_dict, net_list):
         batch_size=hparams.eval_batch_size,
     )
 
-    net = model.get_segmentation_model(
-        (data_info.height, data_info.width, data_info.num_channels),
-        data_info.num_classes,
-        fn_dict,
-        net_list,
-    )
+    #net = model.get_segmentation_model(
+    #    (data_info.height, data_info.width, data_info.num_channels),
+    #    data_info.num_classes,
+    #    fn_dict,
+    #    net_list,
+    #)
+
+    net = sm.Unet('resnet34', classes=data_info.num_classes, input_shape=(data_info.height, data_info.width, data_info.num_channels), activation='softmax')
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
     optimizer = _optimizer(
