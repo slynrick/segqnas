@@ -163,7 +163,7 @@ class PascalVOC2012Dataset:
         # read data
         image = Image.open(self.image_filepaths[i])
         image = image.resize((self.image_width, self.image_height), Image.ANTIALIAS)
-        image = np.array(image, dtype=np.uint8)
+        image = np.array(image)
 
         mask = Image.open(self.mask_filepaths[i])
         mask = mask.resize((self.image_width, self.image_height), Image.ANTIALIAS)
@@ -180,7 +180,7 @@ class PascalVOC2012Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample["image"], sample["mask"]
 
-        image = image.astype("float32")
+        image = image.astype("float32")/255
         mask = mask.astype("float32")
 
         return image, mask
