@@ -357,6 +357,9 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         train_dataloader,
         validation_data=val_dataloader,
         epochs=hparams.max_epochs,
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)
+        ]
     )
 
     val_mean_iou = history.history["val_iou_score"][-1]
