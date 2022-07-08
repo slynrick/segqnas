@@ -20,7 +20,7 @@ from tensorflow.keras.optimizers import RMSprop
 from cnn import hparam, input, model
 from cnn.hooks import GetBestHook, TimeOutHook
 
-sm.set_framework('tf.keras')
+sm.set_framework("tf.keras")
 
 # TRAIN_TIMEOUT = 5400
 TRAIN_TIMEOUT = 86400
@@ -186,7 +186,7 @@ def _get_loss_and_grads(is_train, params, features, labels):
 
     # loss = tf.compat.v1.losses.sparse_softmax_cross_entropy(logits=logits, labels=labels)
     loss = tf.keras.losses.BinaryCrossentropy()(y_true=labels, y_pred=logits)
-    #loss = loss_function.DiceLoss()(y_true=labels, y_pred=logits)
+    # loss = loss_function.DiceLoss()(y_true=labels, y_pred=logits)
 
     # Apply weight decay for every trainable variable in the model
     model_params = tf.compat.v1.trainable_variables()
@@ -262,7 +262,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     elif params["log_level"] == "DEBUG":
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
-    #model_path = os.path.join(params["experiment_path"], id_num)
+    # model_path = os.path.join(params["experiment_path"], id_num)
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
     tf.config.experimental.set_visible_devices(gpus[int(id_num.split("_")[-1])], "GPU")
@@ -275,67 +275,91 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     hparams = hparam.HParams(**params)
 
-    train_sample_names = input.load_pascalvoc12_sample_names("pascalvoc12", "train")
-    val_sample_names = input.load_pascalvoc12_sample_names("pascalvoc12", "val")
-
-    train_data_generator = input.PascalVOC2012DataGenerator(
-        sample_names=train_sample_names,
-        img_path=os.path.join("pascalvoc12", "VOCdevkit", "VOC2012", "JPEGImages"),
-        mask_path=os.path.join(
-            "pascalvoc12", "VOCdevkit", "VOC2012", "SegmentationClass"
-        ),
-        height=hparams.height,
-        width=hparams.width,
-        num_channels=hparams.num_channels,
-        num_classes=hparams.num_classes,
-        batch_size=hparams.batch_size,
+    train_dataset_descriptor_filepath = os.path.join(
+        "pascalvoc12",
+        "VOCdevkit",
+        "VOC2012",
+        "ImageSets",
+        "Segmentation",
+        "train.txt",
     )
 
-    val_data_generator = input.PascalVOC2012DataGenerator(
-        sample_names=val_sample_names,
-        img_path=os.path.join("pascalvoc12", "VOCdevkit", "VOC2012", "JPEGImages"),
-        mask_path=os.path.join(
-            "pascalvoc12", "VOCdevkit", "VOC2012", "SegmentationClass"
-        ),
-        height=hparams.height,
-        width=hparams.width,
-        num_channels=hparams.num_channels,
-        num_classes=hparams.num_classes,
-        batch_size=hparams.eval_batch_size,
+    val_dataset_descriptor_filepath = os.path.join(
+        "pascalvoc12",
+        "VOCdevkit",
+        "VOC2012",
+        "ImageSets",
+        "Segmentation",
+        "val.txt",
     )
 
-    #net = model.get_segmentation_model(
+    images_path = os.path.join("pascalvoc12", "VOCdevkit", "VOC2012", "JPEGImages")
+
+    masks_path = os.path.join(
+        "pascalvoc12", "VOCdevkit", "VOC2012", "SegmentationClass"
+    )
+
+    train_dataset = input.PascalVOC2012Dataset(
+        train_dataset_descriptor_filepath,
+        images_path=images_path,
+        masks_path=masks_path,
+        image_height=hparams.height,
+        image_width=hparams.width,
+        augmentation=input.get_training_augmentation(hparams.height, hparams.width),
+    )
+
+    val_dataset = input.PascalVOC2012Dataset(
+        val_dataset_descriptor_filepath,
+        images_path=images_path,
+        masks_path=masks_path,
+        image_height=hparams.height,
+        image_width=hparams.width,
+    )
+
+    train_dataloader = input.Dataloader(train_dataset, batch_size=16, shuffle=True)
+    val_dataloader = input.Dataloader(val_dataset, batch_size=16, shuffle=False)
+
+    # net = model.get_segmentation_model(
     #    (data_info.height, data_info.width, data_info.num_channels),
     #    data_info.num_classes,
     #    fn_dict,
     #    net_list,
-    #)
+    # )
 
-    net = sm.Unet('resnet34', classes=hparams.num_classes, input_shape=(hparams.height, hparams.width, hparams.num_channels), activation='softmax', encoder_weights='imagenet')
+    net = sm.Unet(
+        "resnet34",
+        classes=hparams.num_classes,
+        input_shape=(hparams.height, hparams.width, hparams.num_channels),
+        activation="softmax",
+        encoder_weights="imagenet",
+    )
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
     optimizer = _optimizer(
         hparams.optimizer, hparams.learning_rate, hparams.momentum, decay
     )
 
-    net.compile(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-        optimizer='Adam',#optimizer,
+    net.compile(
+        optimizer="Adam",  # optimizer,
         loss=sm.losses.categorical_focal_dice_loss,
-        metrics=[sm.metrics.IOUScore(threshold=0.5)
-                #UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'), 
-                #tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
-                ],
+        metrics=[
+            sm.metrics.IOUScore(threshold=0.5)
+            # UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'),
+            # tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
+        ],
     )
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"net {net.summary()}"
     )
 
-    history = net.fit(train_data_generator, 
-                    validation_data=val_data_generator,
-                    epochs=hparams.max_epochs)
+    history = net.fit(
+        train_dataloader,
+        validation_data=val_dataloader,
+        epochs=hparams.max_epochs,
+    )
 
-    val_mean_iou = history.history['val_iou_score'][-1]
+    val_mean_iou = history.history["val_iou_score"][-1]
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
@@ -349,6 +373,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     params["t0"] = time.time()
 
     return val_mean_iou
+
 
 #    #tf.compat.v1.disable_v2_behavior()
 #
@@ -418,14 +443,14 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 #    return mean_iou
 #
 
+
 class UpdatedMeanIoU(tf.keras.metrics.MeanIoU):
-    def __init__(self,
-                 y_true=None,
-                 y_pred=None,
-                 num_classes=None,
-                 name=None,
-                 dtype=None):
-        super(UpdatedMeanIoU, self).__init__(num_classes=num_classes, name=name, dtype=dtype)
+    def __init__(
+        self, y_true=None, y_pred=None, num_classes=None, name=None, dtype=None
+    ):
+        super(UpdatedMeanIoU, self).__init__(
+            num_classes=num_classes, name=name, dtype=dtype
+        )
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_pred = tf.math.argmax(y_pred, axis=-1)

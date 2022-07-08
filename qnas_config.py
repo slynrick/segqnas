@@ -394,7 +394,7 @@ class ConfigParameters(object):
             params_dict = {
                 "evolved_params": self.evolved_params,
                 "train": self.train_spec,
-                "files": self.files_spec
+                "files": self.files_spec,
             }
         else:
             phase = "evolution"
@@ -402,7 +402,7 @@ class ConfigParameters(object):
                 "QNAS": self.QNAS_spec,
                 "train": self.train_spec,
                 "files": self.files_spec,
-                "fn_dict": self.fn_dict
+                "fn_dict": self.fn_dict,
             }
 
         params_file_path = os.path.join(
