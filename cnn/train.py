@@ -305,7 +305,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         masks_path=masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
-        augmentation=input.get_training_augmentation(hparams.height, hparams.width),
+        #augmentation=input.get_training_augmentation(hparams.height, hparams.width),
     )
 
     val_dataset = input.PascalVOC2012Dataset(
