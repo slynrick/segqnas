@@ -233,7 +233,7 @@ class Dataloader(tf.keras.utils.Sequence):
         # transpose list of lists
         batch = [np.stack(samples, axis=0) for samples in zip(*data)]
 
-        return batch
+        return tuple(batch)
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
