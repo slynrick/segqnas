@@ -355,7 +355,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     history = net.fit(
         train_dataloader,
-        validation_data=val_dataloader,
+        validation_data=tuple(val_dataloader),
         epochs=hparams.max_epochs,
     )
 
