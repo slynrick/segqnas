@@ -316,8 +316,8 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         image_width=hparams.width,
     )
 
-    train_dataloader = input.Dataloader(train_dataset, batch_size=16, shuffle=True)
-    val_dataloader = input.Dataloader(val_dataset, batch_size=16, shuffle=False)
+    train_dataloader = input.Dataloader(train_dataset, batch_size=hparams.batch_size, shuffle=True)
+    val_dataloader = input.Dataloader(val_dataset, batch_size=hparams.eval_batch_size, shuffle=False)
 
     # net = model.get_segmentation_model(
     #    (data_info.height, data_info.width, data_info.num_channels),
