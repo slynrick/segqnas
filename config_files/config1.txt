@@ -29,20 +29,20 @@ QNAS:
                      'no_op':        {'function': 'NoOp', 'params': {}, 'prob': 1.0/3.0}}
 
 train:
-    batch_size: 32
-    eval_batch_size: 32
+    batch_size: 4
+    eval_batch_size: 4
     max_epochs: 50
     epochs_to_eval: 5
     optimizer: RMSProp
 
     # Dataset
     dataset: PascalVOC12
-    height: 192
-    width: 192
+    height: 448
+    width: 448
     num_channels: 3
     num_classes: 21
     descriptor_files_path: "pascalvoc12/VOCdevkit/VOC2012/ImageSets/Segmentation/"
     images_path: "pascalvoc12/VOCdevkit/VOC2012/JPEGImages/"
     masks_path: "pascalvoc12/VOCdevkit/VOC2012/SegmentationClass/"
-    backbone: "efficientnetb0"
+    backbone: "efficientnetb7"
     data_augmentation: True
