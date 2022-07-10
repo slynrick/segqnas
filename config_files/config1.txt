@@ -41,4 +41,7 @@ train:
     width: 128
     num_channels: 3
     num_classes: 21
+    descriptor_files_path: "pascalvoc12/VOCdevkit/VOC2012/ImageSets/Segmentation/"
+    images_path: "pascalvoc12/VOCdevkit/VOC2012/JPEGImages/"
+    masks_path: "pascalvoc12/VOCdevkit/VOC2012/SegmentationClass/"
     data_augmentation: True

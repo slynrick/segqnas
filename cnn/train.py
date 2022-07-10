@@ -276,33 +276,19 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     hparams = hparam.HParams(**params)
 
     train_dataset_descriptor_filepath = os.path.join(
-        "pascalvoc12",
-        "VOCdevkit",
-        "VOC2012",
-        "ImageSets",
-        "Segmentation",
+        hparams.descriptor_files_path,
         "train.txt",
     )
 
     val_dataset_descriptor_filepath = os.path.join(
-        "pascalvoc12",
-        "VOCdevkit",
-        "VOC2012",
-        "ImageSets",
-        "Segmentation",
+        hparams.descriptor_files_path,
         "val.txt",
-    )
-
-    images_path = os.path.join("pascalvoc12", "VOCdevkit", "VOC2012", "JPEGImages")
-
-    masks_path = os.path.join(
-        "pascalvoc12", "VOCdevkit", "VOC2012", "SegmentationClass"
     )
 
     train_dataset = input.PascalVOC2012Dataset(
         train_dataset_descriptor_filepath,
-        images_path=images_path,
-        masks_path=masks_path,
+        images_path=hparams.images_path,
+        masks_path=hparams.masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
         augmentation=input.get_training_augmentation(hparams.height, hparams.width),
@@ -310,8 +296,8 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     val_dataset = input.PascalVOC2012Dataset(
         val_dataset_descriptor_filepath,
-        images_path=images_path,
-        masks_path=masks_path,
+        images_path=hparams.images_path,
+        masks_path=hparams.masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
     )
@@ -353,27 +339,9 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         ],
     )
 
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(), msg=f"net {net.summary()}"
-    )
-
-    history = net.fit(
-        train_dataloader,
-        validation_data=val_dataloader,
-        epochs=hparams.max_epochs,
-        callbacks=[
-            tf.keras.callbacks.EarlyStopping(
-                monitor="val_loss", mode="min", verbose=1, patience=5
-            )
-        ],
-    )
-
-    val_mean_iou = history.history["val_iou_score"][-1]
-
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
-    )
-
+    # tf.compat.v1.logging.log(
+    #    level=tf.compat.v1.logging.get_verbosity(), msg=f"net {net.summary()}"
+    # )
     params["net"] = net
     params["net_list"] = net_list
 
@@ -381,73 +349,36 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
 
+    node = platform.uname()[1]
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"I am node {node}! Running fitness calculation of {id_num} with "
+        f"structure:\n{net_list}",
+    )
+
+    try:
+        history = net.fit(
+            train_dataloader,
+            validation_data=val_dataloader,
+            epochs=hparams.max_epochs,
+            callbacks=[
+                tf.keras.callbacks.EarlyStopping(
+                    monitor="val_loss", mode="min", verbose=1, patience=5
+                )
+            ],
+        )
+    except tf.errors.ResourceExhaustedError:
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"Model is probably too large... Resource Exhausted Error!",
+        )
+        return 0
+
+    val_mean_iou = history.history["val_iou_score"][-1]
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
+    )
+
     return val_mean_iou
-
-
-#    #tf.compat.v1.disable_v2_behavior()
-#
-#    train_input_fn = functools.partial(
-#        input.input_fn,
-#        data_info=data_info,
-#        dataset_type="train",
-#        batch_size=hparams.batch_size,
-#        data_aug=hparams.data_augmentation,
-#        subtract_mean=hparams.subtract_mean,
-#        process_for_training=True,
-#        threads=hparams.threads,
-#    )
-#
-#    eval_input_fn = functools.partial(
-#        input.input_fn,
-#        data_info=data_info,
-#        dataset_type="valid",
-#        batch_size=hparams.eval_batch_size,
-#        data_aug=False,
-#        subtract_mean=hparams.subtract_mean,
-#        process_for_training=False,
-#        threads=hparams.threads,
-#    )
-#    node = platform.uname()[1]
-#
-#    tf.compat.v1.logging.log(
-#        level=tf.compat.v1.logging.get_verbosity(),
-#        msg=f"I am node {node}! Running fitness calculation of {id_num} with "
-#        f"structure:\n{net_list}",
-#    )
-#
-#    try:
-#        mean_iou = train_and_eval(
-#            params=hparams,
-#            run_config=config,
-#            train_input_fn=train_input_fn,
-#            eval_input_fn=eval_input_fn,
-#        )
-#    except tf.compat.v1.train.NanLossDuringTrainingError:
-#        tf.compat.v1.logging.log(
-#            level=tf.compat.v1.logging.get_verbosity(),
-#            msg=f"Model diverged with NaN loss...",
-#        )
-#        return 0
-#    except ValueError as e:
-#        tf.compat.v1.logging.log(
-#            level=tf.compat.v1.logging.get_verbosity(),
-#            msg=f"Model is possibly incorrect in dimensions. "
-#            f"Negative dimensions are not allowed {e}",
-#        )
-#        return 0
-#    except TimeoutError:
-#        tf.compat.v1.logging.log(
-#            level=tf.compat.v1.logging.get_verbosity(),
-#            msg=f"Model {id_num} took too long to train! "
-#            f"Timeout = {TRAIN_TIMEOUT:,} seconds.",
-#        )
-#        return 0
-#    except tf.errors.ResourceExhaustedError:
-#        tf.compat.v1.logging.log(
-#            level=tf.compat.v1.logging.get_verbosity(),
-#            msg=f"Model is probably too large... Resource Exhausted Error!",
-#        )
-#        return 0
-#
-#    return mean_iou
-#
