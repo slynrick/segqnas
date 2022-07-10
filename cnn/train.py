@@ -7,7 +7,6 @@
     https://github.com/tensorflow/models/blob/r1.10.0/tutorials/image/cifar10_estimator/cifar10_main.py
 
 """
-import functools
 import os
 import platform
 import time
@@ -275,7 +274,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     hparams = hparam.HParams(**params)
 
-    preprocessing = sm.get_preprocessing(hparams.backbone)
+    
 
     train_dataset_descriptor_filepath = os.path.join(
         hparams.descriptor_files_path,
@@ -294,7 +293,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         image_height=hparams.height,
         image_width=hparams.width,
         augmentation=input.get_training_augmentation(hparams.height, hparams.width),
-        preprocessing=preprocessing
+        preprocessing=input.get_preprocessing(sm.get_preprocessing(hparams.backbone))
     )
 
     val_dataset = input.PascalVOC2012Dataset(
@@ -303,7 +302,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         masks_path=hparams.masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
-        preprocessing=preprocessing
+        preprocessing=input.get_preprocessing(sm.get_preprocessing(hparams.backbone))
     )
 
     train_dataloader = input.Dataloader(
