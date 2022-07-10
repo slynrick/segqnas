@@ -331,7 +331,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     # )
 
     net = sm.Unet(
-        "efficientnetb7",
+        "efficientnetb6",
         classes=hparams.num_classes,
         input_shape=(hparams.height, hparams.width, hparams.num_channels),
         activation="softmax",
