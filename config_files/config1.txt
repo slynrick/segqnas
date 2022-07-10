@@ -44,4 +44,5 @@ train:
     descriptor_files_path: "pascalvoc12/VOCdevkit/VOC2012/ImageSets/Segmentation/"
     images_path: "pascalvoc12/VOCdevkit/VOC2012/JPEGImages/"
     masks_path: "pascalvoc12/VOCdevkit/VOC2012/SegmentationClass/"
+    backbone: "efficientnetb0"
     data_augmentation: True

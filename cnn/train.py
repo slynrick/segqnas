@@ -275,6 +275,8 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     hparams = hparam.HParams(**params)
 
+    preprocessing = sm.get_preprocessing(hparams.backbone)
+
     train_dataset_descriptor_filepath = os.path.join(
         hparams.descriptor_files_path,
         "train.txt",
@@ -292,6 +294,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         image_height=hparams.height,
         image_width=hparams.width,
         augmentation=input.get_training_augmentation(hparams.height, hparams.width),
+        preprocessing=preprocessing
     )
 
     val_dataset = input.PascalVOC2012Dataset(
@@ -300,6 +303,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         masks_path=hparams.masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
+        preprocessing=preprocessing
     )
 
     train_dataloader = input.Dataloader(
@@ -317,7 +321,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     # )
 
     net = sm.FPN(
-        "efficientnetb6",
+        hparams.backbone,
         classes=hparams.num_classes,
         input_shape=(hparams.height, hparams.width, hparams.num_channels),
         activation="softmax",
