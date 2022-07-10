@@ -292,7 +292,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         masks_path=hparams.masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
-        augmentation=input.get_training_augmentation(hparams.height, hparams.width),
+        #augmentation=input.get_training_augmentation(hparams.height, hparams.width),
         preprocessing=input.get_preprocessing(sm.get_preprocessing(hparams.backbone))
     )
 
@@ -334,7 +334,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     net.compile(
         optimizer=optimizer,
-        loss=sm.losses.CategoricalCELoss(),#sm.losses.categorical_focal_dice_loss,
+        loss=sm.losses.DiceLoss(),
         metrics=[
             sm.metrics.IOUScore(threshold=0.5)
             # UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'),
