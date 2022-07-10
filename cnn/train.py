@@ -316,8 +316,12 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         image_width=hparams.width,
     )
 
-    train_dataloader = input.Dataloader(train_dataset, batch_size=hparams.batch_size, shuffle=True)
-    val_dataloader = input.Dataloader(val_dataset, batch_size=hparams.eval_batch_size, shuffle=False)
+    train_dataloader = input.Dataloader(
+        train_dataset, batch_size=hparams.batch_size, shuffle=True
+    )
+    val_dataloader = input.Dataloader(
+        val_dataset, batch_size=hparams.eval_batch_size, shuffle=False
+    )
 
     # net = model.get_segmentation_model(
     #    (data_info.height, data_info.width, data_info.num_channels),
@@ -357,9 +361,11 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         train_dataloader,
         validation_data=val_dataloader,
         epochs=hparams.max_epochs,
-        callbacks = [
-            tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)
-        ]
+        callbacks=[
+            tf.keras.callbacks.EarlyStopping(
+                monitor="val_loss", mode="min", verbose=1, patience=5
+            )
+        ],
     )
 
     val_mean_iou = history.history["val_iou_score"][-1]

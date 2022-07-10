@@ -14,6 +14,7 @@ import os
 import pickle as pkl
 import re
 import sys
+import tarfile
 from shutil import rmtree
 
 import numpy as np
@@ -352,6 +353,17 @@ def download_file(data_path, file_name, source_url):
         print(f"Dataset already downloaded, skipping download...")
 
     return file_path
+
+
+def extract_file(compressed_file_path, output_data_path):
+    """Extract the file in *compressed_file_path* in the *output_data_path*
+
+    Args:
+        output_data_path: (str) path to the file to be extracted.
+        compressed_file_path: (str) path where the file will be extracted.
+    """
+    print(f"Extracting {compressed_file_path}")
+    tarfile.open(compressed_file_path, "r").extractall(output_data_path)
 
 
 def create_info_file(out_path, info_dict):
