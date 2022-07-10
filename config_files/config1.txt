@@ -37,8 +37,8 @@ train:
 
     # Dataset
     dataset: PascalVOC12
-    height: 224
-    width: 224
+    height: 192
+    width: 192
     num_channels: 3
     num_classes: 21
     descriptor_files_path: "pascalvoc12/VOCdevkit/VOC2012/ImageSets/Segmentation/"
