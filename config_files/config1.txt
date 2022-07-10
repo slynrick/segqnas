@@ -37,7 +37,7 @@ train:
 
     # Dataset
     dataset: PascalVOC12
-    heigth: 128
+    height: 128
     width: 128
     num_channels: 3
     num_classes: 21
