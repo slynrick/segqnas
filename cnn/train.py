@@ -323,7 +323,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     #    net_list,
     # )
 
-    net = sm.PSPNet(
+    net = sm.Unet(
         hparams.backbone,
         classes=hparams.num_classes,
         input_shape=(hparams.height, hparams.width, hparams.num_channels),
