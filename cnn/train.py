@@ -286,13 +286,17 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         "val.txt",
     )
 
+    augmentation = None
+    if(hparams.data_augmentation):
+       augmentation = input.get_training_augmentation(hparams.height, hparams.width)
+
     train_dataset = input.PascalVOC2012Dataset(
         train_dataset_descriptor_filepath,
         images_path=hparams.images_path,
         masks_path=hparams.masks_path,
         image_height=hparams.height,
         image_width=hparams.width,
-        #augmentation=input.get_training_augmentation(hparams.height, hparams.width),
+        augmentation=augmentation,
         preprocessing=input.get_preprocessing(sm.get_preprocessing(hparams.backbone))
     )
 
