@@ -337,7 +337,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     )
 
     net.compile(
-        optimizer=optimizer,
+        optimizer=sm.losses.DiceLoss(),#optimizer,
         loss=sm.losses.categorical_focal_dice_loss,
         metrics=[
             sm.metrics.IOUScore(threshold=0.5)
