@@ -83,15 +83,15 @@ def get_training_augmentation(image_height, image_width):
 
 def get_preprocessing(preprocessing_fn):
     """Construct preprocessing transform
-    
+
     Args:
-        preprocessing_fn (callbale): data normalization function 
+        preprocessing_fn (callbale): data normalization function
             (can be specific for each pretrained neural network)
     Return:
         transform: albumentations.Compose
-    
+
     """
-    
+
     _transform = [
         A.Lambda(image=preprocessing_fn),
     ]
