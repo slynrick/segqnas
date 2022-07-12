@@ -246,7 +246,7 @@ def build_net(
 
     layer_dict = {}
     for name, definition in fn_dict.items():
-        if definition["function"] in ["ConvBlock"]:
+        if definition["function"] in ["Conv2xBlock"]:
             definition["params"]["mu"] = mu
             definition["params"]["epsilon"] = epsilon
         layer_dict[name] = globals()[definition["function"]](**definition["params"])
@@ -279,10 +279,10 @@ def build_net(
         if skip is not None:
             x = layers.Concatenate(axis=3)([x, skip])
 
-        x = layer_dict[f](inputs=x, name=f'{f}_{i}', is_train=True)
+        x = layer_dict[f](inputs=x, name=f'{f}_{i}', is_train=is_train)
 
     x = layers.Conv2D(
-        filters=21,
+        filters=num_classes,
         kernel_size=(3, 3),
         padding='same',
         use_bias=True,

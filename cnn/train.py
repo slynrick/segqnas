@@ -330,10 +330,10 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     # )
 
     net = model.build_net(
-       (hparams.height, hparams.width, hparams.num_channels),
-       hparams.num_classes,
-       fn_dict,
-       net_list,
+       input_shape=(hparams.height, hparams.width, hparams.num_channels),
+       num_classes=hparams.num_classes,
+       fn_dict=fn_dict,
+       net_list=net_list,
     )
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
