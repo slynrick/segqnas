@@ -385,7 +385,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         )
         return 0
 
-    val_mean_iou = history.history["val_iou_score"][-1]
+    val_mean_iou = history.history["val_mean_iou"][-1]
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
