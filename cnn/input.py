@@ -197,7 +197,7 @@ class PascalVOC2012Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample["image"], sample["mask"]
 
-        image = image.astype("float32") / 255
+        image = image.astype("float32")# / 255
         mask = mask.astype("float32")
 
         return image, mask
