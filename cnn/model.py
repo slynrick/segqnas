@@ -270,8 +270,8 @@ def build_net(
 
     for i, f in enumerate(net_list):
         x = layers.UpSampling2D(size=2)(x)
-        
-        if(i < len(skips)):
+
+        if i < len(skips):
             skip = skips[i]
         else:
             skip = None
@@ -279,73 +279,19 @@ def build_net(
         if skip is not None:
             x = layers.Concatenate(axis=3)([x, skip])
 
-        x = layer_dict[f](inputs=x, name=f'{f}_{i}', is_train=is_train)
+        x = layer_dict[f](inputs=x, name=f"{f}_{i}", is_train=is_train)
 
     x = layers.Conv2D(
         filters=num_classes,
         kernel_size=(3, 3),
-        padding='same',
+        padding="same",
         use_bias=True,
-        kernel_initializer='glorot_uniform',
-        name='final_conv',
+        kernel_initializer="glorot_uniform",
+        name="final_conv",
     )(x)
 
-    x = layers.Activation('softmax', name='softmax')(x)
+    x = layers.Activation("softmax", name="softmax")(x)
 
     # create keras model instance
     model = Model(input, x)
     return model
-
-
-# def get_segmentation_model(
-#     input_shape, num_classes, fn_dict, net_list, is_train=True, mu=0.9, epsilon=2e-5
-# ):
-
-#     layer_dict = {}
-#     for name, definition in fn_dict.items():
-#         if definition["function"] in ["ConvBlock"]:
-#             definition["params"]["mu"] = mu
-#             definition["params"]["epsilon"] = epsilon
-#         layer_dict[name] = globals()[definition["function"]](**definition["params"])
-
-#     skip_connections = []
-#     inputs = Input(shape=input_shape)
-#     x = inputs
-
-#     for i, f in enumerate(net_list):
-#         if f == "no_op":
-#             continue
-#         elif isinstance(layer_dict[f], ConvBlock):
-#             x = layer_dict[f](inputs=x, name=f"l{i}_{f}", is_train=is_train)
-#         else:
-#             skip_connections.append(x)
-#             x = layer_dict[f](inputs=x, name=f"l{i}_{f}")
-
-#     for i, f in enumerate(net_list[::-1]):
-#         if f == "no_op":
-#             continue
-#         elif isinstance(layer_dict[f], ConvBlock):
-#             x = layer_dict[f](
-#                 inputs=x, name=f"l{i+len(net_list)}_{f}", is_train=is_train
-#             )
-#         else:
-#             x = layers.UpSampling2D(
-#                 size=(2, 2),
-#                 data_format="channels_last",
-#                 name=f"l{i+len(net_list)}_upsampling",
-#             )(x)
-#             x = layers.Concatenate()([x, skip_connections.pop()])
-
-#     outputs = layers.Conv2D(
-#         filters=num_classes,
-#         kernel_size=1,
-#         activation="sigmoid",
-#         padding="same",
-#         strides=1,
-#         data_format="channels_last",
-#         kernel_initializer="he_normal",
-#         bias_initializer="he_normal",
-#         name="final_conv",
-#     )(x)
-
-#     model = Model(inputs=inputs, outputs=outputs)

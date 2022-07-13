@@ -25,6 +25,13 @@ sm.set_framework("tf.keras")
 TRAIN_TIMEOUT = 86400
 
 
+class MyMeanIOU(tf.keras.metrics.MeanIoU):
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        return super().update_state(
+            tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight
+        )
+
+
 def _model_fn(features, labels, mode, params):
     """Returns a function that will build the model.
 
@@ -314,13 +321,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         val_dataset, batch_size=hparams.eval_batch_size, shuffle=False
     )
 
-    # net = model.get_segmentation_model(
-    #    (data_info.height, data_info.width, data_info.num_channels),
-    #    data_info.num_classes,
-    #    fn_dict,
-    #    net_list,
-    # )
-
     # net = sm.Unet(
     #     hparams.backbone,
     #     classes=hparams.num_classes,
@@ -330,10 +330,10 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     # )
 
     net = model.build_net(
-       input_shape=(hparams.height, hparams.width, hparams.num_channels),
-       num_classes=hparams.num_classes,
-       fn_dict=fn_dict,
-       net_list=net_list,
+        input_shape=(hparams.height, hparams.width, hparams.num_channels),
+        num_classes=hparams.num_classes,
+        fn_dict=fn_dict,
+        net_list=net_list,
     )
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
@@ -342,13 +342,9 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     )
 
     net.compile(
-        optimizer="Adam",#optimizer,
-        loss=sm.losses.bce_jaccard_loss, #sm.losses.DiceLoss(),
-        metrics=[
-            sm.metrics.IOUScore(threshold=0.5)
-            # UpdatedMeanIoU(num_classes=data_info.num_classes, name='mean_iou'),
-            # tf.keras.metrics.MeanIoU(data_info.num_classes, name="mean_iou")
-        ],
+        optimizer=tf.keras.optimizers.Adam(0.0001),
+        loss=sm.losses.bce_jaccard_loss,
+        metrics=[MyMeanIOU(num_classes=hparams.num_classes, name="mean_iou")],
     )
 
     # tf.compat.v1.logging.log(
@@ -377,7 +373,9 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
             callbacks=[
                 tf.keras.callbacks.EarlyStopping(
                     monitor="val_loss", mode="min", verbose=1, patience=5
-                )
+                ),
+                tf.keras.callbacks.ModelCheckpoint('./best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
+                tf.keras.callbacks.ReduceLROnPlateau(),
             ],
         )
     except tf.errors.ResourceExhaustedError:

@@ -33,6 +33,16 @@ def visualize(**images):
     plt.show()
 
 
+# helper function for data visualization
+def denormalize(x):
+    """Scale image to range 0..1 for correct plot"""
+    x_max = np.percentile(x, 98)
+    x_min = np.percentile(x, 2)
+    x = (x - x_min) / (x_max - x_min)
+    x = x.clip(0, 1)
+    return x
+
+
 def round_clip_0_1(x, **kwargs):
     return x.round().clip(0, 1)
 
@@ -197,7 +207,7 @@ class PascalVOC2012Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample["image"], sample["mask"]
 
-        image = image.astype("float32")# / 255
+        image = image.astype("float32")  # / 255
         mask = mask.astype("float32")
 
         return image, mask
