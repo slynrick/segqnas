@@ -268,7 +268,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     elif params["log_level"] == "DEBUG":
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
-    # model_path = os.path.join(params["experiment_path"], id_num)
+    model_path = os.path.join(params["experiment_path"], id_num)
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
     tf.config.experimental.set_visible_devices(gpus[int(id_num.split("_")[-1])], "GPU")
@@ -374,7 +374,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                 tf.keras.callbacks.EarlyStopping(
                     monitor="val_loss", mode="min", verbose=1, patience=5
                 ),
-                tf.keras.callbacks.ModelCheckpoint('./best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
+                tf.keras.callbacks.ModelCheckpoint(os.path.join(model_path, 'best_model.h5'), save_weights_only=True, save_best_only=True, mode='min'),
                 tf.keras.callbacks.ReduceLROnPlateau(),
             ],
         )
