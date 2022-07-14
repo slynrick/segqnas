@@ -30,8 +30,8 @@ QNAS:
                      'conv_5_1_256': {'function': 'Conv2xBlock', 'params': {'kernel': 5, 'strides': 1, 'filters': 256}, 'prob': 0.1},}
 
 train:
-    batch_size: 8
-    eval_batch_size: 8
+    batch_size: 4
+    eval_batch_size: 4
     max_epochs: 20
     epochs_to_eval: 5
     optimizer: RMSProp
