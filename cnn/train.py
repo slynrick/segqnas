@@ -401,7 +401,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     # save net list as csv (layers)
     net_list_file_path = os.path.join(model_path, "net_list.csv")
-    with open(net_list_file_path, mode="wb") as f:
+    with open(net_list_file_path, mode="w") as f:
         write = csv.writer(f)
         write.writerows(net_list)
 
