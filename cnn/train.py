@@ -403,7 +403,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     net_list_file_path = os.path.join(model_path, "net_list.csv")
     with open(net_list_file_path, mode="w") as f:
         write = csv.writer(f)
-        write.writerows(net_list)
+        write.writerow(net_list)
 
     val_mean_iou = history.history["val_mean_iou"][-1]
 
