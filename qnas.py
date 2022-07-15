@@ -6,12 +6,12 @@
 
 import datetime
 import os
-from pickle import dump, HIGHEST_PROTOCOL
+from pickle import HIGHEST_PROTOCOL, dump
 
 import numpy as np
 
 from population import QPopulationNetwork, QPopulationParams
-from util import delete_old_dirs, init_log, load_pkl, ExtractData
+from util import ExtractData, delete_old_dirs, init_log, load_pkl
 
 
 class QNAS(object):
@@ -439,20 +439,16 @@ class QNAS(object):
 
     def save_train_data(self):
         """Save loss and mean iou of best model of current generation in a csv file every
-        *self.save_data_freq* generations.
+        generation.
         """
 
-        if (
-            np.remainder(self.current_gen, self.save_data_freq) == 0
-            and self.current_gen > 0
-        ):
-            input_dir = os.path.join(
-                self.experiment_path,
-                f"{self.current_best_id[0]}_{self.current_best_id[1]}",
-            )
-            output_dir = os.path.join(self.experiment_path, "csv_data")
-            extractor = ExtractData(input_dir=input_dir, output_dir=output_dir)
-            extractor.extract()
+        input_dir = os.path.join(
+            self.experiment_path,
+            f"{self.current_best_id[0]}_{self.current_best_id[1]}",
+        )
+        output_dir = os.path.join(self.experiment_path, "csv_data")
+        extractor = ExtractData(input_dir=input_dir, output_dir=output_dir)
+        extractor.extract()
 
     def go_next_gen(self):
         """Go to the next generation --> update quantum genes, log data, delete unnecessary

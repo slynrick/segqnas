@@ -7,11 +7,13 @@
     https://github.com/tensorflow/models/blob/r1.10.0/tutorials/image/cifar10_estimator/cifar10_main.py
 
 """
+import csv
 import os
 import platform
 import time
 from logging import addLevelName
 
+import pandas as pd
 import segmentation_models as sm
 import tensorflow as tf
 from tensorflow.keras.optimizers import RMSprop
@@ -375,7 +377,12 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                 tf.keras.callbacks.EarlyStopping(
                     monitor="val_loss", mode="min", verbose=1, patience=5
                 ),
-                tf.keras.callbacks.ModelCheckpoint(os.path.join(model_path, 'best_model.h5'), save_weights_only=True, save_best_only=True, mode='min'),
+                tf.keras.callbacks.ModelCheckpoint(
+                    os.path.join(model_path, "best_model.h5"),
+                    save_weights_only=True,
+                    save_best_only=True,
+                    mode="min",
+                ),
                 tf.keras.callbacks.ReduceLROnPlateau(),
             ],
         )
@@ -385,6 +392,18 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
             msg=f"Model is probably too large... Resource Exhausted Error!",
         )
         return 0
+
+    # save csv file with learning curve (history)
+    history_df = pd.DataFrame(history.history)
+    history_csv_file_path = os.path.join(model_path, "history.csv")
+    with open(history_csv_file_path, mode="wb") as f:
+        history_df.to_csv(f)
+
+    # save net list as csv (layers)
+    net_list_file_path = os.path.join(model_path, "net_list.csv")
+    with open(net_list_file_path, mode="wb") as f:
+        write = csv.writer(f)
+        write.writerows(net_list)
 
     val_mean_iou = history.history["val_mean_iou"][-1]
 
