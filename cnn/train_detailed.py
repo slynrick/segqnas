@@ -14,7 +14,6 @@ import os
 import clr_callback
 import tensorflow as tf
 import tensorflow.keras.backend as K
-
 # from tensorflow_addons.optimizers import CyclicalLearningRate
 from adam2sgd import SWATS, Adam2SGD
 

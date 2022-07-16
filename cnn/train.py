@@ -18,16 +18,10 @@ import segmentation_models as sm
 import tensorflow as tf
 from tensorflow.keras.optimizers import RMSprop
 
-from cnn import hparam, input, model
+from cnn import hparam, input, loss, model
 
 sm.set_framework("tf.keras")
 
-
-class MyMeanIOU(tf.keras.metrics.MeanIoU):
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        return super().update_state(
-            tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight
-        )
 
 def fitness_calculation(id_num, params, fn_dict, net_list):
     """Train and evaluate a model using evolved parameters.
@@ -105,14 +99,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         val_dataset, batch_size=hparams.eval_batch_size, shuffle=False
     )
 
-    # net = sm.Unet(
-    #     hparams.backbone,
-    #     classes=hparams.num_classes,
-    #     input_shape=(hparams.height, hparams.width, hparams.num_channels),
-    #     activation="softmax",
-    #     encoder_weights="imagenet",
-    # )
-
     net = model.build_net(
         input_shape=(hparams.height, hparams.width, hparams.num_channels),
         num_classes=hparams.num_classes,
@@ -121,14 +107,11 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     )
 
     decay = hparams.decay if hparams.optimizer == "RMSProp" else None
-    optimizer = _optimizer(
-        hparams.optimizer, hparams.learning_rate, hparams.momentum, decay
-    )
 
     net.compile(
         optimizer=tf.keras.optimizers.Adam(0.0001),
         loss=sm.losses.bce_jaccard_loss,
-        metrics=[MyMeanIOU(num_classes=hparams.num_classes, name="mean_iou")],
+        metrics=[loss.MyMeanIOU(num_classes=hparams.num_classes, name="mean_iou")],
     )
 
     # tf.compat.v1.logging.log(
