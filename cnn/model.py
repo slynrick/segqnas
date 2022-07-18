@@ -269,7 +269,7 @@ def build_net(
     x = backbone.output
 
     for i, f in enumerate(net_list):
-        x = layers.Conv2DTranspose(x.get_filters(), 3, dilation_rate=2)(x)
+        x = layers.Conv2DTranspose(x.filters, 3, dilation_rate=2)(x)
 
         if i < len(skips):
             skip = skips[i]
