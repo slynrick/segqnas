@@ -251,7 +251,7 @@ def build_net(
             definition["params"]["epsilon"] = epsilon
         layer_dict[name] = globals()[definition["function"]](**definition["params"])
 
-    backbone = tf.keras.applications.EfficientNetB0(
+    backbone = tf.keras.applications.EfficientNetB7(
         include_top=False,
         weights="imagenet",
         input_tensor=None,
@@ -262,7 +262,7 @@ def build_net(
 
     skips = [
         backbone.get_layer(name=layer_name).output
-        for layer_name in encoder_feature_layers["efficientnetb0"]
+        for layer_name in encoder_feature_layers["efficientnetb7"]
     ]
 
     input = backbone.input
