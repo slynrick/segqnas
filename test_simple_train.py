@@ -1,9 +1,10 @@
 # %%
 import segmentation_models as sm
-
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from tensorflow.keras.callbacks import Callback, ModelCheckpoint, TensorBoard, ReduceLROnPlateau, EarlyStopping
+from tensorflow.keras.callbacks import (Callback, EarlyStopping,
+                                        ModelCheckpoint, ReduceLROnPlateau,
+                                        TensorBoard)
 
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 for device in gpu_devices:
@@ -11,15 +12,15 @@ for device in gpu_devices:
 
 sm.set_framework('tf.keras')
 
-from cnn.input import PascalVOC2012Dataset, Dataloader, get_training_augmentation, get_preprocessing, visualize, denormalize, get_validation_augmentation
-
 import os
+import random
 
 import matplotlib.pyplot as plt
-
 import numpy as np
 
-import random
+from cnn.input import (Dataloader, PascalVOC2012Dataset, denormalize,
+                       get_preprocessing, get_training_augmentation,
+                       get_validation_augmentation, visualize)
 
 random.seed(0)
 
@@ -164,7 +165,7 @@ cce_loss = sm.losses.CategoricalCELoss()
 total_loss = dice_loss + cce_loss
 
 metrics = [
-    tf.keras.metrics.OneHotIoU(num_classes=num_classes, target_class_ids=class_indexes, name='mean_iou'), 
+    tf.python.keras.metrics.OneHotIoU(num_classes=num_classes, target_class_ids=class_indexes, name='mean_iou'), 
     # dice_coef_20cat,
     # jaccard_coef,
     #sm.metrics.IOUScore(class_indexes=class_indexes),
