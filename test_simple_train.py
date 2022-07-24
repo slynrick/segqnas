@@ -2,10 +2,10 @@
 import segmentation_models as sm
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from tensorflow.compat.v1.keras.metrics import OneHotIoU, OneHotMeanIoU
 from tensorflow.keras.callbacks import (Callback, EarlyStopping,
                                         ModelCheckpoint, ReduceLROnPlateau,
                                         TensorBoard)
+from tensorflow.keras.metrics import Metric
 
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 for device in gpu_devices:
@@ -166,8 +166,8 @@ cce_loss = sm.losses.CategoricalCELoss()
 total_loss = dice_loss + cce_loss
 
 metrics = [
-    OneHotIoU(num_classes=num_classes, target_class_ids=class_indexes, name='mean_iou_20'), 
-    OneHotMeanIoU(num_classes=num_classes, name='mean_iou_21'), 
+    Metric.OneHotIoU(num_classes=num_classes, target_class_ids=class_indexes, name='mean_iou_20'), 
+    Metric.OneHotMeanIoU(num_classes=num_classes, name='mean_iou_21'), 
     # dice_coef_20cat,
     # jaccard_coef,
     #sm.metrics.IOUScore(class_indexes=class_indexes),
