@@ -12,6 +12,7 @@ import os
 from math import ceil
 
 import albumentations as A
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -50,43 +51,45 @@ def round_clip_0_1(x, **kwargs):
 # define heavy augmentations
 def get_training_augmentation(image_height, image_width):
     train_transform = [
+
         A.HorizontalFlip(p=0.5),
-        A.ShiftScaleRotate(
-            scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0
-        ),
-        A.PadIfNeeded(
-            min_height=image_height,
-            min_width=image_width,
-            always_apply=True,
-            border_mode=0,
-        ),
-        A.RandomCrop(height=image_height, width=image_width, always_apply=True),
-        A.IAAAdditiveGaussianNoise(p=0.2),
-        A.IAAPerspective(p=0.5),
-        A.OneOf(
-            [
-                A.CLAHE(p=1),
-                A.RandomBrightness(p=1),
-                A.RandomGamma(p=1),
-            ],
-            p=0.9,
-        ),
-        A.OneOf(
-            [
-                A.IAASharpen(p=1),
-                A.Blur(blur_limit=3, p=1),
-                A.MotionBlur(blur_limit=3, p=1),
-            ],
-            p=0.9,
-        ),
-        A.OneOf(
-            [
-                A.RandomContrast(p=1),
-                A.HueSaturationValue(p=1),
-            ],
-            p=0.9,
-        ),
-        A.Lambda(mask=round_clip_0_1),
+
+        A.ShiftScaleRotate(scale_limit=(0.5, 2), rotate_limit=(-10,10), shift_limit=0.1, p=1, border_mode=0),
+
+        A.PadIfNeeded(min_height=image_height, min_width=image_height, always_apply=True, border_mode=0),
+        A.CropNonEmptyMaskIfExists(height=image_height, width=image_width, always_apply=True, ignore_channels=[0]),
+
+        A.GaussianBlur(p=0.5),
+
+        # A.IAAAdditiveGaussianNoise(p=0.2),
+        # A.IAAPerspective(p=0.5),
+
+        # A.OneOf(
+        #     [
+        #         A.CLAHE(p=1),
+        #         A.RandomBrightness(p=1),
+        #         A.RandomGamma(p=1),
+        #     ],
+        #     p=0.9,
+        # ),
+
+        # A.OneOf(
+        #     [
+        #         A.IAASharpen(p=1),
+        #         A.Blur(blur_limit=3, p=1),
+        #         A.MotionBlur(blur_limit=3, p=1),
+        #     ],
+        #     p=0.9,
+        # ),
+
+        # A.OneOf(
+        #     [
+        #         A.RandomContrast(p=1),
+        #         A.HueSaturationValue(p=1),
+        #     ],
+        #     p=0.9,
+        # ),
+        A.Lambda(mask=round_clip_0_1)
     ]
     return A.Compose(train_transform)
 
@@ -108,9 +111,12 @@ def get_preprocessing(preprocessing_fn):
     return A.Compose(_transform)
 
 
-def get_validation_augmentation():
+def get_validation_augmentation(image_height, image_width):
     """Add paddings to make image shape divisible by 32"""
-    test_transform = [A.PadIfNeeded(384, 480)]
+    test_transform = [
+        A.Resize(image_height, image_width),
+        #A.PadIfNeeded(min_height=None, min_width=None, pad_height_divisor=48, pad_width_divisor=48, always_apply=True, border_mode=0),
+    ]
     return A.Compose(test_transform)
 
 
@@ -152,6 +158,30 @@ class PascalVOC2012Dataset:
         "tv/monitor",
     ]
 
+    VOC_COLORMAP = [
+        [0, 0, 0],
+        [128, 0, 0],
+        [0, 128, 0],
+        [128, 128, 0],
+        [0, 0, 128],
+        [128, 0, 128],
+        [0, 128, 128],
+        [128, 128, 128],
+        [64, 0, 0],
+        [192, 0, 0],
+        [64, 128, 0],
+        [192, 128, 0],
+        [64, 0, 128],
+        [192, 0, 128],
+        [64, 128, 128],
+        [192, 128, 128],
+        [0, 64, 0],
+        [128, 64, 0],
+        [0, 192, 0],
+        [128, 192, 0],
+        [0, 64, 128],
+    ]
+
     def __init__(
         self,
         dataset_descriptor_filepath,
@@ -187,48 +217,94 @@ class PascalVOC2012Dataset:
         self.preprocessing = preprocessing
 
     def __getitem__(self, i):
-        # read data
-        image = Image.open(self.image_filepaths[i])
-        image = image.resize((self.image_width, self.image_height), Image.ANTIALIAS)
-        image = np.array(image)
+        image = cv2.imread(self.image_filepaths[i])
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mask = cv2.imread(self.mask_filepaths[i])
+        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
+        mask = self._convert_to_segmentation_mask(mask)
 
-        mask = Image.open(self.mask_filepaths[i])
-        mask = mask.resize((self.image_width, self.image_height), Image.ANTIALIAS)
-        mask = np.array(mask, dtype=np.uint8)
-        mask = self._one_hot_encode_mask(mask)
+        # extract certain classes from mask (e.g. cars)
+        #print(image.shape, mask.shape)
 
+        #masks = [(mask == v) for v in self.class_values]
+        #mask = np.stack(masks, axis=-1).astype('float')
+        
+        # add background if mask is not binary
+        #if mask.shape[-1] != 1:
+        #    background = 1 - mask.sum(axis=-1, keepdims=True)
+        #    mask = np.concatenate((mask, background), axis=-1)
+        
         # apply augmentations
         if self.augmentation:
             sample = self.augmentation(image=image, mask=mask)
-            image, mask = sample["image"], sample["mask"]
-
+            image, mask = sample['image'], sample['mask']
+        
         # apply preprocessing
         if self.preprocessing:
             sample = self.preprocessing(image=image, mask=mask)
-            image, mask = sample["image"], sample["mask"]
-
-        image = image.astype("float32")  # / 255
-        mask = mask.astype("float32")
-
+            image, mask = sample['image'], sample['mask']
+            
         return image, mask
+        # # read data
+        # image = Image.open(self.image_filepaths[i])
+        # image = image.resize((self.image_width, self.image_height), Image.ANTIALIAS)
+        # image = np.array(image)
+
+        # mask = Image.open(self.mask_filepaths[i])
+        # mask = mask.resize((self.image_width, self.image_height), Image.ANTIALIAS)
+        # mask = np.array(mask, dtype=np.uint8)
+        # mask = self._one_hot_encode_mask(mask)
+
+        # # apply augmentations
+        # if self.augmentation:
+        #     sample = self.augmentation(image=image, mask=mask)
+        #     image, mask = sample["image"], sample["mask"]
+
+        # # apply preprocessing
+        # if self.preprocessing:
+        #     sample = self.preprocessing(image=image, mask=mask)
+        #     image, mask = sample["image"], sample["mask"]
+
+        # image = image.astype("float32")  # / 255
+        # mask = mask.astype("float32")
+
+        # return image, mask
 
     def __len__(self):
         return len(self.ids)
 
-    def _one_hot_encode_mask(self, mask):
-        # create channel for mask
-        # (height, width) => (height, width, 1)
-        mask = mask[..., np.newaxis]
+    # def _one_hot_encode_mask(self, mask):
+    #     # create channel for mask
+    #     # (height, width) => (height, width, 1)
+    #     mask = mask[..., np.newaxis]
 
-        # create a binary mask for each channel (class)
-        one_hot_mask = []
-        for _class in range(0, len(self.class_values)):
-            class_mask = np.all(np.equal(mask, _class), axis=-1)
-            one_hot_mask.append(class_mask)
-        one_hot_mask = np.stack(one_hot_mask, axis=-1)
-        one_hot_mask = one_hot_mask.astype("uint8")
+    #     # create a binary mask for each channel (class)
+    #     one_hot_mask = []
+    #     for _class in range(0, len(self.class_values)):
+    #         class_mask = np.all(np.equal(mask, _class), axis=-1)
+    #         one_hot_mask.append(class_mask)
+    #     one_hot_mask = np.stack(one_hot_mask, axis=-1)
+    #     one_hot_mask = one_hot_mask.astype("uint8")
 
-        return one_hot_mask
+    #     return one_hot_mask
+
+    def _convert_to_segmentation_mask(self, mask):
+        # This function converts a mask from the Pascal VOC format to the format required by AutoAlbument.
+        #
+        # Pascal VOC uses an RGB image to encode the segmentation mask for that image. RGB values of a pixel
+        # encode the pixel's class.
+        #
+        # AutoAlbument requires a segmentation mask to be a NumPy array with the shape [height, width, num_classes].
+        # Each channel in this mask should encode values for a single class. Pixel in a mask channel should have
+        # a value of 1.0 if the pixel of the image belongs to this class and 0.0 otherwise.
+        height, width = mask.shape[:2]
+        segmentation_mask = np.zeros((height, width, len(self.VOC_COLORMAP)), dtype=np.float32)
+        #segmentation_mask = np.zeros((height, width, 2), dtype=np.float32)
+        for label_index, label in enumerate(self.VOC_COLORMAP):
+            segmentation_mask[:, :, label_index] = np.all(mask == label, axis=-1).astype(float)
+        #segmentation_mask[:, :, 0] = np.all(mask == self.VOC_COLORMAP[0], axis=-1).astype(float)
+        #segmentation_mask[:, :, 1] = np.ones((height, width), dtype=np.float32) - np.all(mask == self.VOC_COLORMAP[0], axis=-1).astype(float)
+        return segmentation_mask
 
 
 class Dataloader(tf.keras.utils.Sequence):
