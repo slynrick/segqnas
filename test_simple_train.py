@@ -102,7 +102,7 @@ net.summary()
 class_indexes = list(range(1, num_classes))
 
 dice_loss = sm.losses.DiceLoss(class_indexes=class_indexes) 
-cce_loss = sm.losses.CategoricalCELoss()
+cce_loss = sm.losses.CategoricalCELoss(class_indexes=class_indexes)
 total_loss = dice_loss + cce_loss
 
 metrics = [
