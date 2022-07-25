@@ -107,7 +107,6 @@ total_loss = dice_loss + cce_loss
 
 metrics = [
     tf.keras.metrics.OneHotIoU(num_classes=num_classes, target_class_ids=class_indexes, name='mean_iou_20'), 
-    tf.keras.metrics.OneHotMeanIoU(num_classes=num_classes, name='mean_iou_21'), 
     # dice_coef_20cat,
     # jaccard_coef,
     #sm.metrics.IOUScore(class_indexes=class_indexes),
