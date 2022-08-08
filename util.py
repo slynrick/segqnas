@@ -35,6 +35,12 @@ def prepare_spleen_data(data_path, target_path, image_size):
     if not os.path.exists(labels_path):
         os.makedirs(labels_path)
 
+    if not os.path.exists(target_images_path):
+        os.makedirs(target_images_path)
+    
+    if not os.path.exists(target_labels_path):
+        os.makedirs(target_labels_path)
+
     images_filenames = listdir_nohidden(images_path)
     labels_filenames = listdir_nohidden(labels_path)
 
