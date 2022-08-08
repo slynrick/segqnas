@@ -32,6 +32,7 @@ QNAS:
 train:
     batch_size: 32
     epochs: 100
+    optimizer: RMSProp
 
     # Dataset
     dataset: Spleen
