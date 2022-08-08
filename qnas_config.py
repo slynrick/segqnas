@@ -11,7 +11,7 @@ from collections import OrderedDict
 import numpy as np
 
 from chromosome import QChromosomeNetwork, QChromosomeParams
-from cnn import input, model
+from cnn import blocks, input, model
 from util import load_pkl, load_yaml, natural_key
 
 
@@ -63,7 +63,7 @@ class ConfigParameters(object):
         def check_fn_dict():
             """Check if function list is compatible with existing functions."""
 
-            available_fn = [c[0] for c in inspect.getmembers(model, inspect.isclass)]
+            available_fn = [c[0] for c in inspect.getmembers(blocks, inspect.isclass)]
 
             fn_dict = config_file["QNAS"]["block_dict"]
 
@@ -72,7 +72,7 @@ class ConfigParameters(object):
             for name, definition in fn_dict.items():
                 if definition["block"] not in available_fn:
                     raise ValueError(
-                        f"{definition['block']} is not a valid function!"
+                        f"{definition['block']} is not a valid block!"
                     )
                 for param in definition["params"].values():
                     if type(param) is not int or param < 0:
