@@ -118,9 +118,9 @@ QNAS:
         momentum:        (float) or (list);
         weight_decay:    (float) or (list);
 
-    function_dict: {'function_name': {'function': 'function_class', 
-                                      'params': {'parameter': value}, 
-                                      'prob': probability_value}}
+    block_dict: {'function_name': {'block': 'function_class', 
+                                  'params': {'parameter': value}, 
+                                  'prob': probability_value}}
 
 train:
     batch_size:          (int) number of examples in a batch to train the networks.

@@ -18,7 +18,7 @@ QNAS:
         momentum: 0.0
         weight_decay: 1.0e-4
 
-    function_dict:  {'conv_1_1_64':  {'function': 'ConvBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 64}, 'prob': 1.0/3.0/6.0},
+    block_dict:  {'conv_1_1_64':  {'function': 'ConvBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 64}, 'prob': 1.0/3.0/6.0},
                      'conv_1_1_128':  {'function': 'ConvBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 128}, 'prob': 1.0/3.0/6.0},
                      'conv_3_1_64':  {'function': 'ConvBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 64}, 'prob': 1.0/3.0/6.0},
                      'conv_3_1_128': {'function': 'ConvBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 128}, 'prob': 1.0/3.0/6.0},

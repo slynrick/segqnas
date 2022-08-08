@@ -65,7 +65,7 @@ class ConfigParameters(object):
 
             available_fn = [c[0] for c in inspect.getmembers(model, inspect.isclass)]
 
-            fn_dict = config_file["QNAS"]["function_dict"]
+            fn_dict = config_file["QNAS"]["block_dict"]
 
             probs = []
 
@@ -164,10 +164,10 @@ class ConfigParameters(object):
         *self.QNAS_spec*.
         """
 
-        self.QNAS_spec["fn_list"] = list(self.QNAS_spec["function_dict"].keys())
+        self.QNAS_spec["fn_list"] = list(self.QNAS_spec["block_dict"].keys())
         self.QNAS_spec["fn_list"].sort(key=natural_key)
-        self.fn_dict = self.QNAS_spec["function_dict"]
-        del self.QNAS_spec["function_dict"]
+        self.fn_dict = self.QNAS_spec["block_dict"]
+        del self.QNAS_spec["block_dict"]
 
         self.QNAS_spec["initial_probs"] = []
         self.QNAS_spec["reducing_fns_list"] = []
