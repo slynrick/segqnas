@@ -124,19 +124,14 @@ QNAS:
 
 train:
     batch_size:          (int) number of examples in a batch to train the networks.
-    eval_batch_size:     (int) batch size for evaluation; if = 0, the number of valid image is used
-    max_epochs:          (int) maximum number of epochs to train the networks.
-    epochs_to_eval:      (int) fitness is defined as the maximum mean iou in the last *epochs_to_eval*
-    optimizer:           (str) RMSProp or Momentum
-
+    epochs:     (int) batch size for evaluation; if = 0, the number of valid image is used
+    
     # Dataset
     dataset:             (str) Cifar10 or CIFAR100
+    image_size:
+    num_channels:
+    num_classes:
     data_augmentation:   (bool) True if data augmentation methods should be applied
-
-    # Tensorflow
-    save_checkpoints_epochs: (int) number of epochs to save a new checkpoint.
-    save_summary_epochs:     (float) number of epochs (or fraction of an epoch) to save new summary
-    threads:                 (int) number of threads for Tensorflow ops (0 -> number of logical cores)
 ```
 
 We provide 3 configuration file examples in the folder `config_files`; one can use them as-is, or modify as

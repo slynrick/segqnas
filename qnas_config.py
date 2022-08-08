@@ -136,9 +136,6 @@ class ConfigParameters(object):
         check_params_ranges()
         check_fn_dict()
 
-        if config_file["train"]["epochs_to_eval"] >= config_file["train"]["max_epochs"]:
-            raise ValueError("Invalid epochs_to_eval! It should be < max_epochs.")
-
     def _get_evolution_params(self):
         """Get specific parameters for the evolution phase."""
 
