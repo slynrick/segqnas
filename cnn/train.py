@@ -49,12 +49,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
 
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"id {id_num.split('_')[-1]} % {len(gpus)}"
-    )
-
-    gpu_id = int(id_num.split("_")[-1]%len(gpus))
+    gpu_id = int(id_num.split("_")[-1])%len(gpus)
 
     tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
     try:
