@@ -51,7 +51,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"id {id_num.split("_")[-1]} % {len(gpus)}"
+        msg=f"id {id_num.split('_')[-1]} % {len(gpus)}"
     )
 
     gpu_id = int(id_num.split("_")[-1]%len(gpus))
