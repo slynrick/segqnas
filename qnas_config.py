@@ -70,9 +70,9 @@ class ConfigParameters(object):
             probs = []
 
             for name, definition in fn_dict.items():
-                if definition["function"] not in available_fn:
+                if definition["block"] not in available_fn:
                     raise ValueError(
-                        f"{definition['function']} is not a valid function!"
+                        f"{definition['block']} is not a valid function!"
                     )
                 for param in definition["params"].values():
                     if type(param) is not int or param < 0:
