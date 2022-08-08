@@ -10,9 +10,11 @@
 import csv
 import os
 import platform
+import random
 import time
 from logging import addLevelName
 
+import numpy as np
 import pandas as pd
 import segmentation_models as sm
 import tensorflow as tf
@@ -49,7 +51,13 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     os.mkdir(model_path)
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
-    tf.config.experimental.set_visible_devices(gpus[int(id_num.split("_")[-1])], "GPU")
+    gpu_id = int(id_num.split("_")[-1]%len(gpus))
+
+    tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
+    try:
+        tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048)])
+    except RuntimeError as e:
+        print(e)
 
     # filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     tf.compat.v1.logging.log(
@@ -59,64 +67,28 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     hparams = hparam.HParams(**params)
 
-    train_dataset_descriptor_filepath = os.path.join(
-        hparams.descriptor_files_path,
-        "train.txt",
-    )
+    seed_value= 0
 
-    val_dataset_descriptor_filepath = os.path.join(
-        hparams.descriptor_files_path,
-        "val.txt",
-    )
+    os.environ['PYTHONHASHSEED']=str(seed_value)
+    random.seed(seed_value)
+    np.random.seed(seed_value)
+    tf.random.set_seed(seed_value)
 
-    augmentation = None
-    if hparams.data_augmentation:
-        augmentation = input.get_training_augmentation(hparams.height, hparams.width)
+    data_path = hparams.data_path
+    image_size = hparams.image_size
+    batch_size = hparams.batch_size
+    epochs = hparams.epochs
 
-    train_dataset = input.PascalVOC2012Dataset(
-        train_dataset_descriptor_filepath,
-        images_path=hparams.images_path,
-        masks_path=hparams.masks_path,
-        image_height=hparams.height,
-        image_width=hparams.width,
-        augmentation=augmentation,
-        preprocessing=input.get_preprocessing(sm.get_preprocessing(hparams.backbone)),
-    )
+    train_images_filepaths, val_images_filepaths, train_labels_filepaths, val_labels_filepaths = input.get_train_val_filenames(data_path)
 
-    val_dataset = input.PascalVOC2012Dataset(
-        val_dataset_descriptor_filepath,
-        images_path=hparams.images_path,
-        masks_path=hparams.masks_path,
-        image_height=hparams.height,
-        image_width=hparams.width,
-        preprocessing=input.get_preprocessing(sm.get_preprocessing(hparams.backbone)),
-    )
+    train_dataset = input.SpleenDataset(train_images_filepaths, train_labels_filepaths)
+    val_dataset = input.SpleenDataset(val_images_filepaths, val_labels_filepaths)
 
-    train_dataloader = input.Dataloader(
-        train_dataset, batch_size=hparams.batch_size, shuffle=True
-    )
-    val_dataloader = input.Dataloader(
-        val_dataset, batch_size=hparams.eval_batch_size, shuffle=False
-    )
+    train_dataloader = input.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_dataloader = input.Dataloader(val_dataset, batch_size=batch_size, shuffle=False)
 
-    net = model.build_net(
-        input_shape=(hparams.height, hparams.width, hparams.num_channels),
-        num_classes=hparams.num_classes,
-        fn_dict=fn_dict,
-        net_list=net_list,
-    )
+    model = model.build_net((image_size, image_size, 1), num_classes, fn_dict=fn_dict, net_list=net_list)
 
-    decay = hparams.decay if hparams.optimizer == "RMSProp" else None
-
-    net.compile(
-        optimizer=tf.keras.optimizers.Adam(0.0001),
-        loss=sm.losses.bce_jaccard_loss,
-        metrics=[loss.MyMeanIOU(num_classes=hparams.num_classes, name="mean_iou")],
-    )
-
-    # tf.compat.v1.logging.log(
-    #    level=tf.compat.v1.logging.get_verbosity(), msg=f"net {net.summary()}"
-    # )
     params["net"] = net
     params["net_list"] = net_list
 
@@ -136,7 +108,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         history = net.fit(
             train_dataloader,
             validation_data=val_dataloader,
-            epochs=hparams.max_epochs,
+            epochs=epochs,
             callbacks=[
                 tf.keras.callbacks.EarlyStopping(
                     monitor="val_loss", mode="min", verbose=1, patience=5
@@ -146,6 +118,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                     save_weights_only=True,
                     save_best_only=True,
                     mode="min",
+                    monitor="val_loss",
                 ),
                 tf.keras.callbacks.ReduceLROnPlateau(),
             ],
@@ -169,10 +142,10 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         write = csv.writer(f)
         write.writerow(net_list)
 
-    val_mean_iou = history.history["val_mean_iou"][-1]
+    val_gen_dice_coef = history.history["val_gen_dice_coef"][-1]
 
     tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(), msg=f"val_mean_iou {val_mean_iou}"
+        level=tf.compat.v1.logging.get_verbosity(), msg=f"val_gen_dice_coef {val_gen_dice_coef}"
     )
 
-    return val_mean_iou
+    return val_gen_dice_coef

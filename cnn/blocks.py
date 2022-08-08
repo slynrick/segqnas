@@ -37,7 +37,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            bias_initializer=self.initializer,
+            use_bias=False,
             name=name,
         )(inputs)
 
@@ -49,7 +49,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            bias_initializer=self.initializer,
+            use_bias=False,
             name=name,
         )(inputs)
 
@@ -61,7 +61,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            bias_initializer=self.initializer,
+            use_bias=False,
             name=name,
         )(inputs)
 
@@ -73,7 +73,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            bias_initializer=self.initializer,
+            use_bias=False,
             name=name,
         )(inputs)
 

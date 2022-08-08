@@ -3,10 +3,10 @@
 QNAS:
     crossover_rate: 0.5
     max_generations: 15
-    max_num_nodes: 5
-    num_quantum_ind: 3
+    max_num_nodes: 9
+    num_quantum_ind: 5
     penalize_number: 6
-    repetition: 1
+    repetition: 2
     replace_method: best
     update_quantum_gen: 5
     update_quantum_rate: 0.1
@@ -18,32 +18,26 @@ QNAS:
         momentum: 0.0
         weight_decay: 1.0e-4
 
-    function_dict:  {'conv_1_1_32':  {'function': 'Conv2xBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 32}, 'prob': 0.1},
-                     'conv_1_1_64':  {'function': 'Conv2xBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 64}, 'prob': 0.1},
-                     'conv_3_1_32':  {'function': 'Conv2xBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 32}, 'prob': 0.1},
-                     'conv_3_1_64':  {'function': 'Conv2xBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 64}, 'prob': 0.1},
-                     'conv_3_1_128': {'function': 'Conv2xBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 128}, 'prob': 0.1},
-                     'conv_3_1_256': {'function': 'Conv2xBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 256}, 'prob': 0.1},
-                     'conv_5_1_32':  {'function': 'Conv2xBlock', 'params': {'kernel': 5, 'strides': 1, 'filters': 32}, 'prob': 0.1},
-                     'conv_5_1_64':  {'function': 'Conv2xBlock', 'params': {'kernel': 5, 'strides': 1, 'filters': 64}, 'prob': 0.1},
-                     'conv_5_1_128': {'function': 'Conv2xBlock', 'params': {'kernel': 5, 'strides': 1, 'filters': 128}, 'prob': 0.1},
-                     'conv_5_1_256': {'function': 'Conv2xBlock', 'params': {'kernel': 5, 'strides': 1, 'filters': 256}, 'prob': 0.1},}
+    function_dict:  {'vgg_1_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.1},
+                     'vgg_1_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.1},
+                     'vgg_3_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.1},
+                     'vgg_3_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.1},
+                     'vgg_3_1_128': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.1},
+                     'vgg_3_1_256': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.1},
+                     'vgg_5_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.1},
+                     'vgg_5_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.1},
+                     'vgg_5_1_128': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.1},
+                     'vgg_5_1_256': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.1},}
 
 train:
-    batch_size: 4
-    eval_batch_size: 4
-    max_epochs: 20
-    epochs_to_eval: 5
-    optimizer: RMSProp
+    batch_size: 32
+    epochs: 100
 
     # Dataset
-    dataset: PascalVOC12
-    height: 224
-    width: 224
-    num_channels: 3
-    num_classes: 21
-    descriptor_files_path: "pascalvoc12/VOCdevkit/VOC2012/ImageSets/Segmentation/"
-    images_path: "pascalvoc12/VOCdevkit/VOC2012/JPEGImages/"
-    masks_path: "pascalvoc12/VOCdevkit/VOC2012/SegmentationClass/"
-    backbone: "efficientnetb7"
-    data_augmentation: True
+    dataset: Spleen
+    height: 128
+    width: 128
+    num_channels: 1
+    num_classes: 2
+    data_path: "./data/Task09_Spleen"
+    data_augmentation: False

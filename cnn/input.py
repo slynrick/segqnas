@@ -399,7 +399,7 @@ def get_train_val_filenames(data_path):
 
     patients = list(descriptor_dict.keys())
     
-    train_patients, val_patients = train_test_split(patients, test_size=0.2, random_state=0)
+    train_patients, val_patients = train_test_split(patients, test_size=0.2)
 
     train_images_filepaths = []
     train_labels_filepaths = []
