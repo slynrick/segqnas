@@ -261,9 +261,6 @@ class ConfigParameters(object):
 
         self.train_spec["data_path"] = self.args["data_path"]
 
-        if not self.train_spec["eval_batch_size"]:
-            self.train_spec["eval_batch_size"] = self.train_spec["batch_size"]
-
         self.train_spec["phase"] = self.phase
         self.train_spec["log_level"] = self.args["log_level"]
 
