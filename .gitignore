@@ -115,3 +115,8 @@ pascalvoc12/
 
 *.ipynb
 *.png
+
+data
+old
+.tar
+.h5

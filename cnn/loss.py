@@ -1,8 +1,8 @@
-import tensorflow as tf
+from cnn.metric import gen_dice_coef
 
 
-class MyMeanIOU(tf.keras.metrics.MeanIoU):
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        return super().update_state(
-            tf.argmax(y_true, axis=-1), tf.argmax(y_pred, axis=-1), sample_weight
-        )
+def gen_dice_coef_loss(y_true, y_pred):
+    '''
+    Dice loss to minimize. Pass to model as loss during compile statement
+    '''
+    return 1 - gen_dice_coef(y_true, y_pred)

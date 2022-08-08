@@ -1,14 +1,4 @@
-""" Copyright (c) 2020, Daniela Szwarcman and IBM Research
-    * Licensed under The MIT License [see LICENSE for details]
-
-    - Utility functions and classes.
-
-    References:
-    https://github.com/tensorflow/models/blob/r1.10.0/tutorials/image/cifar10_estimator/generate_cifar10_tfrecords.py
-    https://github.com/tensorflow/models/blob/r1.10.0/official/resnet/cifar10_download_and_extract.py
-
-"""
-
+import json
 import logging
 import os
 import pickle as pkl
@@ -17,11 +7,63 @@ import sys
 import tarfile
 from shutil import rmtree
 
+import nibabel
 import numpy as np
 import tensorflow as tf
 import yaml
 from six.moves import urllib
+from skimage.transform import resize
 
+
+def listdir_nohidden(path):
+    files = []
+    for f in os.listdir(path):
+        if not f.startswith('.'):
+            files.append(f)
+    return files
+
+def prepare_spleen_data(data_path, target_path, image_size):
+
+    images_path = os.path.join(data_path, 'imagesTr')
+    labels_path = os.path.join(data_path, 'labelsTr')
+
+    if not os.path.exists(images_path):
+        os.makedirs(images_path)
+
+    if not os.path.exists(labels_path):
+        os.makedirs(labels_path)
+
+    images_filenames = listdir_nohidden(images_path)
+    labels_filenames = listdir_nohidden(labels_path)
+
+    images_filenames.sort()
+    labels_filenames.sort()
+
+    descriptor_dict = {}
+
+    for image_filename, label_filename in zip(images_filenames, labels_filenames):
+
+        image = nibabel.load(os.path.join(images_path, image_filename))
+        label = nibabel.load(os.path.join(labels_path, label_filename))
+        patient = image_filename.split('_')[1].split('.')[0]
+        descriptor_dict[f"{patient}"] = []
+
+        for slice_num in range(label.shape[2]):
+            slice_label = label.get_fdata()[:, :, slice_num]
+            slice_label = resize(slice_label, (image_size, image_size), preserve_range=True)
+            slice_image = image.get_fdata()[:, :, slice_num]
+            slice_image = resize(slice_image, (image_size, image_size), preserve_range=True)
+
+            if len(np.unique(slice_label)) != 1:
+                slice_image_filename = os.path.join(target_path, 'imagesTr', f"{image_filename.split('.')[0]}_{slice_num}.npy")
+                slice_label_filename = os.path.join(target_path, 'labelsTr', f"{label_filename.split('.')[0]}_{slice_num}.npy")
+
+                np.save(slice_image_filename, slice_image)
+                np.save(slice_label_filename, slice_label)
+                descriptor_dict[f"{patient}"].append((slice_image_filename, slice_label_filename))
+    
+    with open(os.path.join(target_path, 'dataset.json'), 'w') as fp:
+        json.dump(descriptor_dict, fp)
 
 class ExtractData(object):
     """Class to extract data from an events.out.tfevents file. Uses an EventMultiplexer to

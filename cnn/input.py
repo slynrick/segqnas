@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from PIL import Image
+from tensorflow import keras
 
 
 # helper function for data visualization
@@ -346,3 +347,45 @@ class Dataloader(tf.keras.utils.Sequence):
         """Callback function to shuffle indexes each epoch"""
         if self.shuffle:
             self.indexes = np.random.permutation(self.indexes)
+
+
+class SpleenDataset():
+    def __init__(
+        self,
+        images_filepaths,
+        labels_filepaths,
+        augmentation=None,
+        preprocessing=None,
+    ):
+        self.images_filepaths = images_filepaths
+        self.labels_filepaths = labels_filepaths
+        self.augmentation = augmentation
+        self.preprocessing = preprocessing
+
+    def __getitem__(self, i):
+        image = np.load(self.images_filepaths[i])
+        label = np.load(self.labels_filepaths[i])
+        
+        image = image[..., np.newaxis]
+        label = label[..., np.newaxis]
+
+        image = image.astype('float32')
+        mean = np.mean(image)
+        std = np.std(image)
+        image -= mean
+        image /= std
+
+        label = label.astype('float32')
+
+        if self.augmentation:
+            sample = self.augmentation(image=image, label=label)
+            image, label = sample['image'], sample['label']
+        
+        if self.preprocessing:
+            sample = self.preprocessing(image=image, label=label)
+            image, label = sample['image'], sample['label']
+            
+        return image, label
+
+    def __len__(self):
+        return len(self.images_filepaths)
