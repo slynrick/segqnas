@@ -265,7 +265,7 @@ def load_yaml(file_path):
     """
 
     with open(file_path, "r") as f:
-        file = yaml.load(f)
+        file = yaml.full_load(f)
 
     return file
 
