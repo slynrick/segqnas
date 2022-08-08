@@ -26,6 +26,8 @@ def prepare_spleen_data(data_path, target_path, image_size):
 
     images_path = os.path.join(data_path, 'imagesTr')
     labels_path = os.path.join(data_path, 'labelsTr')
+    target_images_path = os.path.join(target_path, 'imagesTr')
+    target_labels_path = os.path.join(target_path, 'labelsTr')
 
     if not os.path.exists(images_path):
         os.makedirs(images_path)
@@ -55,8 +57,8 @@ def prepare_spleen_data(data_path, target_path, image_size):
             slice_image = resize(slice_image, (image_size, image_size), preserve_range=True)
 
             if len(np.unique(slice_label)) != 1:
-                slice_image_filename = os.path.join(target_path, 'imagesTr', f"{image_filename.split('.')[0]}_{slice_num}.npy")
-                slice_label_filename = os.path.join(target_path, 'labelsTr', f"{label_filename.split('.')[0]}_{slice_num}.npy")
+                slice_image_filename = os.path.join(target_images_path, f"{image_filename.split('.')[0]}_{slice_num}.npy")
+                slice_label_filename = os.path.join(target_labels_path, f"{label_filename.split('.')[0]}_{slice_num}.npy")
 
                 np.save(slice_image_filename, slice_image)
                 np.save(slice_label_filename, slice_label)
