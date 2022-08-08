@@ -73,6 +73,8 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     tf.random.set_seed(seed_value)
 
     data_path = hparams.data_path
+    num_classes = hparams.num_classes
+    num_channels = hparams.num_channels
     image_size = hparams.image_size
     batch_size = hparams.batch_size
     epochs = hparams.epochs
@@ -85,7 +87,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     train_dataloader = input.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = input.Dataloader(val_dataset, batch_size=batch_size, shuffle=False)
 
-    net = model.build_net((image_size, image_size, 1), num_classes, fn_dict=fn_dict, net_list=net_list)
+    net = model.build_net((image_size, image_size, num_channels), num_classes, fn_dict=fn_dict, net_list=net_list)
 
     params["net"] = net
     params["net_list"] = net_list
