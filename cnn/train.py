@@ -65,6 +65,18 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         msg=f"params {params}",
     )
 
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"fn_dict {fn_dict}",
+    )
+
+    tf.compat.v1.logging.log(
+        level=tf.compat.v1.logging.get_verbosity(),
+        msg=f"net_list {net_list}",
+    )
+
+    raise Exception()
+
     hparams = hparam.HParams(**params)
 
     seed_value= 0
