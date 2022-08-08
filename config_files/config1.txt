@@ -18,7 +18,7 @@ QNAS:
         momentum: 0.0
         weight_decay: 1.0e-4
 
-    function_dict:  {'vgg_1_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.1},
+    block_dict:  {'vgg_1_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.1},
                      'vgg_1_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.1},
                      'vgg_3_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.1},
                      'vgg_3_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.1},

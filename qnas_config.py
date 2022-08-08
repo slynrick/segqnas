@@ -107,7 +107,7 @@ class ConfigParameters(object):
                 ("update_quantum_gen", int),
                 ("save_data_freq", int),
                 ("params_ranges", dict),
-                ("function_dict", dict),
+                ("block_dict", dict),
             ],
             "train": [
                 ("batch_size", int),
