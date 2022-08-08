@@ -408,6 +408,8 @@ def get_train_val_filenames(data_path):
 
     for patient in train_patients:
         for slice_ in descriptor_dict[patient]:
+
+            print(slice_)
             train_images_filepaths.append(slice_[0])
             train_labels_filepaths.append(slice_[1])
 
