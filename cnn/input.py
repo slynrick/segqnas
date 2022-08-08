@@ -8,6 +8,7 @@
 
 """
 
+import json
 import os
 from math import ceil
 
@@ -17,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from PIL import Image
+from sklearn.model_selection import train_test_split
 from tensorflow import keras
 
 
@@ -389,3 +391,29 @@ class SpleenDataset():
 
     def __len__(self):
         return len(self.images_filepaths)
+
+def get_train_val_filenames(data_path):
+    descriptor_filepath = os.path.join(data_path, 'dataset.json')
+    with open(descriptor_filepath, 'r') as fp:
+        descriptor_dict = json.load(fp)
+
+    patients = list(descriptor_dict.keys())
+    
+    train_patients, val_patients = train_test_split(patients, test_size=0.2, random_state=0)
+
+    train_images_filepaths = []
+    train_labels_filepaths = []
+    val_images_filepaths = []
+    val_labels_filepaths = []
+
+    for patient in train_patients:
+        for slice_ in descriptor_dict[patient]:
+            train_images_filepaths.append(slice_[0])
+            train_labels_filepaths.append(slice_[1])
+
+    for patient in val_patients:
+        for slice_ in descriptor_dict[patient]:
+            val_images_filepaths.append(slice_[0])
+            val_labels_filepaths.append(slice_[1])
+
+    return train_images_filepaths, val_images_filepaths, train_labels_filepaths, val_labels_filepaths

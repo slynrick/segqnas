@@ -14,6 +14,10 @@ conda install mpi4py=3.0.3
 conda install pandas
 conda install Pillow
 conda install -c conda-forge scikit-learn
+conda install -c conda-forge monai
+conda install -c conda-forge nibabel
+conda install -c conda-forge tqdm
+
 ```
 
 ## Neural Architecture Search for Semantic Segmentation using the Q-NAS algorithm and Tensorflow.
