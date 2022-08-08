@@ -85,7 +85,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     train_dataloader = input.Dataloader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = input.Dataloader(val_dataset, batch_size=batch_size, shuffle=False)
 
-    model = model.build_net((image_size, image_size, 1), num_classes, fn_dict=fn_dict, net_list=net_list)
+    net = model.build_net((image_size, image_size, 1), num_classes, fn_dict=fn_dict, net_list=net_list)
 
     params["net"] = net
     params["net_list"] = net_list
