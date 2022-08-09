@@ -18,26 +18,26 @@ QNAS:
         momentum: 0.0
         weight_decay: 1.0e-4
 
-    block_dict:  {'vgg_1_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.1},
-                'vgg_1_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.1},
-                'vgg_3_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.1},
-                'vgg_3_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.1},
-                'vgg_3_1_128': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.1},
-                'vgg_3_1_256': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.1},
-                'vgg_5_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.1},
-                'vgg_5_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.1},
-                'vgg_5_1_128': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.1},
-                'vgg_5_1_256': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.1},
-                'resnet_1_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.1},
-                'resnet_1_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.1},
-                'resnet_3_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.1},
-                'resnet_3_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.1},
-                'resnet_3_1_128': {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.1},
-                'resnet_3_1_256': {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.1},
-                'resnet_5_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.1},
-                'resnet_5_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.1},
-                'resnet_5_1_128': {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.1},
-                'resnet_5_1_256': {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.1},}
+    block_dict:  {'vgg_1_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.05},
+                'vgg_1_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.05},
+                'vgg_3_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.05},
+                'vgg_3_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.05},
+                'vgg_3_1_128': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.05},
+                'vgg_3_1_256': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.05},
+                'vgg_5_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.05},
+                'vgg_5_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.05},
+                'vgg_5_1_128': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.05},
+                'vgg_5_1_256': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.05},
+                'resnet_1_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.05},
+                'resnet_1_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.05},
+                'resnet_3_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.05},
+                'resnet_3_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.05},
+                'resnet_3_1_128': {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.05},
+                'resnet_3_1_256': {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.05},
+                'resnet_5_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.05},
+                'resnet_5_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.05},
+                'resnet_5_1_128': {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.05},
+                'resnet_5_1_256': {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.05},}
 
 train:
     batch_size: 2
