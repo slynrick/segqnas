@@ -53,7 +53,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
     try:
-        tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048)])
+        tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=3072)])
     except RuntimeError as e:
         print(e)
 
