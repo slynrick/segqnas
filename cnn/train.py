@@ -60,15 +60,9 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     #     print(e)
 
     try:
-        for gpu in gpus:
-            tf.config.experimental.set_virtual_device_configuration(gpus, [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=20480)])
+        tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=20480)])
     except RuntimeError as e:
         print(e)
-
-    # try:
-    #     tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=3072)])
-    # except RuntimeError as e:
-    #     print(e)
 
     # filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
     tf.compat.v1.logging.log(
