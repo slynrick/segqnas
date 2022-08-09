@@ -116,6 +116,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                 ),
                 tf.keras.callbacks.ReduceLROnPlateau(),
             ],
+            verbose=2
         )
     except tf.errors.ResourceExhaustedError:
         tf.compat.v1.logging.log(
