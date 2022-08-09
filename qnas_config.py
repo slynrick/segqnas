@@ -7,6 +7,7 @@
 import inspect
 import os
 from collections import OrderedDict
+from math import sqrt
 
 import numpy as np
 
@@ -88,8 +89,7 @@ class ConfigParameters(object):
 
             if any(probs):
                 probs = np.sum(probs)
-                print(probs)
-                if probs > 1.0 or 1.0 - probs > 1e-4:
+                if probs > 1.0 or sqrt((1.0 - probs)**2) > 1e-4:
                     raise ValueError(
                         "Function probabilities should sum 1.0! "
                         "Tolerance of numpy is 1e-4."
