@@ -88,6 +88,7 @@ class ConfigParameters(object):
 
             if any(probs):
                 probs = np.sum(probs)
+                print(probs)
                 if probs > 1.0 or 1.0 - probs > 1e-4:
                     raise ValueError(
                         "Function probabilities should sum 1.0! "
