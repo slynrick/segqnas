@@ -9,14 +9,7 @@ from cnn.metric import gen_dice_coef
 
 def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
 
-    layer_dict = {}
-    for name, definition in fn_dict.items():
-        if definition["function"] in ["Conv2xBlock"]:
-            definition["params"]["mu"] = mu
-            definition["params"]["epsilon"] = epsilon
-        layer_dict[name] = globals()[definition["function"]](**definition["params"])
-
-    print(layer_dict)
+    print(fn_dict)
     print(net_list)
     raise Exception()
 
