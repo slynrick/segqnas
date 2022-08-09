@@ -24,7 +24,7 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
         block = fn_dict[cell]['block']
         kernel_size = fn_dict[cell]['params']['kernel']
         filters = fn_dict[cell]['params']['filters']
-        x = DownscalingCell(block, kernel_size, filters)
+        x = DownscalingCell(block, kernel_size, filters)(x)
         skips.append(x)
 
     cell = net_list[4]
