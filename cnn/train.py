@@ -64,12 +64,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     # except RuntimeError as e:
     #     print(e)
 
-    # filtered_dict = {key: item for key, item in fn_dict.items() if key in net_list}
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"params {params}",
-    )
-
     hparams = hparam.HParams(**params)
 
     seed_value= 0
@@ -119,13 +113,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
             callbacks=[
                 tf.keras.callbacks.EarlyStopping(
                     monitor="val_loss", mode="min", verbose=1, patience=5
-                ),
-                tf.keras.callbacks.ModelCheckpoint(
-                    os.path.join(model_path, "best_model.h5"),
-                    save_weights_only=True,
-                    save_best_only=True,
-                    mode="min",
-                    monitor="val_loss",
                 ),
                 tf.keras.callbacks.ReduceLROnPlateau(),
             ],
