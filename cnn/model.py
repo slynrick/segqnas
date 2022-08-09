@@ -11,7 +11,6 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
 
     print(fn_dict)
     print(net_list)
-    raise Exception()
 
     inputs = Input(input_shape, name="input")    
     x = inputs
@@ -20,28 +19,26 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
     kernel_size = 3
     block = 'VGGBlock'
 
-    x = DownscalingCell(block, kernel_size, filters[0])(x)
-    skip1 = x
+    skips = []
+    for cell in net_list[0:4]:
+        block = fn_dict[cell]['block']
+        kernel_size = fn_dict[cell]['params']['kernel']
+        filters = fn_dict[cell]['params']['filters']
+        x = DownscalingCell(block, kernel_size, filters)
+        skips.append(x)
 
-    x = DownscalingCell(block, kernel_size, filters[1])(x)
-    skip2 = x
+    cell = net_list[4]
+    block = fn_dict[cell]['block']
+    kernel_size = fn_dict[cell]['params']['kernel']
+    filters = fn_dict[cell]['params']['filters']
+    x = NonscalingCell(block, kernel_size, filters)(x)
 
-    x= DownscalingCell(block, kernel_size, filters[2])(x)
-    skip3 = x
+    for cell in net_list[5:]:
+        block = fn_dict[cell]['block']
+        kernel_size = fn_dict[cell]['params']['kernel']
+        filters = fn_dict[cell]['params']['filters']
+        x = UpscalingCell(block, kernel_size, filters)([x, skips.pop()])
 
-    x = DownscalingCell(block, kernel_size, filters[3])(x)
-    skip4 = x
-
-    x = NonscalingCell(block, kernel_size, filters[4])(x)
-    
-    x = UpscalingCell(block, kernel_size, filters[5])([x, skip4])
-    
-    x = UpscalingCell(block, kernel_size, filters[6])([x, skip3])
-    
-    x = UpscalingCell(block, kernel_size, filters[7])([x, skip2])
-    
-    x = UpscalingCell(block, kernel_size, filters[8])([x, skip1])
-    
     # final conv
     prediction = Conv2D(name="prediction_mask",
                                 filters=num_classes, kernel_size=(1, 1),
