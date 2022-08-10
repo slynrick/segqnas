@@ -108,3 +108,15 @@ ENV/
 
 # Visual Studio Code files
 .vscode
+
+cifar10/
+
+pascalvoc12/
+
+*.ipynb
+*.png
+
+data
+old
+.tar
+.h5

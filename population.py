@@ -10,10 +10,10 @@ from chromosome import QChromosomeParams, QChromosomeNetwork
 
 
 class QPopulation(object):
-    """ QNAS Population to be evolved. """
+    """QNAS Population to be evolved."""
 
     def __init__(self, num_quantum_ind, repetition, update_quantum_rate):
-        """ Initialize QPopulation.
+        """Initialize QPopulation.
 
         Args:
             num_quantum_ind: (int) number of quantum individuals.
@@ -32,21 +32,31 @@ class QPopulation(object):
         self.update_quantum_rate = update_quantum_rate
 
     def initialize_qpop(self):
-        raise NotImplementedError('initialize_qpop() must be implemented in sub classes')
+        raise NotImplementedError(
+            "initialize_qpop() must be implemented in sub classes"
+        )
 
     def generate_classical(self):
-        raise NotImplementedError('generate_classical() must be implemented in sub classes')
+        raise NotImplementedError(
+            "generate_classical() must be implemented in sub classes"
+        )
 
     def update_quantum(self, intensity):
-        raise NotImplementedError('update_quantum() must be implemented in sub classes')
+        raise NotImplementedError("update_quantum() must be implemented in sub classes")
 
 
 class QPopulationParams(QPopulation):
-    """ QNAS Chromosomes for the hyperparameters to be evolved. """
+    """QNAS Chromosomes for the hyperparameters to be evolved."""
 
-    def __init__(self, num_quantum_ind, params_ranges, repetition, crossover_rate,
-                 update_quantum_rate):
-        """ Initialize QPopulationParams.
+    def __init__(
+        self,
+        num_quantum_ind,
+        params_ranges,
+        repetition,
+        crossover_rate,
+        update_quantum_rate,
+    ):
+        """Initialize QPopulationParams.
 
         Args:
             num_quantum_ind: (int) number of quantum individuals.
@@ -57,10 +67,11 @@ class QPopulationParams(QPopulation):
             update_quantum_rate: (float) probability that a quantum gene will be updated.
         """
 
-        super(QPopulationParams, self).__init__(num_quantum_ind, repetition,
-                                                update_quantum_rate)
+        super(QPopulationParams, self).__init__(
+            num_quantum_ind, repetition, update_quantum_rate
+        )
 
-        self.tolerance = 1.e-15  # Tolerance to compare floating point
+        self.tolerance = 1.0e-15  # Tolerance to compare floating point
 
         self.lower = None
         self.upper = None
@@ -73,13 +84,13 @@ class QPopulationParams(QPopulation):
         self.initialize_qpop()
 
     def initialize_qpop(self):
-        """ Initialize quantum population with *self.num_ind* individuals. """
+        """Initialize quantum population with *self.num_ind* individuals."""
 
         self.lower = np.tile(self.initial_lower, (self.num_ind, 1))
         self.upper = np.tile(self.initial_upper, (self.num_ind, 1))
 
     def classic_crossover(self, new_pop, distance):
-        """ Perform arithmetic crossover of the old classic population with the new one.
+        """Perform arithmetic crossover of the old classic population with the new one.
 
         Args:
             new_pop: float numpy array representing the new classical population.
@@ -93,20 +104,22 @@ class QPopulationParams(QPopulation):
         return new_pop
 
     def generate_classical(self):
-        """ Generate a specific number of classical individuals from the observation of quantum
-            individuals. This number is equal to (*num_ind* x *repetition*).
+        """Generate a specific number of classical individuals from the observation of quantum
+        individuals. This number is equal to (*num_ind* x *repetition*).
         """
 
-        random_numbers = np.random.rand(self.num_ind * self.repetition,
-                                        self.chromosome.num_genes).astype(self.dtype)
+        random_numbers = np.random.rand(
+            self.num_ind * self.repetition, self.chromosome.num_genes
+        ).astype(self.dtype)
 
-        new_pop = random_numbers * np.tile(self.upper - self.lower, (self.repetition, 1)) \
-            + np.tile(self.lower, (self.repetition, 1))
+        new_pop = random_numbers * np.tile(
+            self.upper - self.lower, (self.repetition, 1)
+        ) + np.tile(self.lower, (self.repetition, 1))
 
         return new_pop
 
     def update_quantum(self, intensity):
-        """ Update self.lower and self.upper.
+        """Update self.lower and self.upper.
 
         Args:
             intensity: (float) value defining the maximum intensity of the update.
@@ -133,11 +146,18 @@ class QPopulationParams(QPopulation):
 
 
 class QPopulationNetwork(QPopulation):
-    """ QNAS Chromosomes for the networks to be evolved. """
+    """QNAS Chromosomes for the networks to be evolved."""
 
-    def __init__(self, num_quantum_ind, max_num_nodes, repetition, update_quantum_rate,
-                 fn_list, initial_probs):
-        """ Initialize QPopulationNetwork.
+    def __init__(
+        self,
+        num_quantum_ind,
+        max_num_nodes,
+        repetition,
+        update_quantum_rate,
+        fn_list,
+        initial_probs,
+    ):
+        """Initialize QPopulationNetwork.
 
         Args:
             num_quantum_ind: (int) number of quantum individuals.
@@ -151,8 +171,9 @@ class QPopulationNetwork(QPopulation):
                 the algorithm will give the same probability for each function.
         """
 
-        super(QPopulationNetwork, self).__init__(num_quantum_ind, repetition,
-                                                 update_quantum_rate)
+        super(QPopulationNetwork, self).__init__(
+            num_quantum_ind, repetition, update_quantum_rate
+        )
         self.probabilities = None
 
         self.max_update = 0.05
@@ -160,27 +181,32 @@ class QPopulationNetwork(QPopulation):
 
         self.chromosome = QChromosomeNetwork(max_num_nodes, fn_list, self.dtype)
 
-        self.initial_probs = self.chromosome.initialize_qgenes(initial_probs=initial_probs)
+        self.initial_probs = self.chromosome.initialize_qgenes(
+            initial_probs=initial_probs
+        )
         self.initialize_qpop()
 
     def initialize_qpop(self):
-        """ Initialize quantum population with *self.num_ind* individuals. """
+        """Initialize quantum population with *self.num_ind* individuals."""
 
         # Shape = (num_ind, num_nodes, num_functions)
-        self.probabilities = np.tile(self.initial_probs, (self.num_ind,
-                                                          self.chromosome.num_genes, 1))
+        self.probabilities = np.tile(
+            self.initial_probs, (self.num_ind, self.chromosome.num_genes, 1)
+        )
 
     def generate_classical(self):
-        """ Generate a specific number of classical individuals from the observation of quantum
-            individuals. This number is equal to (*num_ind* x *repetition*).
+        """Generate a specific number of classical individuals from the observation of quantum
+        individuals. This number is equal to (*num_ind* x *repetition*).
         """
 
         def sample(idx0, idx1):
             return np.random.choice(size, p=temp_prob[idx0, idx1, :])
 
         size = self.chromosome.num_functions
-        new_pop = np.zeros(shape=(self.num_ind * self.repetition, self.chromosome.num_genes),
-                           dtype=np.int32)
+        new_pop = np.zeros(
+            shape=(self.num_ind * self.repetition, self.chromosome.num_genes),
+            dtype=np.int32,
+        )
 
         temp_prob = np.tile(self.probabilities, (self.repetition, 1, 1))
 
@@ -191,7 +217,7 @@ class QPopulationNetwork(QPopulation):
         return new_pop
 
     def _update(self, chromosomes, idx, update_value):
-        """ Modify *chromosomes* by adding *update_value* to the genes indicated by *idx* and
+        """Modify *chromosomes* by adding *update_value* to the genes indicated by *idx* and
             subtracting *update_value* from the other genes proportional to the size of each
             probability.
 
@@ -206,8 +232,9 @@ class QPopulationNetwork(QPopulation):
         """
 
         idx0 = np.arange(chromosomes.shape[0])
-        update_array = np.where(chromosomes[idx0, idx] + update_value > self.max_prob,
-                                0, update_value)
+        update_array = np.where(
+            chromosomes[idx0, idx] + update_value > self.max_prob, 0, update_value
+        )
         sum_values = chromosomes[idx0, idx] + update_array
         chromosomes[idx0, idx] = 0
         decrease = (update_array / np.sum(chromosomes, axis=1)).reshape(-1, 1)
@@ -218,7 +245,7 @@ class QPopulationNetwork(QPopulation):
         return chromosomes
 
     def update_quantum(self, intensity):
-        """ Update self.probabilities.
+        """Update self.probabilities.
 
         Args:
             intensity: (float) value defining the intensity of the update.
@@ -229,6 +256,7 @@ class QPopulationNetwork(QPopulation):
 
         update_value = intensity * self.max_update
 
-        best_classic = self.current_pop[:self.num_ind]
-        self.probabilities[mask] = self._update(self.probabilities[mask], best_classic[mask],
-                                                update_value)
+        best_classic = self.current_pop[: self.num_ind]
+        self.probabilities[mask] = self._update(
+            self.probabilities[mask], best_classic[mask], update_value
+        )

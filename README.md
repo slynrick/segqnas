@@ -1,5 +1,26 @@
 # Q-NAS
-## Neural Architecture Search using the Q-NAS algorithm and Tensorflow.
+
+## Seting up the environment
+
+```
+git clone https://github.com/GuilhermeBaldo/segqnas.git
+conda create -n qnas python=3.8
+conda activate qnas
+pip3 install --upgrade pip
+pip3 install tensorflow==2.4
+conda install pyyaml=5.3.1
+conda install psutil
+conda install mpi4py=3.0.3
+conda install pandas
+conda install Pillow
+conda install -c conda-forge scikit-learn
+conda install -c conda-forge monai
+conda install -c conda-forge nibabel
+conda install -c conda-forge tqdm
+
+```
+
+## Neural Architecture Search for Semantic Segmentation using the Q-NAS algorithm and Tensorflow.
 
 This repository contains code for the works presented in the following papers:
 
@@ -11,7 +32,6 @@ This repository contains code for the works presented in the following papers:
 >  Efficiency," 2019 8th Brazilian Conference on Intelligent Systems (BRACIS), Salvador, Brazil, 2019, pp
 >. 509-514. [DOI](https://doi.org/10.1109/BRACIS.2019.00095)
 
-
 ### Requirements
 
 The required python packages are listed below. Make sure you have `openmpi` (https://www.open-mpi.org/)
@@ -21,14 +41,14 @@ The specific versions that we used in our runs are:
 
 ```
 pyyaml==3.13
-numpy==1.14.5
+numpy==last version
 mpi4py==3.0.0
-tensorflow==1.9.0
+tensorflow==2.3.0
+psultil
 ```
 
 All of our runs were executed in a multi-computer environment, with NVIDIA K80 GPUs and Power8 processors
  running Linux (Red Hat Enterprise Linux 7.4 3).
-
 
 ---
 ### Running Q-NAS
@@ -55,15 +75,13 @@ Here's an example of how to prepare the CIFAR-10 dataset limited to 10k examples
 
 ```shell script
 python run_dataset_prep.py \
-    --data_path cifar10 \
-    --output_folder cifar_tfr_10000 \
-    --num_classes 10 \
-    --limit_data 10000
+    --data_path pascalvoc12 \
+    --output_folder pascalvoc12_tfr \
 ```
 
-At the end of the process, the folder `cifar10/cifar_tfr_10000` has the following files:
->cifar_train_mean.npz  
-data_info.txt  
+At the end of the process, the folder `pascalvoc12/pascalvoc12_tfr` has the following files:
+>pascalvoc12_train_mean.npz
+pascalvoc12_train_std.npz  
 test_1.tfrecords  
 train_1.tfrecords  
 valid_1.tfrecords  
@@ -71,19 +89,7 @@ valid_1.tfrecords
 The tfrecords files contains the images and labels, `data_info.txt` includes basic information about this
  dataset, and `cifar_train_mean.npz` is the numpy array with the mean of the training images.
 
-This example shows how to prepare the CIFAR-100 dataset, with all the available training examples:
-
-```shell script
-python run_dataset_prep.py \
-    --data_path cifar100 \
-    --output_folder cifar_tfr \
-    --num_classes 100 \
-    --label_mode fine \
-    --limit_data 0
-```
-
 Run `python run_dataset_prep.py --help` for additional parameter details.
-
 
 #### 2. Run architecture search
 
@@ -112,26 +118,20 @@ QNAS:
         momentum:        (float) or (list);
         weight_decay:    (float) or (list);
 
-    function_dict: {'function_name': {'function': 'function_class', 
-                                      'params': {'parameter': value}, 
-                                      'prob': probability_value}}
+    block_dict: {'function_name': {'block': 'function_class', 
+                                  'params': {'parameter': value}, 
+                                  'prob': probability_value}}
 
 train:
     batch_size:          (int) number of examples in a batch to train the networks.
-    eval_batch_size:     (int) batch size for evaluation; if = 0, the number of valid image is used
-    max_epochs:          (int) maximum number of epochs to train the networks.
-    epochs_to_eval:      (int) fitness is defined as the maximum accuracy in the last *epochs_to_eval*
-    optimizer:           (str) RMSProp or Momentum
-
+    epochs:     (int) batch size for evaluation; if = 0, the number of valid image is used
+    
     # Dataset
     dataset:             (str) Cifar10 or CIFAR100
+    image_size:
+    num_channels:
+    num_classes:
     data_augmentation:   (bool) True if data augmentation methods should be applied
-    subtract_mean:       (bool) True if the dataset mean image should be subtracted from images
-
-    # Tensorflow
-    save_checkpoints_epochs: (int) number of epochs to save a new checkpoint.
-    save_summary_epochs:     (float) number of epochs (or fraction of an epoch) to save new summary
-    threads:                 (int) number of threads for Tensorflow ops (0 -> number of logical cores)
 ```
 
 We provide 3 configuration file examples in the folder `config_files`; one can use them as-is, or modify as
@@ -145,11 +145,11 @@ In summary, the files are:
 This is an example of how to run architecture search for dataset `cifar10/cifar_tfr_10000` with `config1.txt`:
 
 ```shell script
-mpirun -n 20 python run_evolution.py \
+mpirun -n 2 python run_evolution.py \
     --experiment_path my_exp_config1 \
     --config_file config_files/config1.txt \
-    --data_path cifar10/cifar_tfr_10000 \
-    --log_level INFO
+    --data_path pascalvoc12/pascalvoc12_tfr \
+    --log_level DEBUG
 ```
 
 The number of workers in the MPI execution must be equal to the number of classical individuals. In `config1.txt`,   
@@ -164,7 +164,7 @@ log_QNAS.txt
 
 The folder `12_7` has the Tensorflow files for the best network in the evolution; in this case, is the
  individual number `7` found in generation `12`. The folder `csv_data` has csv files with training
-   information of the individuals (loss and accuracy for the best individuals in some generations). Both of
+   information of the individuals (loss and mean iou for the best individuals in some generations). Both of
     these directories are not used in later steps, they are just information that one might want to inspect.
 
 The file `data_QNAS.pkl` keeps all the evolution data (chromosomes, fitness values, number of evaluations, 

@@ -8,231 +8,412 @@
 
 """
 
+import json
 import os
+from math import ceil
 
+import albumentations as A
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from PIL import Image
+from sklearn.model_selection import train_test_split
+from tensorflow import keras
 
 
-class DataSet(object):
-    def __init__(self, data_info, data_aug, subtract_mean, process_for_training):
-        """ Initialize DataSet base class.
+# helper function for data visualization
+def visualize(**images):
+    """PLot images in one row."""
+    cols = 6
+    rows = ceil(len(images) / 6)
+    plt.figure(figsize=(32, 10))
+    for i, (name, image) in enumerate(images.items()):
+        plt.subplot(rows, cols, i + 1)
+        plt.xticks([])
+        plt.yticks([])
+        plt.title(" ".join(name.split("_")).title())
+        plt.imshow(image)
+    plt.show()
 
-        Args:
-            data_info: one of Cifar10Info or Cifar100Info objects.
-            data_aug: (bool) True if user wants to train using data augmentation.
-            subtract_mean: (bool) True if calculated mean on the training set should be
-                subtracted.
-            process_for_training: (bool) if True, the dataset is processed for training (include
-                shuffle and dataset augmentation); for validation and test, set it to False.
-        """
 
-        self.data_augmentation = data_aug
-        self.info = data_info
-        self.process_for_training = process_for_training
-        self.subtract_mean = subtract_mean
+# helper function for data visualization
+def denormalize(x):
+    """Scale image to range 0..1 for correct plot"""
+    x_max = np.percentile(x, 98)
+    x_min = np.percentile(x, 2)
+    x = (x - x_min) / (x_max - x_min)
+    x = x.clip(0, 1)
+    return x
 
-    def get_file_list(self, dataset_type):
-        """ Get the file list corresponding to the *mode*.
 
-        Args:
-            dataset_type: (str) one of 'train', 'valid' or 'test'.
+def round_clip_0_1(x, **kwargs):
+    return x.round().clip(0, 1)
 
-        Returns:
-            list of files with examples.
-        """
 
-        if dataset_type == 'train':
-            return self.info.train_files
-        elif dataset_type == 'valid':
-            return self.info.valid_files
-        elif dataset_type == 'test':
-            return self.info.test_files
+# define heavy augmentations
+def get_training_augmentation(image_height, image_width):
+    train_transform = [
 
-    def rec_parser(self, serialized_example):
-        """ Parse a single tf.Example into image and label tensors.
+        A.HorizontalFlip(p=0.5),
 
-        Args:
-            serialized_example: tfrecords example.
+        A.ShiftScaleRotate(scale_limit=(0.5, 2), rotate_limit=(-10,10), shift_limit=0.1, p=1, border_mode=0),
 
-        Returns:
-            image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
-            label (shape = []).
-        """
+        A.PadIfNeeded(min_height=image_height, min_width=image_height, always_apply=True, border_mode=0),
+        A.CropNonEmptyMaskIfExists(height=image_height, width=image_width, always_apply=True, ignore_channels=[0]),
 
-        features = tf.parse_single_example(
-            serialized_example,
-            features={'height': tf.FixedLenFeature([], tf.int64),
-                      'width': tf.FixedLenFeature([], tf.int64),
-                      'depth': tf.FixedLenFeature([], tf.int64),
-                      'label': tf.FixedLenFeature([], tf.int64),
-                      'image_raw': tf.FixedLenFeature([], tf.string)})
+        A.GaussianBlur(p=0.5),
 
-        image = tf.decode_raw(features['image_raw'], tf.uint8)
-        image = tf.reshape(image, (self.info.height, self.info.width, self.info.num_channels))
+        # A.IAAAdditiveGaussianNoise(p=0.2),
+        # A.IAAPerspective(p=0.5),
 
-        # Rescale the values of the image from the range [0, 255] to [0, 1.0]
-        image = tf.divide(tf.cast(image, tf.float32), 255.0)
-        # Subtract mean_img from image
-        if self.subtract_mean:
-            image = tf.subtract(image, self.info.mean_image, name='mean_subtraction')
-        label = tf.cast(features['label'], tf.int32)
+        # A.OneOf(
+        #     [
+        #         A.CLAHE(p=1),
+        #         A.RandomBrightness(p=1),
+        #         A.RandomGamma(p=1),
+        #     ],
+        #     p=0.9,
+        # ),
 
-        if self.process_for_training and self.data_augmentation:
-            image = self.preprocess(image)
+        # A.OneOf(
+        #     [
+        #         A.IAASharpen(p=1),
+        #         A.Blur(blur_limit=3, p=1),
+        #         A.MotionBlur(blur_limit=3, p=1),
+        #     ],
+        #     p=0.9,
+        # ),
 
+        # A.OneOf(
+        #     [
+        #         A.RandomContrast(p=1),
+        #         A.HueSaturationValue(p=1),
+        #     ],
+        #     p=0.9,
+        # ),
+        A.Lambda(mask=round_clip_0_1)
+    ]
+    return A.Compose(train_transform)
+
+
+def get_preprocessing(preprocessing_fn):
+    """Construct preprocessing transform
+
+    Args:
+        preprocessing_fn (callbale): data normalization function
+            (can be specific for each pretrained neural network)
+    Return:
+        transform: albumentations.Compose
+
+    """
+
+    _transform = [
+        A.Lambda(image=preprocessing_fn),
+    ]
+    return A.Compose(_transform)
+
+
+def get_validation_augmentation(image_height, image_width):
+    """Add paddings to make image shape divisible by 32"""
+    test_transform = [
+        A.Resize(image_height, image_width),
+        #A.PadIfNeeded(min_height=None, min_width=None, pad_height_divisor=48, pad_width_divisor=48, always_apply=True, border_mode=0),
+    ]
+    return A.Compose(test_transform)
+
+
+class PascalVOC2012Dataset:
+    """Pascal VOC 2012 Dataset. Read images, apply augmentation and preprocessing transformations.
+
+    Args:
+        image_paths (str): path to images folder
+        mask_paths (str): path to segmentation masks folder
+        classes (list): values of classes to extract from segmentation mask
+        augmentation (albumentations.Compose): data transfromation pipeline
+            (e.g. flip, scale, etc.)
+        preprocessing (albumentations.Compose): data preprocessing
+            (e.g. noralization, shape manipulation, etc.)
+
+    """
+
+    CLASSES = [
+        "background",
+        "aeroplane",
+        "bicycle",
+        "bird",
+        "boat",
+        "bottle",
+        "bus",
+        "car",
+        "cat",
+        "chair",
+        "cow",
+        "diningtable",
+        "dog",
+        "horse",
+        "motorbike",
+        "person",
+        "potted plant",
+        "sheep",
+        "sofa",
+        "train",
+        "tv/monitor",
+    ]
+
+    VOC_COLORMAP = [
+        [0, 0, 0],
+        [128, 0, 0],
+        [0, 128, 0],
+        [128, 128, 0],
+        [0, 0, 128],
+        [128, 0, 128],
+        [0, 128, 128],
+        [128, 128, 128],
+        [64, 0, 0],
+        [192, 0, 0],
+        [64, 128, 0],
+        [192, 128, 0],
+        [64, 0, 128],
+        [192, 0, 128],
+        [64, 128, 128],
+        [192, 128, 128],
+        [0, 64, 0],
+        [128, 64, 0],
+        [0, 192, 0],
+        [128, 192, 0],
+        [0, 64, 128],
+    ]
+
+    def __init__(
+        self,
+        dataset_descriptor_filepath,
+        images_path,
+        masks_path,
+        classes=None,
+        image_height=448,
+        image_width=448,
+        augmentation=None,
+        preprocessing=None,
+    ):
+        with open(dataset_descriptor_filepath, "r") as file:
+            self.ids = file.read().splitlines()
+
+        self.image_filepaths = [
+            os.path.join(images_path, img_id + ".jpg") for img_id in self.ids
+        ]
+        self.mask_filepaths = [
+            os.path.join(masks_path, img_id + ".png") for img_id in self.ids
+        ]
+
+        # convert str names to class values on masks
+        if classes:
+            self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
+        else:
+            self.class_values = [
+                self.CLASSES.index(cls.lower()) for cls in self.CLASSES
+            ]
+
+        self.image_height = image_height
+        self.image_width = image_width
+        self.augmentation = augmentation
+        self.preprocessing = preprocessing
+
+    def __getitem__(self, i):
+        image = cv2.imread(self.image_filepaths[i])
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mask = cv2.imread(self.mask_filepaths[i])
+        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
+        mask = self._convert_to_segmentation_mask(mask)
+
+        # extract certain classes from mask (e.g. cars)
+        #print(image.shape, mask.shape)
+
+        #masks = [(mask == v) for v in self.class_values]
+        #mask = np.stack(masks, axis=-1).astype('float')
+        
+        # add background if mask is not binary
+        #if mask.shape[-1] != 1:
+        #    background = 1 - mask.sum(axis=-1, keepdims=True)
+        #    mask = np.concatenate((mask, background), axis=-1)
+        
+        # apply augmentations
+        if self.augmentation:
+            sample = self.augmentation(image=image, mask=mask)
+            image, mask = sample['image'], sample['mask']
+        
+        # apply preprocessing
+        if self.preprocessing:
+            sample = self.preprocessing(image=image, mask=mask)
+            image, mask = sample['image'], sample['mask']
+            
+        return image, mask
+        # # read data
+        # image = Image.open(self.image_filepaths[i])
+        # image = image.resize((self.image_width, self.image_height), Image.ANTIALIAS)
+        # image = np.array(image)
+
+        # mask = Image.open(self.mask_filepaths[i])
+        # mask = mask.resize((self.image_width, self.image_height), Image.ANTIALIAS)
+        # mask = np.array(mask, dtype=np.uint8)
+        # mask = self._one_hot_encode_mask(mask)
+
+        # # apply augmentations
+        # if self.augmentation:
+        #     sample = self.augmentation(image=image, mask=mask)
+        #     image, mask = sample["image"], sample["mask"]
+
+        # # apply preprocessing
+        # if self.preprocessing:
+        #     sample = self.preprocessing(image=image, mask=mask)
+        #     image, mask = sample["image"], sample["mask"]
+
+        # image = image.astype("float32")  # / 255
+        # mask = mask.astype("float32")
+
+        # return image, mask
+
+    def __len__(self):
+        return len(self.ids)
+
+    # def _one_hot_encode_mask(self, mask):
+    #     # create channel for mask
+    #     # (height, width) => (height, width, 1)
+    #     mask = mask[..., np.newaxis]
+
+    #     # create a binary mask for each channel (class)
+    #     one_hot_mask = []
+    #     for _class in range(0, len(self.class_values)):
+    #         class_mask = np.all(np.equal(mask, _class), axis=-1)
+    #         one_hot_mask.append(class_mask)
+    #     one_hot_mask = np.stack(one_hot_mask, axis=-1)
+    #     one_hot_mask = one_hot_mask.astype("uint8")
+
+    #     return one_hot_mask
+
+    def _convert_to_segmentation_mask(self, mask):
+        # This function converts a mask from the Pascal VOC format to the format required by AutoAlbument.
+        #
+        # Pascal VOC uses an RGB image to encode the segmentation mask for that image. RGB values of a pixel
+        # encode the pixel's class.
+        #
+        # AutoAlbument requires a segmentation mask to be a NumPy array with the shape [height, width, num_classes].
+        # Each channel in this mask should encode values for a single class. Pixel in a mask channel should have
+        # a value of 1.0 if the pixel of the image belongs to this class and 0.0 otherwise.
+        height, width = mask.shape[:2]
+        segmentation_mask = np.zeros((height, width, len(self.VOC_COLORMAP)), dtype=np.float32)
+        #segmentation_mask = np.zeros((height, width, 2), dtype=np.float32)
+        for label_index, label in enumerate(self.VOC_COLORMAP):
+            segmentation_mask[:, :, label_index] = np.all(mask == label, axis=-1).astype(float)
+        #segmentation_mask[:, :, 0] = np.all(mask == self.VOC_COLORMAP[0], axis=-1).astype(float)
+        #segmentation_mask[:, :, 1] = np.ones((height, width), dtype=np.float32) - np.all(mask == self.VOC_COLORMAP[0], axis=-1).astype(float)
+        return segmentation_mask
+
+
+class Dataloader(tf.keras.utils.Sequence):
+    """Load data from dataset and form batches
+
+    Args:
+        dataset: instance of Dataset class for image loading and preprocessing.
+        batch_size: Integet number of images in batch.
+        shuffle: Boolean, if `True` shuffle image indexes each epoch.
+    """
+
+    def __init__(self, dataset, batch_size=1, shuffle=False):
+        self.dataset = dataset
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.indexes = np.arange(len(dataset))
+
+        self.on_epoch_end()
+
+    def __getitem__(self, i):
+
+        # collect batch data
+        start = i * self.batch_size
+        stop = (i + 1) * self.batch_size
+        data = []
+        for j in range(start, stop):
+            data.append(self.dataset[j])
+
+        # transpose list of lists
+        batch = [np.stack(samples, axis=0) for samples in zip(*data)]
+
+        return tuple(batch)
+
+    def __len__(self):
+        """Denotes the number of batches per epoch"""
+        return len(self.indexes) // self.batch_size
+
+    def on_epoch_end(self):
+        """Callback function to shuffle indexes each epoch"""
+        if self.shuffle:
+            self.indexes = np.random.permutation(self.indexes)
+
+
+class SpleenDataset():
+    def __init__(
+        self,
+        images_filepaths,
+        labels_filepaths,
+        augmentation=None,
+        preprocessing=None,
+    ):
+        self.images_filepaths = images_filepaths
+        self.labels_filepaths = labels_filepaths
+        self.augmentation = augmentation
+        self.preprocessing = preprocessing
+
+    def __getitem__(self, i):
+        image = np.load(self.images_filepaths[i])
+        label = np.load(self.labels_filepaths[i])
+        
+        image = image[..., np.newaxis]
+        label = label[..., np.newaxis]
+
+        image = image.astype('float32')
+        mean = np.mean(image)
+        std = np.std(image)
+        image -= mean
+        image /= std
+
+        label = label.astype('float32')
+
+        if self.augmentation:
+            sample = self.augmentation(image=image, label=label)
+            image, label = sample['image'], sample['label']
+        
+        if self.preprocessing:
+            sample = self.preprocessing(image=image, label=label)
+            image, label = sample['image'], sample['label']
+            
         return image, label
 
-    def make_batch(self, batch_size, dataset_type, threads=0):
-        """ Read the images and labels from files corresponding to *dataset_type* and prepare a
-            batch of them.
+    def __len__(self):
+        return len(self.images_filepaths)
 
-        Args:
-            batch_size: (int) size of the batch.
-            dataset_type: (str) one of 'train', 'valid' or 'test'.
-            threads: (int) number of threads to parse dataset examples.
+def get_train_val_filenames(data_path):
+    descriptor_filepath = os.path.join(data_path, 'dataset.json')
+    with open(descriptor_filepath, 'r') as fp:
+        descriptor_dict = json.load(fp)
 
-        Returns:
-            images (shape = (batch_size, height, width, num_channels)).
-            labels (shape = (batch_size,)).
-        """
+    patients = list(descriptor_dict.keys())
+    
+    train_patients, val_patients = train_test_split(patients, test_size=0.2)
 
-        if not threads:
-            if os.uname().sysname == 'Linux':
-                threads = len(os.sched_getaffinity(0))
-            else:
-                threads = os.cpu_count()
+    train_images_filepaths = []
+    train_labels_filepaths = []
+    val_images_filepaths = []
+    val_labels_filepaths = []
 
-        dataset = tf.data.TFRecordDataset(self.get_file_list(dataset_type))
-        dataset = dataset.map(self.rec_parser, num_parallel_calls=threads)
-        dataset = dataset.prefetch(8 * batch_size)
+    for patient in train_patients:
+        for slice_ in descriptor_dict[patient]:
+            train_images_filepaths.append(slice_[0])
+            train_labels_filepaths.append(slice_[1])
 
-        # For training, shuffle dataset and repeat forever.
-        if self.process_for_training:
-            # Ensure that the capacity is sufficiently large to provide good random shuffling.
-            buffer_size = int(0.4 * self.info.num_train_ex)
-            # Shuffle dataset every new iteration (epoch)
-            dataset = dataset.shuffle(buffer_size=buffer_size, reshuffle_each_iteration=True)
-            dataset = dataset.repeat()
+    for patient in val_patients:
+        for slice_ in descriptor_dict[patient]:
+            val_images_filepaths.append(slice_[0])
+            val_labels_filepaths.append(slice_[1])
 
-        # Batch results by up to batch_size, and then fetch the tuple from the iterator.
-        iterator = dataset.batch(batch_size).make_one_shot_iterator()
-        images, labels = iterator.get_next()
-
-        return images, labels
-
-    def preprocess(self, image):
-        """ Pad, resize and randomly flip a single image with shape = [H, W, C].
-
-        Args:
-            image: raw image (tf.float32 [0, 1] and shape = [height, width, num_channels]).
-
-        Returns:
-            preprocessed image, with same shape.
-        """
-
-        pad_height = self.info.height + self.info.pad
-        pad_width = self.info.width + self.info.pad
-        image = tf.image.resize_image_with_crop_or_pad(image, pad_height, pad_width)
-        image = tf.random_crop(image, [self.info.height, self.info.width,
-                                       self.info.num_channels])
-        image = tf.image.random_flip_left_right(image)
-
-        return image
-
-
-class Cifar10Info(object):
-    def __init__(self, data_path, validation=True):
-        """ Cifar10 dataset information.
-
-            Info in http://www.cs.toronto.edu/~kriz/cifar.html.
-
-        Args:
-            data_path: (str) path to the folder containing the tfrecords files.
-            validation: (bool) whether to use the validation dataset for validation.
-        """
-
-        self.data_path = data_path
-        self.height = 32
-        self.width = 32
-        self.num_channels = 3
-        self.mean_image = np.load(os.path.join(self.data_path,
-                                               'cifar_train_mean.npz'))['train_img_mean']
-        self.num_classes = 10
-        self.pad = 4
-
-        self.train_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
-                            if f.startswith('train')]
-        self.valid_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
-                            if f.startswith('valid')]
-        self.test_files = [os.path.join(self.data_path, f) for f in os.listdir(self.data_path)
-                           if f.startswith('test')]
-
-        # if user wants to train using all images
-        if not validation:
-            self.train_files = self.train_files + self.valid_files
-            self.valid_files = []
-
-        self.num_train_ex = count_records(self.train_files)
-        self.num_valid_ex = count_records(self.valid_files)
-        self.num_test_ex = count_records(self.test_files)
-
-
-class Cifar100Info(Cifar10Info):
-    def __init__(self, data_path, validation=True):
-        """ Cifar100 dataset information.
-
-            Info in http://www.cs.toronto.edu/~kriz/cifar.html.
-
-        Args:
-            data_path: (str) path to the folder containing the tfrecords files.
-            validation: (bool) whether to use the validation dataset for validation.
-        """
-
-        super(Cifar100Info, self).__init__(data_path, validation)
-        self.num_classes = 100
-
-
-def count_records(file_list):
-    """ Count total number of records in a file list.
-
-    Args:
-        file_list: list of tfrecords files.
-
-    Returns:
-        total number of records in the file list.
-    """
-
-    c = 0
-    for file_path in file_list:
-        for _ in tf.python_io.tf_record_iterator(file_path):
-            c += 1
-    return c
-
-
-def input_fn(data_info, dataset_type, batch_size, data_aug, subtract_mean, process_for_training,
-             threads=0):
-    """ Create input function for model.
-
-    Args:
-        data_info: one of Cifar10Info, Cifar100Info or objects.
-        dataset_type: (str) one of 'train', 'valid' or 'test'.
-        batch_size: (int) number of examples in a batch (can be different for train or evaluate)
-        data_aug: (bool) True if user wants to train using data augmentation.
-        subtract_mean: (bool) True if calculated mean on the training set should be
-            subtracted.
-        process_for_training: (bool) if True, the dataset is processed for training (shuffle and
-            repeat, for example); for validation and test, set it to False.
-        threads: (int) number of threads to read and batch dataset; if 0, it set to the number
-            of logical cores.
-
-    Returns:
-        batch of images (shape = (batch_size, height, width, num_channels)).
-        batch of labels (shape = (batch_size,)).
-    """
-
-    with tf.device('/cpu:0'):
-        dataset = DataSet(data_info, data_aug, subtract_mean, process_for_training)
-        image_batch, label_batch = dataset.make_batch(batch_size, dataset_type, threads)
-
-        return image_batch, label_batch
+    return train_images_filepaths, val_images_filepaths, train_labels_filepaths, val_labels_filepaths

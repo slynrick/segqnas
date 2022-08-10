@@ -8,10 +8,10 @@ import numpy as np
 
 
 class QChromosome(object):
-    """ QNAS Chromosomes to be evolved. """
+    """QNAS Chromosomes to be evolved."""
 
     def __init__(self, dtype):
-        """ Initialize QChromosome.
+        """Initialize QChromosome.
 
         Args:
             dtype: type of the chromosome array.
@@ -21,10 +21,12 @@ class QChromosome(object):
         self.dtype = dtype
 
     def initialize_qgenes(self, *args):
-        raise NotImplementedError('initialize_qgenes() must be implemented in sub classes')
+        raise NotImplementedError(
+            "initialize_qgenes() must be implemented in sub classes"
+        )
 
     def set_num_genes(self, num_genes):
-        """  Set the number of genes of the chromosome.
+        """Set the number of genes of the chromosome.
 
         Args:
             num_genes: (int) number of genes.
@@ -33,12 +35,12 @@ class QChromosome(object):
         self.num_genes = num_genes
 
     def decode(self, chromosome):
-        raise NotImplementedError('decode() must be implemented in sub classes')
+        raise NotImplementedError("decode() must be implemented in sub classes")
 
 
 class QChromosomeParams(QChromosome):
     def __init__(self, params_ranges, dtype=np.float64):
-        """ Initialize QChromosomeParams.
+        """Initialize QChromosomeParams.
 
         Args:
             params_ranges: {'parameter_name': [parameter_lower_limit, parameter_upper_limit]}.
@@ -53,7 +55,7 @@ class QChromosomeParams(QChromosome):
         self.set_num_genes(num_genes=len(self.params_names))
 
     def get_limits(self):
-        """ Convert the ranges of each parameter to be evolved into lists of lower and upper
+        """Convert the ranges of each parameter to be evolved into lists of lower and upper
             limits.
 
         Returns:
@@ -66,7 +68,7 @@ class QChromosomeParams(QChromosome):
         return lower, upper
 
     def initialize_qgenes(self):
-        """ Get the initial values for lower and upper limits representing the quantum genes."""
+        """Get the initial values for lower and upper limits representing the quantum genes."""
 
         lower, upper = self.get_limits()
         initial_lower = np.asarray(lower, dtype=self.dtype)
@@ -75,7 +77,7 @@ class QChromosomeParams(QChromosome):
         return initial_lower, initial_upper
 
     def decode(self, chromosome):
-        """ Convert numpy array representing the classic chromosome into a dictionary with
+        """Convert numpy array representing the classic chromosome into a dictionary with
             parameters names as keys. This is done only to improve readability of the code.
 
         Args:
@@ -85,15 +87,17 @@ class QChromosomeParams(QChromosome):
             dict with current parameter values.
         """
 
-        params_dict = {self.params_names[i]: np.asscalar(chromosome[i])
-                       for i in range(len(chromosome))}
+        params_dict = {
+            self.params_names[i]: np.asscalar(chromosome[i])
+            for i in range(len(chromosome))
+        }
 
         return params_dict
 
 
 class QChromosomeNetwork(QChromosome):
     def __init__(self, max_num_nodes, fn_list, dtype=np.float64):
-        """ Initialize QChromosomeNetwork.
+        """Initialize QChromosomeNetwork.
 
         Args:
             max_num_nodes: (int) maximum number of nodes of the network, which will be the
@@ -110,7 +114,7 @@ class QChromosomeNetwork(QChromosome):
         self.set_num_genes(max_num_nodes)
 
     def initialize_qgenes(self, initial_probs=None):
-        """ Get the initial values for probabilities based on the available number of
+        """Get the initial values for probabilities based on the available number of
             functions of a node if *initial_probs* is empty.
 
         Args:
@@ -122,15 +126,16 @@ class QChromosomeNetwork(QChromosome):
 
         if not initial_probs:
             prob = 1 / self.num_functions
-            initial_probs = np.full(shape=(self.num_functions,), fill_value=prob,
-                                    dtype=self.dtype)
+            initial_probs = np.full(
+                shape=(self.num_functions,), fill_value=prob, dtype=self.dtype
+            )
         else:
             initial_probs = np.array(initial_probs)
 
         return initial_probs
 
     def decode(self, chromosome):
-        """ Convert numpy array representing the classic chromosome into a list of function
+        """Convert numpy array representing the classic chromosome into a list of function
             names representing the layers of the network.
 
         Args:

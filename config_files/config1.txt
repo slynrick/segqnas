@@ -2,45 +2,51 @@
 
 QNAS:
     crossover_rate: 0.5
-    max_generations: 100
-    max_num_nodes: 20
-    num_quantum_ind: 5
-    penalize_number: 0
-    repetition: 4
+    max_generations: 50
+    max_num_nodes: 9
+    num_quantum_ind: 4
+    penalize_number: 6
+    repetition: 2
     replace_method: best
     update_quantum_gen: 5
     update_quantum_rate: 0.1
     save_data_freq: 10
 
     params_ranges:
-        decay: [0.1, 0.999]
+        decay: 0.9
         learning_rate: 0.001
-        momentum: [0.0, 0.999]
-        weight_decay: [1.0e-5, 1.0e-3]
+        momentum: 0.0
+        weight_decay: 1.0e-4
 
-    function_dict:  {'conv_1_1_32':  {'function': 'ConvBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 32}, 'prob': 1.0/3.0/6.0},
-                     'conv_1_1_64':  {'function': 'ConvBlock', 'params': {'kernel': 1, 'strides': 1, 'filters': 64}, 'prob': 1.0/3.0/6.0},
-                     'conv_3_1_32':  {'function': 'ConvBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 32}, 'prob': 1.0/3.0/6.0},
-                     'conv_3_1_64':  {'function': 'ConvBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 64}, 'prob': 1.0/3.0/6.0},
-                     'conv_3_1_128': {'function': 'ConvBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 128}, 'prob': 1.0/3.0/6.0},
-                     'conv_3_1_256': {'function': 'ConvBlock', 'params': {'kernel': 3, 'strides': 1, 'filters': 256}, 'prob': 1.0/3.0/6.0},
-                     'max_pool_2_2': {'function': 'MaxPooling', 'params': {'kernel': 2, 'strides': 2}, 'prob': 1.0/3.0/2.0},
-                     'avg_pool_2_2': {'function': 'AvgPooling', 'params': {'kernel': 2, 'strides': 2}, 'prob': 1.0/3.0/2.0},
-                     'no_op':        {'function': 'NoOp', 'params': {}, 'prob': 1.0/3.0}}
+    block_dict:  {'vgg_1_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.05},
+                'vgg_1_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.05},
+                'vgg_3_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.05},
+                'vgg_3_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.05},
+                'vgg_3_1_128': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.05},
+                'vgg_3_1_256': {'block': 'VGGBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.05},
+                'vgg_5_1_32':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.05},
+                'vgg_5_1_64':  {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.05},
+                'vgg_5_1_128': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.05},
+                'vgg_5_1_256': {'block': 'VGGBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.05},
+                'resnet_1_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 1, 'filters': 32}, 'prob': 0.05},
+                'resnet_1_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 1, 'filters': 64}, 'prob': 0.05},
+                'resnet_3_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 32}, 'prob': 0.05},
+                'resnet_3_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 64}, 'prob': 0.05},
+                'resnet_3_1_128': {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 128}, 'prob': 0.05},
+                'resnet_3_1_256': {'block': 'ResNetBlock', 'params': {'kernel': 3, 'filters': 256}, 'prob': 0.05},
+                'resnet_5_1_32':  {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 32}, 'prob': 0.05},
+                'resnet_5_1_64':  {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 64}, 'prob': 0.05},
+                'resnet_5_1_128': {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 128}, 'prob': 0.05},
+                'resnet_5_1_256': {'block': 'ResNetBlock', 'params': {'kernel': 5, 'filters': 256}, 'prob': 0.05},}
 
 train:
-    batch_size: 256
-    eval_batch_size: 0
-    max_epochs: 50
-    epochs_to_eval: 5
+    batch_size: 2
+    epochs: 100
     optimizer: RMSProp
 
     # Dataset
-    dataset: Cifar10
-    data_augmentation: True
-    subtract_mean: True
-
-    # Tensorflow
-    save_checkpoints_epochs: 10
-    save_summary_epochs: 0.25
-    threads: 0
+    dataset: Spleen
+    image_size: 128
+    num_channels: 1
+    num_classes: 2
+    data_augmentation: False
