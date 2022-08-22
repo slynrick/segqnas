@@ -72,9 +72,7 @@ class ConfigParameters(object):
 
             for name, definition in fn_dict.items():
                 if definition["block"] not in available_fn:
-                    raise ValueError(
-                        f"{definition['block']} is not a valid block!"
-                    )
+                    raise ValueError(f"{definition['block']} is not a valid block!")
                 for param in definition["params"].values():
                     if type(param) is not int or param < 0:
                         raise ValueError(
@@ -89,7 +87,7 @@ class ConfigParameters(object):
 
             if any(probs):
                 probs = np.sum(probs)
-                if sqrt((1.0 - probs)**2) > 1e-4:
+                if sqrt((1.0 - probs) ** 2) > 1e-4:
                     raise ValueError(
                         "Function probabilities should sum 1.0! "
                         "Tolerance of numpy is 1e-4."

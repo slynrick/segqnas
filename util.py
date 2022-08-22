@@ -18,16 +18,17 @@ from skimage.transform import resize
 def listdir_nohidden(path):
     files = []
     for f in os.listdir(path):
-        if not f.startswith('.'):
+        if not f.startswith("."):
             files.append(f)
     return files
 
+
 def prepare_spleen_data(data_path, target_path, image_size):
 
-    images_path = os.path.join(data_path, 'imagesTr')
-    labels_path = os.path.join(data_path, 'labelsTr')
-    target_images_path = os.path.join(target_path, 'imagesTr')
-    target_labels_path = os.path.join(target_path, 'labelsTr')
+    images_path = os.path.join(data_path, "imagesTr")
+    labels_path = os.path.join(data_path, "labelsTr")
+    target_images_path = os.path.join(target_path, "imagesTr")
+    target_labels_path = os.path.join(target_path, "labelsTr")
 
     if not os.path.exists(images_path):
         os.makedirs(images_path)
@@ -37,7 +38,7 @@ def prepare_spleen_data(data_path, target_path, image_size):
 
     if not os.path.exists(target_images_path):
         os.makedirs(target_images_path)
-    
+
     if not os.path.exists(target_labels_path):
         os.makedirs(target_labels_path)
 
@@ -53,25 +54,38 @@ def prepare_spleen_data(data_path, target_path, image_size):
 
         image = nibabel.load(os.path.join(images_path, image_filename))
         label = nibabel.load(os.path.join(labels_path, label_filename))
-        patient = image_filename.split('_')[1].split('.')[0]
+        patient = image_filename.split("_")[1].split(".")[0]
         descriptor_dict[f"{patient}"] = []
 
         for slice_num in range(label.shape[2]):
             slice_label = label.get_fdata()[:, :, slice_num]
-            slice_label = resize(slice_label, (image_size, image_size), preserve_range=True)
+            slice_label = resize(
+                slice_label, (image_size, image_size), preserve_range=True
+            )
             slice_image = image.get_fdata()[:, :, slice_num]
-            slice_image = resize(slice_image, (image_size, image_size), preserve_range=True)
+            slice_image = resize(
+                slice_image, (image_size, image_size), preserve_range=True
+            )
 
             if len(np.unique(slice_label)) != 1:
-                slice_image_filename = os.path.join(target_images_path, f"{image_filename.split('.')[0]}_{slice_num}.npy")
-                slice_label_filename = os.path.join(target_labels_path, f"{label_filename.split('.')[0]}_{slice_num}.npy")
+                slice_image_filename = os.path.join(
+                    target_images_path,
+                    f"{image_filename.split('.')[0]}_{slice_num}.npy",
+                )
+                slice_label_filename = os.path.join(
+                    target_labels_path,
+                    f"{label_filename.split('.')[0]}_{slice_num}.npy",
+                )
 
                 np.save(slice_image_filename, slice_image)
                 np.save(slice_label_filename, slice_label)
-                descriptor_dict[f"{patient}"].append((slice_image_filename, slice_label_filename))
-    
-    with open(os.path.join(target_path, 'dataset.json'), 'w') as fp:
+                descriptor_dict[f"{patient}"].append(
+                    (slice_image_filename, slice_label_filename)
+                )
+
+    with open(os.path.join(target_path, "dataset.json"), "w") as fp:
         json.dump(descriptor_dict, fp)
+
 
 class ExtractData(object):
     """Class to extract data from an events.out.tfevents file. Uses an EventMultiplexer to

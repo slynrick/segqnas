@@ -463,9 +463,9 @@ class QNAS(object):
 
         # Remove Tensorflow models files
         delete_old_dirs(
-           self.experiment_path,
-           keep_best=True,
-           best_id=f"{self.best_so_far_id[0]}_{self.best_so_far_id[1]}",
+            self.experiment_path,
+            keep_best=True,
+            best_id=f"{self.best_so_far_id[0]}_{self.best_so_far_id[1]}",
         )
         self.current_gen += 1
 
