@@ -134,12 +134,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                     train_dataloader,
                     validation_data=val_dataloader,
                     epochs=epochs,
-                    callbacks=[
-                        tf.keras.callbacks.EarlyStopping(
-                            monitor="val_loss", mode="min", verbose=1, patience=5
-                        ),
-                        tf.keras.callbacks.ReduceLROnPlateau(),
-                    ],
                     verbose=2,
                 )
             except tf.errors.ResourceExhaustedError:
