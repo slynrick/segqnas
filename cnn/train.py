@@ -18,9 +18,12 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
-                                       get_training_augmentation,
-                                       get_validation_augmentation)
+from spleen_dataset.dataloader import (
+    SpleenDataloader,
+    SpleenDataset,
+    get_training_augmentation,
+    get_validation_augmentation,
+)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
@@ -88,13 +91,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     num_initializations = 3
     metric_epochs = 10
 
-    net = model.build_net(
-        (image_size, image_size, num_channels),
-        num_classes,
-        fn_dict=fn_dict,
-        net_list=net_list,
-    )
-
     params["net"] = net
     params["net_list"] = net_list
 
@@ -115,6 +111,13 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     for initialization in range(num_initializations):
 
         for fold in range(num_splits):
+
+            net = model.build_net(
+                (image_size, image_size, num_channels),
+                num_classes,
+                fn_dict=fn_dict,
+                net_list=net_list,
+            )
 
             train_patients, val_patients = get_split_deterministic(
                 patients, fold=fold, num_splits=num_splits, random_state=initialization
