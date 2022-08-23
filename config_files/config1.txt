@@ -36,6 +36,7 @@ QNAS:
                 'vgg_5_64':           {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 64},     'prob': 1/72},
                 'vgg_5_128':          {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 128},    'prob': 1/72},
                 'vgg_5_256':          {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 256},    'prob': 1/72},
+                'vgg_5_512':          {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 512},    'prob': 1/72},
                 'vgg_5_1024':         {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 1024},   'prob': 1/72},
 
                 'vgg_7_32':           {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 32},     'prob': 1/72},
