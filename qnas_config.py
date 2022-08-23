@@ -89,7 +89,8 @@ class ConfigParameters(object):
                 probs = np.sum(probs)
                 if sqrt((1.0 - probs) ** 2) > 1e-2:
                     raise ValueError(
-                        "Function probabilities should sum 1.0! "
+                        "Function probabilities should sum 1.0!"
+                        f"But it summed to {probs}"
                         "Tolerance of numpy is 1e-2."
                     )
 
