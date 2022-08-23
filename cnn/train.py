@@ -18,12 +18,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (
-    SpleenDataloader,
-    SpleenDataset,
-    get_training_augmentation,
-    get_validation_augmentation,
-)
+from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
+                                       get_training_augmentation,
+                                       get_validation_augmentation)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
@@ -91,9 +88,6 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     num_initializations = 3
     metric_epochs = 10
 
-    params["net"] = net
-    params["net_list"] = net_list
-
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     params["t0"] = time.time()
@@ -157,6 +151,9 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         level=tf.compat.v1.logging.get_verbosity(),
         msg=f"val_gen_dice_coef {mean_val_gen_dice_coef} +- {std_val_gen_dice_coef}",
     )
+
+    params["net"] = net
+    params["net_list"] = net_list
 
     return mean_val_gen_dice_coef
 
