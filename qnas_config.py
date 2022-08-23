@@ -87,10 +87,10 @@ class ConfigParameters(object):
 
             if any(probs):
                 probs = np.sum(probs)
-                if sqrt((1.0 - probs) ** 2) > 1e-4:
+                if sqrt((1.0 - probs) ** 2) > 1e-2:
                     raise ValueError(
                         "Function probabilities should sum 1.0! "
-                        "Tolerance of numpy is 1e-4."
+                        "Tolerance of numpy is 1e-2."
                     )
 
         vars_dict = {
