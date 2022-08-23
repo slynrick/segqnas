@@ -18,12 +18,9 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (
-    SpleenDataloader,
-    SpleenDataset,
-    get_training_augmentation,
-    get_validation_augmentation,
-)
+from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
+                                       get_training_augmentation,
+                                       get_validation_augmentation)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
@@ -112,6 +109,8 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         msg=f"I am node {node}! Running fitness calculation of {id_num} with "
         f"structure:\n{net_list}",
     )
+
+    val_gen_dice_coef_list = []
 
     for initialization in range(num_initializations):
 
