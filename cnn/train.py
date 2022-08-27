@@ -56,15 +56,15 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     gpu_id = int(id_num.split("_")[-1]) % len(gpus)
     
-    tf.config.gpu.set_per_process_memory_fraction(0.4)
+    tf.config.gpu.set_per_process_memory_fraction(0.35)
 
     tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
 
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError as e:
-        print(e)
+    # try:
+    #     for gpu in gpus:
+    #         tf.config.experimental.set_memory_growth(gpu, True)
+    # except RuntimeError as e:
+    #     print(e)
 
     # try:
     #     tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=20480)])
