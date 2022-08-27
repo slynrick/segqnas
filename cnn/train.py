@@ -55,6 +55,8 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     gpus = tf.config.experimental.list_physical_devices("GPU")
 
     gpu_id = int(id_num.split("_")[-1]) % len(gpus)
+    
+    tf.config.gpu.set_per_process_memory_fraction(0.4)
 
     tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
 
