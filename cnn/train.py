@@ -152,6 +152,12 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
         msg=f"val_gen_dice_coef {mean_val_gen_dice_coef} +- {std_val_gen_dice_coef}",
     )
 
+    # save net list as csv (layers)
+    net_list_file_path = os.path.join(model_path, "net_list.csv")
+    with open(net_list_file_path, mode="w") as f:
+        write = csv.writer(f)
+        write.writerow(net_list)
+
     params["net"] = net
     params["net_list"] = net_list
 
