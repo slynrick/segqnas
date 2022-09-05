@@ -23,56 +23,48 @@ QNAS:
                 'vgg_1_128':          {'block': 'VGGBlock',       'params': {'kernel': 1, 'filters': 128},    'prob': 1/48},
                 'vgg_1_256':          {'block': 'VGGBlock',       'params': {'kernel': 1, 'filters': 256},    'prob': 1/48},
                 'vgg_1_512':          {'block': 'VGGBlock',       'params': {'kernel': 1, 'filters': 512},    'prob': 1/48},
-                'vgg_1_1024':         {'block': 'VGGBlock',       'params': {'kernel': 1, 'filters': 1024},   'prob': 1/48},
 
                 'vgg_3_32':           {'block': 'VGGBlock',       'params': {'kernel': 3, 'filters': 32},     'prob': 1/48},
                 'vgg_3_64':           {'block': 'VGGBlock',       'params': {'kernel': 3, 'filters': 64},     'prob': 1/48},
                 'vgg_3_128':          {'block': 'VGGBlock',       'params': {'kernel': 3, 'filters': 128},    'prob': 1/48},
                 'vgg_3_256':          {'block': 'VGGBlock',       'params': {'kernel': 3, 'filters': 256},    'prob': 1/48},
                 'vgg_3_512':          {'block': 'VGGBlock',       'params': {'kernel': 3, 'filters': 512},    'prob': 1/48},
-                'vgg_3_1024':         {'block': 'VGGBlock',       'params': {'kernel': 3, 'filters': 1024},   'prob': 1/48},
 
                 'vgg_5_32':           {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 32},     'prob': 1/48},
                 'vgg_5_64':           {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 64},     'prob': 1/48},
                 'vgg_5_128':          {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 128},    'prob': 1/48},
                 'vgg_5_256':          {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 256},    'prob': 1/48},
                 'vgg_5_512':          {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 512},    'prob': 1/48},
-                'vgg_5_1024':         {'block': 'VGGBlock',       'params': {'kernel': 5, 'filters': 1024},   'prob': 1/48},
 
                 'vgg_7_32':           {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 32},     'prob': 1/48},
                 'vgg_7_64':           {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 64},     'prob': 1/48},
                 'vgg_7_128':          {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 128},    'prob': 1/48},
                 'vgg_7_256':          {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 256},    'prob': 1/48},
                 'vgg_7_512':          {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 512},    'prob': 1/48},
-                'vgg_7_1024':         {'block': 'VGGBlock',       'params': {'kernel': 7, 'filters': 1024},   'prob': 1/48},
 
                 'resnet_1_32':        {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 32},     'prob': 1/48},
                 'resnet_1_64':        {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 64},     'prob': 1/48},
                 'resnet_1_128':       {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 128},    'prob': 1/48},
                 'resnet_1_256':       {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 256},    'prob': 1/48},
                 'resnet_1_512':       {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 512},    'prob': 1/48},
-                'resnet_1_1024':      {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 1024},   'prob': 1/48},
 
                 'resnet_3_32':        {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 32},     'prob': 1/48},
                 'resnet_3_64':        {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 64},     'prob': 1/48},
                 'resnet_3_128':       {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 128},    'prob': 1/48},
                 'resnet_3_256':       {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 256},    'prob': 1/48},
                 'resnet_3_512':       {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 512},    'prob': 1/48},
-                'resnet_3_1024':      {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 1024},   'prob': 1/48},
 
                 'resnet_5_32':        {'block': 'ResNetBlock',    'params': {'kernel': 5, 'filters': 32},     'prob': 1/48},
                 'resnet_5_64':        {'block': 'ResNetBlock',    'params': {'kernel': 5, 'filters': 64},     'prob': 1/48},
                 'resnet_5_128':       {'block': 'ResNetBlock',    'params': {'kernel': 5, 'filters': 128},    'prob': 1/48},
                 'resnet_5_256':       {'block': 'ResNetBlock',    'params': {'kernel': 5, 'filters': 256},    'prob': 1/48},
                 'resnet_5_512':       {'block': 'ResNetBlock',    'params': {'kernel': 5, 'filters': 512},    'prob': 1/48},
-                'resnet_5_1024':      {'block': 'ResNetBlock',    'params': {'kernel': 5, 'filters': 1024},   'prob': 1/48},
                 
                 'resnet_7_32':        {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 32},     'prob': 1/48},
                 'resnet_7_64':        {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 64},     'prob': 1/48},
                 'resnet_7_128':       {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 128},    'prob': 1/48},
                 'resnet_7_256':       {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 256},    'prob': 1/48},
-                'resnet_7_512':       {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 512},    'prob': 1/48},
-                'resnet_7_1024':      {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 1024},   'prob': 1/48},}
+                'resnet_7_512':       {'block': 'ResNetBlock',    'params': {'kernel': 7, 'filters': 512},    'prob': 1/48},}
 
 
 train:
