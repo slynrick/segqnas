@@ -42,7 +42,6 @@ QNAS:
                 'resnet_1_64':        {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 64},     'prob': 1/32},
                 'resnet_1_128':       {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 128},    'prob': 1/32},
                 'resnet_1_256':       {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 256},    'prob': 1/32},
-                'resnet_1_512':       {'block': 'ResNetBlock',    'params': {'kernel': 1, 'filters': 512},    'prob': 1/32},
 
                 'resnet_3_32':        {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 32},     'prob': 1/32},
                 'resnet_3_64':        {'block': 'ResNetBlock',    'params': {'kernel': 3, 'filters': 64},     'prob': 1/32},
