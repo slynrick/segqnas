@@ -130,3 +130,37 @@ class InceptionBlock(Block):
         x = self._activation(x)
 
         return x
+
+class DenseBlock(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+        x0 = x
+
+        x = self._batch_norm(x, is_train)
+        x = self._activation(x)
+        x = self._conv_kxk(x)
+        x1 = x
+
+        x = self._concat([x, x0])
+
+        x = self._batch_norm(x, is_train)
+        x = self._activation(x)
+        x = self._conv_kxk(x)
+        x2 = x
+
+        x = self._concat([x, x0, x1])
+
+        x = self._batch_norm(x, is_train)
+        x = self._activation(x)
+        x = self._conv_kxk(x)
+        x3 = x
+
+        x = self._concat([x, x0, x1, x2])
+
+        x = self._batch_norm(x, is_train)
+        x = self._activation(x)
+        x = self._conv_kxk(x)
+
+        x = self._concat([x, x0, x1, x2, x3])
+
+        return x
