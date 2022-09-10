@@ -121,7 +121,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
             )
             val_dataloader = SpleenDataloader(val_dataset, batch_size, val_augmentation)
 
-            checkpoint_filepath = "/tmp/checkpoint"
+            checkpoint_filepath = f"/tmp/checkpoint_{id_num}"
             model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
                 filepath=checkpoint_filepath,
                 save_weights_only=True,
