@@ -145,7 +145,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                 patient_dataloader = SpleenDataloader(
                     patient_dataset, 1, val_augmentation, shuffle=False
                 )
-                results = model.evaluate(patient_dataloader)
+                results = net.evaluate(patient_dataloader)
                 val_gen_dice_coef_patient = results[-1]
                 val_gen_dice_coef_list.append(val_gen_dice_coef_patient)
 
