@@ -36,7 +36,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+            kernel_regularizer=K.regularizers.L1L2(l1=1e-5, l2=1e-4),
             use_bias=False,
             name=name,
         )(inputs)
@@ -49,7 +49,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+            kernel_regularizer=K.regularizers.L1L2(l1=1e-5, l2=1e-4),
             use_bias=False,
             name=name,
         )(inputs)
@@ -62,7 +62,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+            kernel_regularizer=K.regularizers.L1L2(l1=1e-5, l2=1e-4),
             use_bias=False,
             name=name,
         )(inputs)
@@ -74,7 +74,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
-            kernel_regularizer=regularizers.L1L2(l1=1e-5, l2=1e-4),
+            kernel_regularizer=K.regularizers.L1L2(l1=1e-5, l2=1e-4),
             use_bias=False,
             name=name,
         )(inputs)
