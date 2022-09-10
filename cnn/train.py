@@ -82,8 +82,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     val_augmentation = get_validation_augmentation(patch_size)
 
     num_splits = 5
-    num_initializations = 3
-    metric_epochs = 10
+    num_initializations = 1
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
@@ -135,7 +134,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                 train_dataloader,
                 validation_data=val_dataloader,
                 epochs=epochs,
-                verbose=1,
+                verbose=2,
                 callbacks=[model_checkpoint_callback],
             )
 
