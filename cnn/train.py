@@ -55,17 +55,14 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     gpus = tf.config.experimental.list_physical_devices("GPU")
 
     gpu_id = int(id_num.split("_")[-1]) % len(gpus)
-    
+
     tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
 
-    # try:
-    #     for gpu in gpus:
-    #         tf.config.experimental.set_memory_growth(gpu, False)
-    # except RuntimeError as e:
-    #     print(e)
-
     try:
-        tf.config.experimental.set_virtual_device_configuration(gpus[gpu_id], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)])
+        tf.config.experimental.set_virtual_device_configuration(
+            gpus[gpu_id],
+            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)],
+        )
     except RuntimeError as e:
         print(e)
 
@@ -125,24 +122,33 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
             )
             val_dataloader = SpleenDataloader(val_dataset, batch_size, val_augmentation)
 
-            try:
-                history = net.fit(
-                    train_dataloader,
-                    validation_data=val_dataloader,
-                    epochs=epochs,
-                    verbose=2,
-                )
-            except tf.errors.ResourceExhaustedError:
-                tf.compat.v1.logging.log(
-                    level=tf.compat.v1.logging.get_verbosity(),
-                    msg=f"Model is probably too large... Resource Exhausted Error!",
-                )
-                return 0
-
-            val_gen_dice_coef = np.mean(
-                history.history["val_gen_dice_coef"][-metric_epochs:]
+            checkpoint_filepath = "/tmp/checkpoint"
+            model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+                filepath=checkpoint_filepath,
+                save_weights_only=True,
+                monitor="val_gen_dice_coef",
+                mode="max",
+                save_best_only=True,
             )
-            val_gen_dice_coef_list.append(val_gen_dice_coef)
+
+            history = net.fit(
+                train_dataloader,
+                validation_data=val_dataloader,
+                epochs=epochs,
+                verbose=1,
+                callbacks=[model_checkpoint_callback],
+            )
+
+            net.load_weights(checkpoint_filepath)
+
+            for patient in val_patients:
+                patient_dataset = SpleenDataset([patient], only_non_empty_slices=True)
+                patient_dataloader = SpleenDataloader(
+                    patient_dataset, 1, val_augmentation, shuffle=False
+                )
+                results = model.evaluate(patient_dataloader)
+                val_gen_dice_coef_patient = results[-1]
+                val_gen_dice_coef_list.append(val_gen_dice_coef_patient)
 
     mean_val_gen_dice_coef = np.mean(val_gen_dice_coef_list)
     std_val_gen_dice_coef = np.std(val_gen_dice_coef_list)
