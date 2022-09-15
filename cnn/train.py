@@ -98,56 +98,66 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
 
     val_gen_dice_coef_list = []
 
-    for initialization in range(num_initializations):
+    try:
 
-        for fold in range(num_splits):
+        for initialization in range(num_initializations):
 
-            net = model.build_net(
-                (image_size, image_size, num_channels),
-                num_classes,
-                fn_dict=fn_dict,
-                net_list=net_list,
-            )
+            for fold in range(num_splits):
 
-            train_patients, val_patients = get_split_deterministic(
-                patients, fold=fold, num_splits=num_splits, random_state=initialization
-            )
-
-            train_dataset = SpleenDataset(train_patients, only_non_empty_slices=True)
-            val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
-
-            train_dataloader = SpleenDataloader(
-                train_dataset, batch_size, train_augmentation
-            )
-            val_dataloader = SpleenDataloader(val_dataset, batch_size, val_augmentation)
-
-            checkpoint_filepath = f"/tmp/checkpoint_{id_num}"
-            model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-                filepath=checkpoint_filepath,
-                save_weights_only=True,
-                monitor="val_gen_dice_coef",
-                mode="max",
-                save_best_only=True,
-            )
-
-            history = net.fit(
-                train_dataloader,
-                validation_data=val_dataloader,
-                epochs=epochs,
-                verbose=2,
-                callbacks=[model_checkpoint_callback],
-            )
-
-            net.load_weights(checkpoint_filepath)
-
-            for patient in val_patients:
-                patient_dataset = SpleenDataset([patient], only_non_empty_slices=True)
-                patient_dataloader = SpleenDataloader(
-                    patient_dataset, 1, val_augmentation, shuffle=False
+                net = model.build_net(
+                    (image_size, image_size, num_channels),
+                    num_classes,
+                    fn_dict=fn_dict,
+                    net_list=net_list,
                 )
-                results = net.evaluate(patient_dataloader)
-                val_gen_dice_coef_patient = results[-1]
-                val_gen_dice_coef_list.append(val_gen_dice_coef_patient)
+
+                train_patients, val_patients = get_split_deterministic(
+                    patients, fold=fold, num_splits=num_splits, random_state=initialization
+                )
+
+                train_dataset = SpleenDataset(train_patients, only_non_empty_slices=True)
+                val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
+
+                train_dataloader = SpleenDataloader(
+                    train_dataset, batch_size, train_augmentation
+                )
+                val_dataloader = SpleenDataloader(val_dataset, batch_size, val_augmentation)
+
+                checkpoint_filepath = f"/tmp/checkpoint_{id_num}"
+                model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+                    filepath=checkpoint_filepath,
+                    save_weights_only=True,
+                    monitor="val_gen_dice_coef",
+                    mode="max",
+                    save_best_only=True,
+                )
+
+                history = net.fit(
+                    train_dataloader,
+                    validation_data=val_dataloader,
+                    epochs=epochs,
+                    verbose=2,
+                    callbacks=[model_checkpoint_callback],
+                )
+
+                net.load_weights(checkpoint_filepath)
+
+                for patient in val_patients:
+                    patient_dataset = SpleenDataset([patient], only_non_empty_slices=True)
+                    patient_dataloader = SpleenDataloader(
+                        patient_dataset, 1, val_augmentation, shuffle=False
+                    )
+                    results = net.evaluate(patient_dataloader)
+                    val_gen_dice_coef_patient = results[-1]
+                    val_gen_dice_coef_list.append(val_gen_dice_coef_patient)
+    except e:
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"Exception: {e}",
+        )
+
+        return 0   
+
 
     mean_val_gen_dice_coef = np.mean(val_gen_dice_coef_list)
     std_val_gen_dice_coef = np.std(val_gen_dice_coef_list)
