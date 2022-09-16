@@ -150,7 +150,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                     results = net.evaluate(patient_dataloader)
                     val_gen_dice_coef_patient = results[-1]
                     val_gen_dice_coef_list.append(val_gen_dice_coef_patient)
-    except e:
+    except Exception as e:
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
             msg=f"Exception: {e}",
