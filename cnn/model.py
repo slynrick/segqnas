@@ -37,24 +37,26 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
     prediction = Conv2D(
         name="prediction_mask",
         filters=num_classes,
-        kernel_size=(1, 1),
+        kernel_size=1,
         activation="sigmoid",
     )(x)
 
-    model = Model(inputs=[inputs], outputs=[prediction], name="net")
+    model = Model(inputs=[inputs], outputs=[prediction], name="net")    
 
-    starter_learning_rate = 1e-3
-    end_learning_rate = 0
-    decay_steps = 1e10
-    learning_rate_fn = PolynomialDecay(
-        starter_learning_rate, decay_steps, end_learning_rate, power=0.9
-    )
+    # starter_learning_rate = 1e-3
+    # end_learning_rate = 0
+    # decay_steps = 1e10
+    # learning_rate_fn = PolynomialDecay(
+    #     starter_learning_rate, decay_steps, end_learning_rate, power=0.9
+    # )
 
-    # model.compile(optimizer=Adam(learning_rate=1e-4), loss=gen_dice_coef_loss, metrics=[gen_dice_coef])
-    model.compile(
-        optimizer=Adam(learning_rate=learning_rate_fn),
-        loss=gen_dice_coef_loss,
-        metrics=[gen_dice_coef],
-    )
+    # model.compile(optimizer=Adam(learning_rate=1e-3), loss=gen_dice_coef_loss, metrics=[gen_dice_coef])
+
+    model.compile(optimizer=Adam(learning_rate=1e-3), loss=gen_dice_coef_loss, metrics=[gen_dice_coef])
+    # model.compile(
+    #     optimizer=Adam(learning_rate=learning_rate_fn),
+    #     loss=gen_dice_coef_loss,
+    #     metrics=[gen_dice_coef],
+    # )
 
     return model

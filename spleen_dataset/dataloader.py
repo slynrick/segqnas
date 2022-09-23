@@ -6,7 +6,8 @@ import albumentations as A
 import numpy as np
 from tensorflow.keras.utils import Sequence
 
-from spleen_dataset.config import dataset_folder, num_threads, preprocessed_folder
+from spleen_dataset.config import (dataset_folder, num_threads,
+                                   preprocessed_folder)
 from spleen_dataset.utils import get_list_of_patients, subfiles
 
 
@@ -14,20 +15,20 @@ def get_training_augmentation(patch_size):
     train_transform = [
         A.Resize(*patch_size),
         A.HorizontalFlip(p=0.5),
-        A.ShiftScaleRotate(p=0.75),
-        # A.RandomBrightness(limit=0.0001, p=0.5),
-        A.PadIfNeeded(
-            min_height=patch_size[0],
-            min_width=patch_size[1],
-            always_apply=True,
-            border_mode=0,
-        ),
-        A.CropNonEmptyMaskIfExists(
-            height=patch_size[0],
-            width=patch_size[1],
-            always_apply=True,
-            ignore_channels=[0],
-        ),
+        A.ShiftScaleRotate(p=1),
+        # A.RandomBrightness(p=1),
+        # A.PadIfNeeded(
+        #     min_height=patch_size[0],
+        #     min_width=patch_size[1],
+        #     always_apply=True,
+        #     border_mode=0,
+        # ),
+        # A.CropNonEmptyMaskIfExists(
+        #     height=patch_size[0],
+        #     width=patch_size[1],
+        #     always_apply=True,
+        #     ignore_channels=[0],
+        # ),
         # A.GaussianBlur(p=0.5),
         # A.IAAAdditiveGaussianNoise(p=0.2),
         # A.IAAPerspective(p=0.5),

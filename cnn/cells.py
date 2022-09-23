@@ -27,7 +27,7 @@ class Cell(object):
             padding="same",
             data_format="channels_last",
             kernel_initializer="he_normal",
-            bias_initializer="he_normal",
+            use_bias=False,
             name=name,
         )(inputs)
 
@@ -36,14 +36,27 @@ class Cell(object):
 
     def _transpose_conv(self, inputs, name=None):
         return K.layers.Conv2DTranspose(
-            filters=self.filters / 2,
-            kernel_size=(2, 2),
-            strides=(2, 2),
+            filters=self.filters,
+            kernel_size=3,
+            strides=2,
             activation="relu",
             padding="same",
             data_format="channels_last",
             kernel_initializer="he_normal",
-            bias_initializer="he_normal",
+            use_bias=False,
+            name=name,
+        )(inputs)
+
+    def _downsampling_conv(self, inputs, name=None):
+        return K.layers.Conv2D(
+            filters=self.filters,
+            kernel_size=3,
+            activation="relu",
+            strides=2,
+            padding="same",
+            data_format="channels_last",
+            kernel_initializer="he_normal",
+            use_bias=False,
             name=name,
         )(inputs)
 
@@ -57,8 +70,8 @@ class DownscalingCell(Cell):
             x = self._conv_1x1(x)
 
         x = self.block(x, is_train=is_train)
-
-        x = self._max_pool(x)
+        x = self._downsampling_conv(x)
+        #x = self._max_pool(x)
 
         return x
 
