@@ -13,24 +13,29 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
     inputs = Input(input_shape, name="input")
     x = inputs
 
+    filter_list = [32, 64, 128, 256, 512]
+
     skips = []
-    for cell in net_list[0:4]:
+    for i, cell in enumerate(net_list[0:4]):
         block = fn_dict[cell]["block"]
         kernel_size = fn_dict[cell]["params"]["kernel"]
-        filters = fn_dict[cell]["params"]["filters"]
+        #filters = fn_dict[cell]["params"]["filters"]
+        filters = filter_list[i]
         x = DownscalingCell(block, kernel_size, filters)(x)
         skips.append(x)
 
     cell = net_list[4]
     block = fn_dict[cell]["block"]
     kernel_size = fn_dict[cell]["params"]["kernel"]
-    filters = fn_dict[cell]["params"]["filters"]
+    #filters = fn_dict[cell]["params"]["filters"]
+    filters = filter_list[4]
     x = NonscalingCell(block, kernel_size, filters)(x)
 
-    for cell in net_list[5:]:
+    for i, cell in enumerate(net_list[5:]):
         block = fn_dict[cell]["block"]
         kernel_size = fn_dict[cell]["params"]["kernel"]
-        filters = fn_dict[cell]["params"]["filters"]
+        #filters = fn_dict[cell]["params"]["filters"]
+        filters = filter_list[-i-1]
         x = UpscalingCell(block, kernel_size, filters)([x, skips.pop()])
 
     # final conv
