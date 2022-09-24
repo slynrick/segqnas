@@ -71,7 +71,7 @@ class DownscalingCell(Cell):
 
         x = self.block(x, is_train=is_train)
         x = self._downsampling_conv(x)
-        #x = self._max_pool(x)
+        # x = self._max_pool(x)
 
         return x
 
