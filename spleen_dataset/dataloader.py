@@ -16,46 +16,7 @@ def get_training_augmentation(patch_size):
         A.Resize(*patch_size),
         A.HorizontalFlip(p=0.5),
         A.ShiftScaleRotate(p=1),
-        # A.RandomBrightness(p=1),
-        # A.PadIfNeeded(
-        #     min_height=patch_size[0],
-        #     min_width=patch_size[1],
-        #     always_apply=True,
-        #     border_mode=0,
-        # ),
-        # A.CropNonEmptyMaskIfExists(
-        #     height=patch_size[0],
-        #     width=patch_size[1],
-        #     always_apply=True,
-        #     ignore_channels=[0],
-        # ),
-        # A.GaussianBlur(p=0.5),
-        # A.IAAAdditiveGaussianNoise(p=0.2),
-        # A.IAAPerspective(p=0.5),
-        # A.OneOf(
-        #     [
-        #         A.CLAHE(p=1),
-        #         A.RandomBrightness(p=1),
-        #         A.RandomGamma(p=1),
-        #     ],
-        #     p=0.9,
-        # ),
-        # A.OneOf(
-        #     [
-        #         A.IAASharpen(p=1),
-        #         A.Blur(blur_limit=3, p=1),
-        #         A.MotionBlur(blur_limit=3, p=1),
-        #     ],
-        #     p=0.9,
-        # ),
-        # A.OneOf(
-        #     [
-        #         A.RandomContrast(p=1),
-        #         A.HueSaturationValue(p=1),
-        #     ],
-        #     p=0.9,
-        # ),
-        # A.Lambda(mask=round_clip_0_1)
+        A.RandomBrightness(p=1),
     ]
     return A.Compose(train_transform)
 
@@ -64,7 +25,6 @@ def get_validation_augmentation(patch_size):
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
         A.Resize(*patch_size),
-        # A.PadIfNeeded(min_height=None, min_width=None, pad_height_divisor=48, pad_width_divisor=48, always_apply=True, border_mode=0),
     ]
     return A.Compose(test_transform)
 
