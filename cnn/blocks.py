@@ -95,7 +95,7 @@ class ResNetBlock(Block):
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
 
-        if(inputs.shape[-1] == self.filters):
+        if inputs.shape[-1] == self.filters:
             s = inputs
         else:
             # this is done to match filters in the shortcut
@@ -119,7 +119,7 @@ class XceptionBlock(Block):
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
 
-        if(inputs.shape[-1] == self.filters):
+        if inputs.shape[-1] == self.filters:
             s = inputs
         else:
             # this is done to match filters in the shortcut
@@ -143,7 +143,7 @@ class MBConvBlock(Block):
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
 
-        if(inputs.shape[-1] == self.filters):
+        if inputs.shape[-1] == self.filters:
             s = inputs
         else:
             # this is done to match filters in the shortcut

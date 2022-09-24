@@ -41,7 +41,7 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
         activation="sigmoid",
     )(x)
 
-    model = Model(inputs=[inputs], outputs=[prediction], name="net")    
+    model = Model(inputs=[inputs], outputs=[prediction], name="net")
 
     # starter_learning_rate = 1e-3
     # end_learning_rate = 0
@@ -52,7 +52,11 @@ def build_net(input_shape, num_classes, fn_dict, net_list, is_train=True):
 
     # model.compile(optimizer=Adam(learning_rate=1e-3), loss=gen_dice_coef_loss, metrics=[gen_dice_coef])
 
-    model.compile(optimizer=Adam(learning_rate=1e-3), loss=gen_dice_coef_loss, metrics=[gen_dice_coef])
+    model.compile(
+        optimizer=Adam(learning_rate=1e-3),
+        loss=gen_dice_coef_loss,
+        metrics=[gen_dice_coef],
+    )
     # model.compile(
     #     optimizer=Adam(learning_rate=learning_rate_fn),
     #     loss=gen_dice_coef_loss,

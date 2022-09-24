@@ -18,9 +18,12 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
-                                       get_training_augmentation,
-                                       get_validation_augmentation)
+from spleen_dataset.dataloader import (
+    SpleenDataloader,
+    SpleenDataset,
+    get_training_augmentation,
+    get_validation_augmentation,
+)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
@@ -82,7 +85,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     val_augmentation = get_validation_augmentation(patch_size)
 
     num_splits = 5
-    num_initializations = 1
+    num_initializations = 3
 
     # Training time start counting here. It needs to be defined outside model_fn(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
@@ -97,6 +100,7 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
     )
 
     val_gen_dice_coef_list = []
+    evaluation_epochs = int(0.2 * epochs)
 
     try:
 
@@ -112,52 +116,56 @@ def fitness_calculation(id_num, params, fn_dict, net_list):
                 )
 
                 train_patients, val_patients = get_split_deterministic(
-                    patients, fold=fold, num_splits=num_splits, random_state=initialization
+                    patients,
+                    fold=fold,
+                    num_splits=num_splits,
+                    random_state=initialization,
                 )
 
-                train_dataset = SpleenDataset(train_patients, only_non_empty_slices=True)
+                train_dataset = SpleenDataset(
+                    train_patients, only_non_empty_slices=True
+                )
                 val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
 
                 train_dataloader = SpleenDataloader(
                     train_dataset, batch_size, train_augmentation
                 )
-                val_dataloader = SpleenDataloader(val_dataset, batch_size, val_augmentation)
+                val_dataloader = SpleenDataloader(
+                    val_dataset, batch_size, val_augmentation
+                )
 
-                checkpoint_filepath = f"/tmp/checkpoint_{id_num}"
-                model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-                    filepath=checkpoint_filepath,
-                    save_weights_only=True,
-                    monitor="val_gen_dice_coef",
-                    mode="max",
-                    save_best_only=True,
+                def learning_rate_fn(epoch):
+                    initial_lr = 1e-3
+                    power = 0.9
+                    return float(initial_lr * (1 - (epoch / float(epochs))) ** power)
+
+                lr_callback = tf.keras.callbacks.LearningRateScheduler(
+                    learning_rate_fn, verbose=False
                 )
 
                 history = net.fit(
                     train_dataloader,
                     validation_data=val_dataloader,
                     epochs=epochs,
-                    verbose=2,
-                    callbacks=[model_checkpoint_callback],
+                    verbose=0,
+                    callbacks=[lr_callback],
                 )
 
-                net.load_weights(checkpoint_filepath)
+                val_gen_dice_coef_list.extend(
+                    history.history["val_gen_dice_coef"][-evaluation_epochs:]
+                )
+                tf.compat.v1.logging.log(
+                    level=tf.compat.v1.logging.get_verbosity(),
+                    msg=f"Dice of {id_num} = {np.mean(history.history['val_gen_dice_coef'][-evaluation_epochs:])}",
+                )
 
-                for patient in val_patients:
-                    patient_dataset = SpleenDataset([patient], only_non_empty_slices=True)
-                    patient_dataloader = SpleenDataloader(
-                        patient_dataset, 1, val_augmentation, shuffle=False
-                    )
-                    results = net.evaluate(patient_dataloader)
-                    val_gen_dice_coef_patient = results[-1]
-                    val_gen_dice_coef_list.append(val_gen_dice_coef_patient)
     except Exception as e:
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
             msg=f"Exception: {e}",
         )
 
-        return 0   
-
+        return 0
 
     mean_val_gen_dice_coef = np.mean(val_gen_dice_coef_list)
     std_val_gen_dice_coef = np.std(val_gen_dice_coef_list)

@@ -5,8 +5,12 @@ import SimpleITK as sitk
 from batchgenerators.utilities.file_and_folder_operations import *
 from monai.apps import download_and_extract
 
-from spleen_dataset.config import (dataset_folder, num_threads,
-                                   preprocessed_folder, root_folder)
+from spleen_dataset.config import (
+    dataset_folder,
+    num_threads,
+    preprocessed_folder,
+    root_folder,
+)
 
 
 def get_list_of_patients(base_dir):
@@ -109,9 +113,9 @@ def load_and_preprocess(case, patient_name, output_folder):
     #     imgs_npy[i][mask == 0] = 0
 
     # Z normalisation
-    #mean = imgs_npy[0].mean()
-    #std = imgs_npy[0].std()
-    #imgs_npy[0] = (imgs_npy[0] - mean) / (std + 1e-8)
+    # mean = imgs_npy[0].mean()
+    # std = imgs_npy[0].std()
+    # imgs_npy[0] = (imgs_npy[0] - mean) / (std + 1e-8)
 
     for slice_idx in range(imgs_npy.shape[1]):
         slice_npy = imgs_npy[:, slice_idx, :, :]
