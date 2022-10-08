@@ -5,6 +5,12 @@ from tensorflow import keras as K
 from cnn.blocks import Block
 
 
+def instantiate_cell(cell, block, kernel_size, filters):
+    module = importlib.import_module("cnn.cells")
+    class_ = getattr(module, cell)
+    return class_(block, kernel_size, filters)
+
+
 class Cell(object):
     def __init__(self, block, kernel_size, filters):
         self.block = self._instatiate_block(block, kernel_size, filters)
@@ -69,23 +75,23 @@ class DownscalingCell(Cell):
             x = self._concat(inputs)
             x = self._conv_1x1(x)
 
-        x = self.block(x, is_train=is_train)
-        x = self._downsampling_conv(x)
+        x = self.block(x, name=name, is_train=is_train)
+        x = self._downsampling_conv(x, name=f"{name}_downsample")
         # x = self._max_pool(x)
 
         return x
 
 
 class UpscalingCell(Cell):
-    def __call__(self, inputs, is_train=True):
+    def __call__(self, inputs, name=None, is_train=True):
         x = inputs
 
         if isinstance(inputs, list):
             x = self._concat(inputs)
             x = self._conv_1x1(x)
 
-        x = self.block(x, is_train=is_train)
-        x = self._transpose_conv(x)
+        x = self.block(x, name=name, is_train=is_train)
+        x = self._transpose_conv(x, name=f"{name}_upsample")
 
         return x
 
@@ -98,6 +104,6 @@ class NonscalingCell(Cell):
             x = self._concat(inputs)
             x = self._conv_1x1(x)
 
-        x = self.block(x, is_train=is_train)
+        x = self.block(x, name=name, is_train=is_train)
 
         return x

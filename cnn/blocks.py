@@ -80,12 +80,12 @@ class VGGBlock(Block):
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
 
-        x = self._conv_kxk(x)
-        x = self._batch_norm(x, is_train)
+        x = self._conv_kxk(x, name=name + "_conv_1")
+        x = self._batch_norm(x, is_train=is_train, name=name + "_norm_1")
         x = self._relu_activation(x)
 
-        x = self._conv_kxk(x)
-        x = self._batch_norm(x, is_train)
+        x = self._conv_kxk(x, name=name + "_conv_2")
+        x = self._batch_norm(x, is_train=is_train, name=name + "_norm_2")
         x = self._relu_activation(x)
 
         return x

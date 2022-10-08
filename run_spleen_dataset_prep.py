@@ -121,7 +121,7 @@ def load_and_preprocess(case, patient_name, output_folder):
         slice_npy = imgs_npy[:, slice_idx, :, :]
 
         slice_npy[0] = np.clip(slice_npy[0], -57, 164)
-        slice_npy[0] = (slice_npy[0] - np.min(slice_npy[0]))/np.ptp(slice_npy[0])
+        slice_npy[0] = (slice_npy[0] - np.min(slice_npy[0])) / np.ptp(slice_npy[0])
 
         # mean = slice_npy[0].mean()
         # std = slice_npy[0].std()
