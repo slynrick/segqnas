@@ -8,15 +8,17 @@ from tensorflow.keras.layers import (
     ReLU,
     SeparableConv2D,
 )
+from tensorflow.keras.regularizers import L2
 
 
 class Block(object):
     def __init__(self, kernel_size, filters, name=None):
-        self.kernel_size = kernel_size
+        self.data_format = "channels_last"
         self.filters = filters
         self.initializer = HeNormal(seed=0)
+        self.kernel_size = kernel_size
         self.padding = "same"
-        self.data_format = "channels_last"
+        self.regularizer = L2(1e-6)
 
     def _add(self, inputs, name=None):
         return Add(name=name)(inputs)
@@ -46,6 +48,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)
@@ -58,6 +61,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)
@@ -70,6 +74,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)
@@ -81,6 +86,7 @@ class Block(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)
@@ -96,9 +102,23 @@ class StemConvolution(Block):
 
 
 class OutputConvolution(Block):
+    def _final_conv(self, inputs, name=None):
+        return Conv2D(
+            filters=self.filters,
+            kernel_size=3,
+            activation=None,
+            padding=self.padding,
+            data_format=self.data_format,
+            kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
+            bias_initializer=self.initializer,
+            bias_regularizer=self.regularizer,
+            name=name,
+        )(inputs)
+
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
-        x = self._conv_1x1(x, name=f"{name}_conv")
+        x = self._final_conv(x, name=f"{name}_conv")
         x = self._sigmoid_activation(x)
         return x
 

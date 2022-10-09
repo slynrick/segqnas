@@ -8,6 +8,7 @@ from tensorflow.keras.layers import (
     Conv2DTranspose,
     concatenate,
 )
+from tensorflow.keras.regularizers import L2
 
 from cnn.blocks import Block
 
@@ -15,11 +16,12 @@ from cnn.blocks import Block
 class Cell(object):
     def __init__(self, block, kernel_size, filters):
         self.block = self._instatiate_block(block, kernel_size, filters)
-        self.kernel_size = kernel_size
-        self.initializer = HeNormal(seed=0)
-        self.filters = filters
-        self.padding = "same"
         self.data_format = "channels_last"
+        self.filters = filters
+        self.initializer = HeNormal(seed=0)
+        self.kernel_size = kernel_size
+        self.padding = "same"
+        self.regularizer = L2(1e-6)
 
     def _instatiate_block(self, block, kernel_size, filters):
         module = importlib.import_module("cnn.blocks")
@@ -37,6 +39,7 @@ class Cell(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)
@@ -50,6 +53,7 @@ class Cell(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)
@@ -63,6 +67,7 @@ class Cell(object):
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
             name=name,
         )(inputs)

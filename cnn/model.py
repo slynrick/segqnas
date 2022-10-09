@@ -8,9 +8,11 @@ from cnn.layer import Layer
 from cnn.loss import gen_dice_coef_loss
 from cnn.metric import gen_dice_coef, soft_gen_dice_coef
 
+STEM_FILTERS = 32
+
 
 def calculate_number_of_filters(depth):
-    return 32 * (2**depth)
+    return STEM_FILTERS * (2**depth)
 
 
 def get_skip_connection(previous_feature_maps, current_feature_map):
@@ -28,7 +30,7 @@ def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
 
     inputs = Input(input_shape, name="input")
 
-    x = Layer("NonscalingCell", "StemConvolution", 3, 32)(
+    x = Layer("NonscalingCell", "StemConvolution", 3, STEM_FILTERS)(
         inputs, name=f"StemConvolution"
     )
 
@@ -67,15 +69,13 @@ def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
 
         previous_feature_maps.append(x)
 
-    prediction_mask = Layer("NonscalingCell", "OutputConvolution", 1, num_classes)(
+    prediction_mask = Layer("NonscalingCell", "OutputConvolution", 3, num_classes)(
         x, name=f"OutputConvolution"
     )
 
     model = Model(inputs=[inputs], outputs=[prediction_mask], name="net")
 
-    # optimizer = optimizer=Adam(learning_rate=learning_rate_fn)
     optimizer = optimizer = Adam()
-    lr_metric = get_lr_metric(optimizer)
 
     model.compile(
         optimizer=optimizer,
