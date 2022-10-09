@@ -12,16 +12,15 @@ from spleen_dataset.utils import get_list_of_patients, subfiles
 
 def get_training_augmentation(patch_size):
     train_transform = [
-        A.Resize(*patch_size),
         A.HorizontalFlip(p=0.5),
         A.ShiftScaleRotate(p=1),
-        A.RandomBrightness(p=1),
+        A.RandomBrightness(p=1, limit=(-0.1, 0.1)),
+        A.Resize(*patch_size),
     ]
     return A.Compose(train_transform)
 
 
 def get_validation_augmentation(patch_size):
-    """Add paddings to make image shape divisible by 32"""
     test_transform = [
         A.Resize(*patch_size),
     ]
