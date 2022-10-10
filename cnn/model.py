@@ -22,13 +22,15 @@ def get_skip_connection(previous_feature_maps, current_feature_map):
 
     return None
 
-def clip_cell_min_max_depth(cell, depth, min_depth=0, max_depth=4):
-    if depth < min_depth:
-        depth = min_depth
+
+def fix_cell_for_feasibility(cell, depth, num_layers, layer_num, min_depth, max_depth):
+    if num_layers - layer_num <= depth:
+        cell = "UpscalingCell"
+
+    if depth == min_depth and cell == "UpscalingCell":
         cell = "NonscalingCell"
 
-    if depth > max_depth:
-        depth = max_depth
+    if depth == max_depth and cell == "DownscalingCell":
         cell = "NonscalingCell"
 
     return cell
@@ -53,15 +55,14 @@ def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
         block = fn_dict[layer].get("block", None)
         kernel = fn_dict[layer].get("kernel", None)
 
-        if num_layers - layer_num <= depth:
-            cell = "UpscalingCell"
+        cell = fix_cell_for_feasibility(
+            cell, depth, num_layers, layer_num, min_depth, max_depth
+        )
 
         if cell == "DownscalingCell":
             depth += 1
         elif cell == "UpscalingCell":
             depth -= 1
-
-        cell = clip_cell_min_max_depth(cell, depth, min_depth, max_depth)
 
         filters = calculate_number_of_filters(depth)
 
@@ -76,7 +77,7 @@ def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
 
         previous_feature_maps.append(x)
 
-    prediction_mask = Layer("NonscalingCell", "OutputConvolution", 3, num_classes)(
+    prediction_mask = Layer("NonscalingCell", "OutputConvolution", 1, num_classes)(
         x, name=f"OutputConvolution"
     )
 

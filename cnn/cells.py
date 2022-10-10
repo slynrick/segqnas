@@ -72,8 +72,8 @@ class Cell(object):
             name=name,
         )(inputs)
 
-    def _relu_activation(self, inputs):
-        return Activation("relu")(inputs)
+    def _relu_activation(self, inputs, name=None):
+        return Activation("relu", name=name)(inputs)
 
     def _batch_norm(self, inputs, is_train, name=None):
         return BatchNormalization(axis=-1, momentum=0.9, epsilon=2e-5, name=name)(
@@ -83,42 +83,46 @@ class Cell(object):
     def _concat_with_skip_connection_if_needed(self, inputs, name=None, is_train=True):
         x = inputs
         if isinstance(x, list):
-            x = self._concat(x)
-            x = self._conv_1x1(x)
-            x = self._batch_norm(x, is_train=is_train)
-            x = self._relu_activation(x)
+            x = self._concat(x, name=f"{name}_Concatenation")
+            x = self._conv_1x1(x, name=f"{name}_Convolution")
+            x = self._batch_norm(x, is_train=is_train, name=f"{name}_Normalization")
+            x = self._relu_activation(x, name=f"{name}_Activation")
         return x
 
 
 class DownscalingCell(Cell):
     def _downsample(self, inputs, name=None, is_train=True):
         x = inputs
-        x = self._downsampling_conv(x, name=name + "_conv")
-        x = self._batch_norm(x, is_train=is_train, name=name + "_norm")
-        x = self._relu_activation(x)
+        x = self._downsampling_conv(x, name=f"{name}_Downsampling_Convolution")
+        x = self._batch_norm(
+            x, is_train=is_train, name=f"{name}_Downsampling_Normalization"
+        )
+        x = self._relu_activation(x, name=f"{name}_Downsampling_Activation")
         return x
 
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
         x = self._concat_with_skip_connection_if_needed(x, name=name, is_train=is_train)
         x = self.block(x, name=name, is_train=is_train)
-        x = self._downsample(x, name=f"{name}_downsampling", is_train=is_train)
+        x = self._downsample(x, name=name, is_train=is_train)
         return x
 
 
 class UpscalingCell(Cell):
     def _upsample(self, inputs, name=None, is_train=True):
         x = inputs
-        x = self._upsampling_conv(x, name=name + "_conv")
-        x = self._batch_norm(x, is_train=is_train, name=name + "_norm")
-        x = self._relu_activation(x)
+        x = self._upsampling_conv(x, name=f"{name}_Upsampling_Convolution")
+        x = self._batch_norm(
+            x, is_train=is_train, name=f"{name}_Upsampling_Normalization"
+        )
+        x = self._relu_activation(x, name=f"{name}_Upsampling_Activation")
         return x
 
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
         x = self._concat_with_skip_connection_if_needed(x, name=name, is_train=is_train)
         x = self.block(x, name=name, is_train=is_train)
-        x = self._upsample(x, name=f"{name}_upsampling", is_train=is_train)
+        x = self._upsample(x, name=name, is_train=is_train)
         return x
 
 
