@@ -6,7 +6,8 @@ import albumentations as A
 import numpy as np
 from tensorflow.keras.utils import Sequence
 
-from spleen_dataset.config import dataset_folder, num_threads, preprocessed_folder
+from spleen_dataset.config import (dataset_folder, num_threads,
+                                   preprocessed_folder)
 from spleen_dataset.utils import get_list_of_patients, subfiles
 
 

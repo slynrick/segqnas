@@ -22,9 +22,22 @@ def get_skip_connection(previous_feature_maps, current_feature_map):
 
     return None
 
+def clip_cell_min_max_depth(cell, depth, min_depth=0, max_depth=4):
+    if depth < min_depth:
+        depth = min_depth
+        cell = "NonscalingCell"
+
+    if depth > max_depth:
+        depth = max_depth
+        cell = "NonscalingCell"
+
+    return cell
+
 
 def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
     depth = 0
+    min_depth = 0
+    max_depth = 4
     previous_feature_maps = []
     num_layers = len(layer_list)
 
@@ -36,9 +49,9 @@ def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
 
     for layer_num, layer in enumerate(layer_list):
 
-        cell = fn_dict[layer]["cell"]
-        block = fn_dict[layer]["block"]
-        kernel = fn_dict[layer]["kernel"]
+        cell = fn_dict[layer].get("cell", None)
+        block = fn_dict[layer].get("block", None)
+        kernel = fn_dict[layer].get("kernel", None)
 
         if num_layers - layer_num <= depth:
             cell = "UpscalingCell"
@@ -48,13 +61,7 @@ def build_net(input_shape, num_classes, fn_dict, layer_list, is_train=True):
         elif cell == "UpscalingCell":
             depth -= 1
 
-        if depth < 0:
-            depth = 0
-            cell = "NonscalingCell"
-
-        if depth > 4:
-            depth = 4
-            cell = "NonscalingCell"
+        cell = clip_cell_min_max_depth(cell, depth, min_depth, max_depth)
 
         filters = calculate_number_of_filters(depth)
 
