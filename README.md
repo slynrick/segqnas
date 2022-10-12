@@ -118,7 +118,7 @@ QNAS:
         momentum:        (float) or (list);
         weight_decay:    (float) or (list);
 
-    block_dict: {'function_name': {'block': 'function_class', 
+    layer_dict: {'function_name': {'block': 'function_class', 
                                   'params': {'parameter': value}, 
                                   'prob': probability_value}}
 

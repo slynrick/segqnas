@@ -8,11 +8,12 @@ import inspect
 import os
 from collections import OrderedDict
 from math import sqrt
+from typing import Optional, Union, get_args, get_origin
 
 import numpy as np
 
-from chromosome import QChromosomeNetwork, QChromosomeParams
-from cnn import blocks, input, model
+from chromosome import QChromosomeNetwork
+from cnn import blocks, cells, input, model
 from util import load_pkl, load_yaml, natural_key
 
 
@@ -28,9 +29,10 @@ class ConfigParameters(object):
         self.phase = phase
         self.args = args
         self.QNAS_spec = {}
-        self.train_spec = {}
+        # self.train_spec = {}
         self.files_spec = {}
-        self.fn_dict = {}
+        self.layer_dict = {}
+        self.cell_list = []
         self.previous_params_file = None
         self.evolved_params = None
 
@@ -41,47 +43,35 @@ class ConfigParameters(object):
             config_file: dict with parameters.
         """
 
-        def check_params_ranges():
-            """Check if parameter ranges are inside the allowed limits."""
+        def check_cell_list():
+            """Check if cell list is compatible with existing functions."""
+            available_cells = [c[0] for c in inspect.getmembers(cells, inspect.isclass)]
 
-            ranges = config_file["QNAS"]["params_ranges"]
+            cell_list = config_file["QNAS"].get("cell_list")
 
-            allowed = {
-                "decay": (1e-6, 1.0),
-                "learning_rate": (1e-6, 1.0),
-                "momentum": (0.0, 1.0),
-                "weight_decay": (1e-10, 1e-1),
-            }
+            if cell_list:
+                for cell in cell_list:
+                    if cell not in available_cells:
+                        raise ValueError(f"{cell} is not a valid cell!")
 
-            for key, value in ranges.items():
-                if type(value) is list:
-                    if value[0] < allowed[key][0] or value[1] > allowed[key][1]:
-                        raise ValueError(f"{key} value out of bound!")
-                elif type(value) is float:
-                    if value < allowed[key][0] or value > allowed[key][1]:
-                        raise ValueError(f"{key} value out of bound!")
+        def check_layer_dict():
+            """Check if layer dict is compatible with existing functions."""
 
-        def check_fn_dict():
-            """Check if function list is compatible with existing functions."""
+            available_blocks = [
+                c[0] for c in inspect.getmembers(blocks, inspect.isclass)
+            ]
+            available_cells = [c[0] for c in inspect.getmembers(cells, inspect.isclass)]
 
-            available_fn = [c[0] for c in inspect.getmembers(blocks, inspect.isclass)]
-
-            fn_dict = config_file["QNAS"]["block_dict"]
+            layer_dict = config_file["QNAS"]["layer_dict"]
 
             probs = []
 
-            for name, definition in fn_dict.items():
-                if definition["block"] not in available_fn:
-                    raise ValueError(
-                        f"{definition['block']} is not a valid block!"
-                    )
-                for param in definition["params"].values():
-                    if type(param) is not int or param < 0:
-                        raise ValueError(
-                            f"{name} has an invalid parameter: "
-                            f"{definition['params']}!"
-                        )
-
+            for name, definition in layer_dict.items():
+                if "cell" in definition:
+                    if definition["cell"] not in available_cells:
+                        raise ValueError(f"{definition['cell']} is not a valid cell!")
+                if definition["block"] not in available_blocks:
+                    raise ValueError(f"{definition['block']} is not a valid block!")
                 if type(definition["prob"]) == str:
                     probs.append(eval(definition["prob"]))
                 else:
@@ -89,10 +79,11 @@ class ConfigParameters(object):
 
             if any(probs):
                 probs = np.sum(probs)
-                if sqrt((1.0 - probs)**2) > 1e-4:
+                if sqrt((1.0 - probs) ** 2) > 1e-2:
                     raise ValueError(
-                        "Function probabilities should sum 1.0! "
-                        "Tolerance of numpy is 1e-4."
+                        "Function probabilities should sum 1.0!"
+                        f"But it summed to {probs}"
+                        "Tolerance of numpy is 1e-2."
                     )
 
         vars_dict = {
@@ -101,18 +92,19 @@ class ConfigParameters(object):
                 ("max_generations", int),
                 ("max_num_nodes", int),
                 ("num_quantum_ind", int),
-                ("penalize_number", int),
                 ("repetition", int),
                 ("replace_method", str),
                 ("update_quantum_rate", float),
                 ("update_quantum_gen", int),
                 ("save_data_freq", int),
-                ("params_ranges", dict),
-                ("block_dict", dict),
+                ("layer_dict", dict),
+                ("cell_list", Optional[list]),
             ],
             "train": [
                 ("batch_size", int),
                 ("epochs", int),
+                ("initializations", int),
+                ("folds", int),
                 ("dataset", str),
                 ("image_size", int),
                 ("num_channels", int),
@@ -124,18 +116,23 @@ class ConfigParameters(object):
         for config in vars_dict.keys():
             for item in vars_dict[config]:
                 var = config_file[config].get(item[0])
-                if var is None:
+
+                if get_origin(item[1]) == Union:
+                    required_type = list(get_args(item[1]))
+                else:
+                    required_type = [item[1]]
+                if var is None and not type(None) in required_type:
                     raise KeyError(
                         f'Variable "{config}:{item[0]}" not found in '
                         f"configuration file {self.args['config_file']}"
                     )
-                elif type(var) is not item[1]:
+                elif not type(var) in required_type:
                     raise TypeError(
-                        f"Variable {item[0]} should be of type {item[1]} but it "
+                        f"Variable {item[0]} should be of type {required_type} but it "
                         f"is a {type(var)}"
                     )
-        check_params_ranges()
-        check_fn_dict()
+        check_layer_dict()
+        check_cell_list()
 
     def _get_evolution_params(self):
         """Get specific parameters for the evolution phase."""
@@ -149,74 +146,36 @@ class ConfigParameters(object):
         self.train_spec = dict(config_file["train"])
         self.QNAS_spec = dict(config_file["QNAS"])
 
-        # Get the parameters lower and upper limits
-        ranges = self._get_ranges(config_file)
-        self.QNAS_spec["params_ranges"] = OrderedDict(sorted(ranges.items()))
-
-        self._get_fn_spec()
+        self._get_layer_spec()
 
         self.train_spec["experiment_path"] = self.args["experiment_path"]
 
-    def _get_fn_spec(self):
-        """Organize the function specifications in *self.fn_list*, *self.fn_dict* and
+    def _get_layer_spec(self):
+        """Organize the function specifications in *self.layer_list*, *self.layer_dict* and
         *self.QNAS_spec*.
         """
 
-        self.QNAS_spec["fn_list"] = list(self.QNAS_spec["block_dict"].keys())
-        self.QNAS_spec["fn_list"].sort(key=natural_key)
-        self.fn_dict = self.QNAS_spec["block_dict"]
-        del self.QNAS_spec["block_dict"]
+        self.QNAS_spec["layer_list"] = list(self.QNAS_spec["layer_dict"].keys())
+        self.QNAS_spec["layer_list"].sort(key=natural_key)
+        self.layer_dict = self.QNAS_spec["layer_dict"]
+        self.cell_list = self.QNAS_spec.get("cell_list", None)
+
+        del self.QNAS_spec["layer_dict"]
 
         self.QNAS_spec["initial_probs"] = []
-        self.QNAS_spec["reducing_fns_list"] = []
 
-        for fn in self.QNAS_spec["fn_list"]:
-            if type(self.fn_dict[fn]["prob"]) == str:
-                prob = eval(self.fn_dict[fn]["prob"])
+        for layer in self.QNAS_spec["layer_list"]:
+            if type(self.layer_dict[layer]["prob"]) == str:
+                prob = eval(self.layer_dict[layer]["prob"])
             else:
-                prob = self.fn_dict[fn]["prob"]
+                prob = self.layer_dict[layer]["prob"]
 
             # If all probabilities are None, the system assigns an equal value to all functions.
             if prob is not None:
                 self.QNAS_spec["initial_probs"].append(prob)
 
-            # Populating the reducing functions list
-            strides = self.fn_dict[fn]["params"].get("strides")
-            if strides and strides > 1:
-                self.QNAS_spec["reducing_fns_list"].append(fn)
-
-        for item in self.fn_dict.values():
+        for item in self.layer_dict.values():
             del item["prob"]
-
-    def _get_ranges(self, config_file):
-        """Get the ranges of the numerical parameters to be evolved.
-
-        Args:
-            config_file: dict holding the parameters in the config file.
-
-        Returns:
-            dict containing the extracted ranges.
-        """
-
-        if self.train_spec["optimizer"] == "Momentum":
-            ranges = {
-                key: val
-                for key, val in config_file["QNAS"]["params_ranges"].items()
-                if key != "decay" and type(val) == list
-            }
-        else:
-            ranges = {
-                key: val
-                for key, val in config_file["QNAS"]["params_ranges"].items()
-                if type(val) == list
-            }
-
-        # If user provided a value instead of a range, parameter will not be evolved.
-        for key, value in config_file["QNAS"]["params_ranges"].items():
-            if type(value) != list:
-                self.train_spec[key] = value
-
-        return ranges
 
     def _get_continue_params(self):
         """Get parameters for the continue evolution phase. The evolution parameters are loaded
@@ -288,7 +247,7 @@ class ConfigParameters(object):
 
     def load_old_params(self):
         """Load parameters from *self.files_spec['previous_QNAS_params']* and replace
-        *self.train_spec*, *self.QNAS_spec*, and *self.fn_dict* with the file values.
+        *self.train_spec*, *self.QNAS_spec*, and *self.layer_dict* with the file values.
         """
 
         previous_params_file = load_yaml(self.files_spec["previous_QNAS_params"])
@@ -296,7 +255,8 @@ class ConfigParameters(object):
         self.train_spec = dict(previous_params_file["train"])
         self.QNAS_spec = dict(previous_params_file["QNAS"])
         self.QNAS_spec["params_ranges"] = eval(self.QNAS_spec["params_ranges"])
-        self.fn_dict = previous_params_file["fn_dict"]
+        self.layer_dict = previous_params_file["layer_dict"]
+        self.cell_list = previous_params_file["cell_list"]
 
     def load_evolved_data(self, generation=None, individual=0):
         """Read the yaml log *self.files_spec['data_file']* and get values from the individual
@@ -324,11 +284,9 @@ class ConfigParameters(object):
             individual < net_pop.shape[0]
         ), "The individual number cannot be bigger than the size of the population!"
 
-        params = QChromosomeParams(
-            params_ranges=self.QNAS_spec["params_ranges"]
-        ).decode(params_pop[individual])
         net = QChromosomeNetwork(
-            fn_list=self.QNAS_spec["fn_list"], max_num_nodes=log_data["num_net_nodes"]
+            layer_list=self.QNAS_spec["layer_list"],
+            max_num_nodes=log_data["num_net_nodes"],
         ).decode(net_pop[individual])
 
         self.evolved_params = {"params": params, "net": net}
@@ -393,7 +351,8 @@ class ConfigParameters(object):
                 "QNAS": self.QNAS_spec,
                 "train": self.train_spec,
                 "files": self.files_spec,
-                "fn_dict": self.fn_dict,
+                "layer_dict": self.layer_dict,
+                "cell_list": self.cell_list,
             }
 
         params_file_path = os.path.join(

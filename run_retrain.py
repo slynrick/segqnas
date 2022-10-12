@@ -51,7 +51,7 @@ def main(**args):
     valid_mean_iou, test_info = train.train_and_eval(
         data_info=config.data_info,
         params=train_params,
-        fn_dict=config.fn_dict,
+        layer_dict=config.layer_dict,
         net_list=config.evolved_params["net"],
         lr_schedule=args["lr_schedule"],
         run_train_eval=args["run_train_eval"],

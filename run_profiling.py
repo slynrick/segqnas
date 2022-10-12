@@ -13,9 +13,9 @@ import os
 
 import tensorflow as tf
 
-from util import load_pkl, load_yaml
 from chromosome import QChromosomeNetwork
 from cnn import model
+from util import load_pkl, load_yaml
 
 
 def load_params(exp_path, generation=None, individual=0):
@@ -54,7 +54,8 @@ def load_params(exp_path, generation=None, individual=0):
     nets = log_data["net_pop"]
 
     net = QChromosomeNetwork(
-        fn_list=params["QNAS"]["fn_list"], max_num_nodes=params["QNAS"]["max_num_nodes"]
+        layer_list=params["QNAS"]["layer_list"],
+        max_num_nodes=params["QNAS"]["max_num_nodes"],
     ).decode(nets[individual])
     loaded_params = {
         "individual_id_str": f"Generation {generation} - individual {individual}",
@@ -62,8 +63,8 @@ def load_params(exp_path, generation=None, individual=0):
         "net_list": net,
         "input_shape": input_shape,
         "num_classes": params["train_data_info"]["num_classes"],
-        "fn_dict": params["fn_dict"],
-        "fn_list": params["QNAS"]["fn_list"],
+        "layer_dict": params["layer_dict"],
+        "layer_list": params["QNAS"]["layer_list"],
     }
 
     return loaded_params
@@ -116,10 +117,10 @@ def main(exp_path, generation, individual):
             net = model.NetworkGraph(num_classes=params["num_classes"], mu=0.99)
             filtered_dict = {
                 key: item
-                for key, item in params["fn_dict"].items()
+                for key, item in params["layer_dict"].items()
                 if key in params["net_list"]
             }
-            net.create_functions(fn_dict=filtered_dict)
+            net.create_functions(layer_dict=filtered_dict)
             net.create_network(
                 inputs=input_image, net_list=params["net_list"], is_train=False
             )

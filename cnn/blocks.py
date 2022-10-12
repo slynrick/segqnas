@@ -1,136 +1,250 @@
-import torch
-import torch.nn as nn
-from tensorflow import keras as K
+from tensorflow.keras.initializers import GlorotUniform, HeUniform
+from tensorflow.keras.layers import (
+    Activation,
+    Add,
+    AveragePooling2D,
+    BatchNormalization,
+    Conv2D,
+    DepthwiseConv2D,
+    ReLU,
+    SeparableConv2D,
+    concatenate,
+)
+from tensorflow.keras.regularizers import L2
 
 
 class Block(object):
-
     def __init__(self, kernel_size, filters, name=None):
-        self.kernel_size = kernel_size
+        self.data_format = "channels_last"
         self.filters = filters
-        self.initializer = 'he_normal'
-        self.padding = 'same'
-        self.data_format = 'channels_last'
+        self.initializer = HeUniform(seed=0)
+        self.kernel_size = kernel_size
+        self.padding = "same"
+        self.regularizer = L2(1e-6)
 
     def _add(self, inputs, name=None):
-        return K.layers.Add(name=name)(inputs)
+        return Add(name=f"{name}_Addition")(inputs)
 
     def _concat(self, inputs, name=None):
-        return K.layers.concatenate(inputs, name=name, axis=-1)
+        return concatenate(inputs, name=f"{name}_Concatenation", axis=-1)
+
+    def _avg_pooling(self, inputs, name=None):
+        return AveragePooling2D(
+            pool_size=2, strides=1, padding=self.padding, name=f"{name}_Pooling"
+        )(inputs)
 
     def _batch_norm(self, inputs, is_train, name=None):
-        return K.layers.BatchNormalization(
-            axis=-1,
-            momentum=0.9,
-            epsilon=2e-5,
-            name=name
-        )(inputs=inputs, training=is_train)     
+        return BatchNormalization(
+            axis=-1, momentum=0.9, epsilon=2e-5, name=f"{name}_Normalization"
+        )(inputs=inputs, training=is_train)
 
-    def _activation(self, inputs):
-        return K.layers.Activation("relu")(inputs)   
+    def _relu_activation(self, inputs, name=None):
+        return Activation("relu", name=f"{name}_ReLU")(inputs)
+
+    def _sigmoid_activation(self, inputs, name=None):
+        return Activation("sigmoid", name=f"{name}_Sigmoid")(inputs)
 
     def _conv_kxk(self, inputs, name=None):
-        return K.layers.Conv2D(
+        return Conv2D(
             filters=self.filters,
             kernel_size=self.kernel_size,
             activation=None,
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
-            name=name,
-        )(inputs)
-
-    def _conv_1xk(self, inputs, name=None):
-        return K.layers.Conv2D(
-            filters=self.filters,
-            kernel_size=(1, self.kernel_size),
-            activation=None,
-            padding=self.padding,
-            data_format=self.data_format,
-            kernel_initializer=self.initializer,
-            use_bias=False,
-            name=name,
+            name=f"{name}_Convolution_{self.kernel_size}x{self.kernel_size}",
         )(inputs)
 
     def _conv_kx1(self, inputs, name=None):
-        return K.layers.Conv2D(
+        return Conv2D(
             filters=self.filters,
             kernel_size=(self.kernel_size, 1),
             activation=None,
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
-            name=name,
+            name=f"{name}_Convolution_{self.kernel_size}x1",
+        )(inputs)
+
+    def _conv_1xk(self, inputs, name=None):
+        return Conv2D(
+            filters=self.filters,
+            kernel_size=(1, self.kernel_size),
+            activation=None,
+            padding=self.padding,
+            data_format=self.data_format,
+            kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
+            use_bias=False,
+            name=f"{name}_Convolution_1x{self.kernel_size}",
         )(inputs)
 
     def _conv_1x1(self, inputs, name=None):
-        return K.layers.Conv2D(
+        return Conv2D(
             filters=self.filters,
             kernel_size=1,
             activation=None,
             padding=self.padding,
             data_format=self.data_format,
             kernel_initializer=self.initializer,
+            kernel_regularizer=self.regularizer,
             use_bias=False,
+            name=f"{name}_Convolution_1x1",
+        )(inputs)
+
+    # def _dw_sep_conv_kxk(self, inputs, name=None):
+    #     return SeparableConv2D(
+    #         filters=self.filters,
+    #         kernel_size=self.kernel_size,
+    #         activation=None,
+    #         padding=self.padding,
+    #         data_format=self.data_format,
+    #         kernel_initializer=self.initializer,
+    #         kernel_regularizer=self.regularizer,
+    #         use_bias=False,
+    #         name=name,
+    #     )(inputs)
+
+    # def _dw_conv_kxk(self, inputs, name=None):
+    #     return DepthwiseConv2D(
+    #         kernel_size=self.kernel_size,
+    #         activation=None,
+    #         padding=self.padding,
+    #         data_format=self.data_format,
+    #         kernel_initializer=self.initializer,
+    #         kernel_regularizer=self.regularizer,
+    #         use_bias=False,
+    #         name=name,
+    #     )(inputs)
+
+
+class StemConvolution(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+        x = self._conv_kxk(x, name=f"{name}_Convolution")
+        x = self._batch_norm(x, is_train=is_train, name=f"{name}_Normalization")
+        x = self._relu_activation(x, name=f"{name}_Activation")
+        return x
+
+
+class OutputConvolution(Block):
+    def _final_conv(self, inputs, name=None):
+        return Conv2D(
+            filters=self.filters,
+            kernel_size=self.kernel_size,
+            activation=None,
+            padding=self.padding,
+            data_format=self.data_format,
+            kernel_initializer=GlorotUniform(seed=0),
+            kernel_regularizer=self.regularizer,
+            bias_initializer=GlorotUniform(seed=0),
+            bias_regularizer=self.regularizer,
             name=name,
         )(inputs)
 
-    def _avg_pool(self, inputs, name=None):
-        return K.layers.AveragePooling2D(pool_size=(2,2))(inputs)
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+        x = self._final_conv(x, name=f"{name}_Convolution")
+        x = self._sigmoid_activation(x, name=f"{name}_Activation")
+        return x
+
 
 class VGGBlock(Block):
-
-    def __call__(self, inputs, name=None, is_train=True):
+    def __call__(self, inputs, name, is_train=True):
         x = inputs
 
-        x = self._conv_kxk(x)
-        x = self._batch_norm(x, is_train)
-        x = self._activation(x)
+        x = self._conv_kxk(x, name=f"{name}_1")
+        x = self._batch_norm(x, is_train=is_train, name=f"{name}_1")
+        x = self._relu_activation(x, name=f"{name}_1")
 
-        x = self._conv_kxk(x)
-        x = self._batch_norm(x, is_train)
-        x = self._activation(x)
+        x = self._conv_kxk(x, name=f"{name}_2")
+        x = self._batch_norm(x, is_train=is_train, name=f"{name}_2")
+        x = self._relu_activation(x, name=f"{name}_2")
 
         return x
+
 
 class ResNetBlock(Block):
-
-    def __call__(self, inputs, name=None, is_train=True):
+    def __call__(self, inputs, name, is_train=True):
         x = inputs
-        skip = self._conv_1x1(x)
 
-        x = self._conv_kxk(x)
-        x = self._batch_norm(x, is_train)
-        x = self._activation(x)
+        if inputs.shape[-1] == self.filters:
+            s = inputs
+        else:
+            # this is done to match filters in the shortcut
+            s = self._conv_1x1(inputs, name=f"{name}_Shortcut")
 
-        x = self._conv_kxk(x)
-        x = self._batch_norm(x, is_train)
+        x = self._conv_kxk(x, name=f"{name}_1")
+        x = self._batch_norm(x, is_train, name=f"{name}_1")
+        x = self._relu_activation(x, name=f"{name}_1")
 
-        x = self._add([x, skip])
+        x = self._conv_kxk(x, name=f"{name}_Convolution_2")
+        x = self._batch_norm(x, is_train, name=f"{name}_2")
 
-        x = self._activation(x)
+        x = self._add([x, s], name=f"{name}_Addition")
+
+        x = self._relu_activation(x, name=f"{name}_2")
 
         return x
+
+
+class DenseBlock(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+
+        s_0 = x
+
+        x = self._batch_norm(x, is_train, name=f"{name}_1")
+        x = self._relu_activation(x, name=f"{name}_1")
+        x = self._conv_1x1(x, name=f"{name}_1")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_2")
+        x = self._relu_activation(x, name=f"{name}_2")
+        x = self._conv_kxk(x, name=f"{name}_1")
+
+        s_1 = x
+
+        x = self._concat([x, s_0], name=f"{name}_1")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_3")
+        x = self._relu_activation(x, name=f"{name}_3")
+        x = self._conv_1x1(x, name=f"{name}_2")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_4")
+        x = self._relu_activation(x, name=f"{name}_4")
+        x = self._conv_kxk(x, name=f"{name}_2")
+
+        x = self._concat([x, s_0, s_1], name=f"{name}_2")
+
+        return x
+
 
 class InceptionBlock(Block):
-
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
 
-        b1 = self._conv_1x1(x)
+        a = self._conv_1x1(x, name=f"{name}_Branch_1")
 
-        b2 = self._avg_pool(x)
-        b2 = self._conv_1x1(b2)
+        b = self._avg_pooling(x, name=f"{name}_Branch_2")
+        b = self._conv_1x1(b, name=f"{name}_Branch_2")
 
-        b3 = self._conv_1x1(x)
-        b3 = self._conv_kxk(b3)
-        b3_1 = self._conv_1xk(b3)
-        b3_2 = self._conv_kx1(b3)
+        c = self._conv_1x1(x, name=f"{name}_Branch_3")
+        c = self._conv_kxk(c, name=f"{name}_Branch_3")
+        d = self._conv_1xk(c, name=f"{name}_Branch_3")
+        e = self._conv_kx1(c, name=f"{name}_Branch_3")
 
-        x = self._concat([b1, b2, b3_1, b3_2])
-        x = self._batch_norm(x, is_train)
-        x = self._activation(x)
+        x = self._concat([a, b, d, e], name=f"{name}_Block")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_Block")
+        x = self._relu_activation(x, name=f"{name}_Block")
 
         return x
+
+
+class IdentityBlock(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        return inputs
