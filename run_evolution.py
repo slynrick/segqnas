@@ -59,8 +59,9 @@ def master(args, comm):
 
     # Evaluation function for QNAS (train CNN and return validation mean iou)
     eval_f = evaluation.EvalPopulation(
-        params=config.train_spec,
-        fn_dict=config.fn_dict,
+        train_params=config.train_spec,
+        layer_dict=config.layer_dict,
+        cell_list=config.cell_list,
         log_level=config.train_spec["log_level"],
     )
 

@@ -6,7 +6,7 @@
 
 import numpy as np
 
-from chromosome import QChromosomeParams, QChromosomeNetwork
+from chromosome import QChromosomeNetwork
 
 
 class QPopulation(object):
@@ -45,106 +45,6 @@ class QPopulation(object):
         raise NotImplementedError("update_quantum() must be implemented in sub classes")
 
 
-class QPopulationParams(QPopulation):
-    """QNAS Chromosomes for the hyperparameters to be evolved."""
-
-    def __init__(
-        self,
-        num_quantum_ind,
-        params_ranges,
-        repetition,
-        crossover_rate,
-        update_quantum_rate,
-    ):
-        """Initialize QPopulationParams.
-
-        Args:
-            num_quantum_ind: (int) number of quantum individuals.
-            params_ranges: {'parameter_name': [parameter_lower_limit, parameter_upper_limit]}.
-            repetition: (int) ratio between the number of classic individuals in the classic
-                population and the quantum individuals in the quantum population.
-            crossover_rate: (float) crossover rate.
-            update_quantum_rate: (float) probability that a quantum gene will be updated.
-        """
-
-        super(QPopulationParams, self).__init__(
-            num_quantum_ind, repetition, update_quantum_rate
-        )
-
-        self.tolerance = 1.0e-15  # Tolerance to compare floating point
-
-        self.lower = None
-        self.upper = None
-        self.crossover = crossover_rate
-
-        self.chromosome = QChromosomeParams(params_ranges, self.dtype)
-
-        self.initial_lower, self.initial_upper = self.chromosome.initialize_qgenes()
-
-        self.initialize_qpop()
-
-    def initialize_qpop(self):
-        """Initialize quantum population with *self.num_ind* individuals."""
-
-        self.lower = np.tile(self.initial_lower, (self.num_ind, 1))
-        self.upper = np.tile(self.initial_upper, (self.num_ind, 1))
-
-    def classic_crossover(self, new_pop, distance):
-        """Perform arithmetic crossover of the old classic population with the new one.
-
-        Args:
-            new_pop: float numpy array representing the new classical population.
-            distance: (float) random distance for arithmetic crossover (range = [0, 1]).
-        """
-
-        mask = np.random.rand(self.num_ind * self.repetition, self.chromosome.num_genes)
-        idx = np.where(mask <= self.crossover)
-        new_pop[idx] = new_pop[idx] + (self.current_pop[idx] - new_pop[idx]) * distance
-
-        return new_pop
-
-    def generate_classical(self):
-        """Generate a specific number of classical individuals from the observation of quantum
-        individuals. This number is equal to (*num_ind* x *repetition*).
-        """
-
-        random_numbers = np.random.rand(
-            self.num_ind * self.repetition, self.chromosome.num_genes
-        ).astype(self.dtype)
-
-        new_pop = random_numbers * np.tile(
-            self.upper - self.lower, (self.repetition, 1)
-        ) + np.tile(self.lower, (self.repetition, 1))
-
-        return new_pop
-
-    def update_quantum(self, intensity):
-        """Update self.lower and self.upper.
-
-        Args:
-            intensity: (float) value defining the maximum intensity of the update.
-        """
-
-        random = np.random.rand(self.num_ind, self.chromosome.num_genes)
-        mask = np.where(random <= self.update_quantum_rate)
-
-        max_genes = np.max(self.current_pop, axis=0)
-        min_genes = np.min(self.current_pop, axis=0)
-        diff = np.tile(max_genes - min_genes, (self.num_ind, 1))
-
-        update = self.current_pop[mask] - self.lower[mask] - (diff[mask] / 2)
-        self.lower[mask] += intensity * update
-
-        update = self.current_pop[mask] - self.upper[mask] + (diff[mask] / 2)
-        self.upper[mask] += intensity * update
-        # Correct limits (truncate) if they get out of the initial boundaries
-        for i in range(self.num_ind):
-            idx = np.where(self.lower[i] - self.initial_lower < -self.tolerance)
-            self.lower[i][idx] = self.initial_lower[idx]
-            idx = np.where(self.upper[i] - self.initial_upper > self.tolerance)
-            self.upper[i][idx] = self.initial_upper[idx]
-
-
 class QPopulationNetwork(QPopulation):
     """QNAS Chromosomes for the networks to be evolved."""
 
@@ -154,7 +54,7 @@ class QPopulationNetwork(QPopulation):
         max_num_nodes,
         repetition,
         update_quantum_rate,
-        fn_list,
+        layer_list,
         initial_probs,
     ):
         """Initialize QPopulationNetwork.
@@ -166,7 +66,7 @@ class QPopulationNetwork(QPopulation):
             repetition: (int) ratio between the number of classic individuals in the classic
                 population and the quantum individuals in the quantum population.
             update_quantum_rate: (float) probability that a quantum gene will be updated.
-            fn_list: list of possible functions.
+            layer_list: list of possible functions.
             initial_probs: list defining the initial probabilities for each function; if empty,
                 the algorithm will give the same probability for each function.
         """
@@ -179,7 +79,7 @@ class QPopulationNetwork(QPopulation):
         self.max_update = 0.05
         self.max_prob = 0.99
 
-        self.chromosome = QChromosomeNetwork(max_num_nodes, fn_list, self.dtype)
+        self.chromosome = QChromosomeNetwork(max_num_nodes, layer_list, self.dtype)
 
         self.initial_probs = self.chromosome.initialize_qgenes(
             initial_probs=initial_probs

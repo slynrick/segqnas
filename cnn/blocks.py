@@ -1,4 +1,4 @@
-from tensorflow.keras.initializers import HeNormal
+from tensorflow.keras.initializers import GlorotUniform, HeUniform
 from tensorflow.keras.layers import (
     Activation,
     Add,
@@ -17,7 +17,7 @@ class Block(object):
     def __init__(self, kernel_size, filters, name=None):
         self.data_format = "channels_last"
         self.filters = filters
-        self.initializer = HeNormal(seed=0)
+        self.initializer = HeUniform(seed=0)
         self.kernel_size = kernel_size
         self.padding = "same"
         self.regularizer = L2(1e-6)
@@ -30,7 +30,7 @@ class Block(object):
 
     def _avg_pooling(self, inputs, name=None):
         return AveragePooling2D(
-            pool_size=2, stride=1, padding=self.padding, name=f"{name}_Pooling"
+            pool_size=2, strides=1, padding=self.padding, name=f"{name}_Pooling"
         )(inputs)
 
     def _batch_norm(self, inputs, is_train, name=None):
@@ -40,12 +40,6 @@ class Block(object):
 
     def _relu_activation(self, inputs, name=None):
         return Activation("relu", name=f"{name}_ReLU")(inputs)
-
-    # def _relu6_activation(self, inputs, name=None):
-    #     return ReLU(max_value=6.0, name=f"{name}_ReLU6")(inputs)
-
-    # def _linear_activation(self, inputs, name=None):
-    #     return Activation("linear", name=f"{name}_Linear")(inputs)
 
     def _sigmoid_activation(self, inputs, name=None):
         return Activation("sigmoid", name=f"{name}_Sigmoid")(inputs)
@@ -145,9 +139,9 @@ class OutputConvolution(Block):
             activation=None,
             padding=self.padding,
             data_format=self.data_format,
-            kernel_initializer=self.initializer,
+            kernel_initializer=GlorotUniform(seed=0),
             kernel_regularizer=self.regularizer,
-            bias_initializer=self.initializer,
+            bias_initializer=GlorotUniform(seed=0),
             bias_regularizer=self.regularizer,
             name=name,
         )(inputs)
@@ -208,20 +202,20 @@ class DenseBlock(Block):
         x = self._relu_activation(x, name=f"{name}_1")
         x = self._conv_1x1(x, name=f"{name}_1")
 
-        x = self._batch_norm(x, is_train, name=f"{name}_1")
-        x = self._relu_activation(x, name=f"{name}_1")
+        x = self._batch_norm(x, is_train, name=f"{name}_2")
+        x = self._relu_activation(x, name=f"{name}_2")
         x = self._conv_kxk(x, name=f"{name}_1")
 
         s_1 = x
 
         x = self._concat([x, s_0], name=f"{name}_1")
 
-        x = self._batch_norm(x, is_train, name=f"{name}_2")
-        x = self._relu_activation(x, name=f"{name}_2")
+        x = self._batch_norm(x, is_train, name=f"{name}_3")
+        x = self._relu_activation(x, name=f"{name}_3")
         x = self._conv_1x1(x, name=f"{name}_2")
 
-        x = self._batch_norm(x, is_train, name=f"{name}_2")
-        x = self._relu_activation(x, name=f"{name}_2")
+        x = self._batch_norm(x, is_train, name=f"{name}_4")
+        x = self._relu_activation(x, name=f"{name}_4")
         x = self._conv_kxk(x, name=f"{name}_2")
 
         x = self._concat([x, s_0, s_1], name=f"{name}_2")
@@ -243,63 +237,12 @@ class InceptionBlock(Block):
         d = self._conv_1xk(c, name=f"{name}_Branch_3")
         e = self._conv_kx1(c, name=f"{name}_Branch_3")
 
-        x = self._concat([a, b, d, e], name=name)
+        x = self._concat([a, b, d, e], name=f"{name}_Block")
 
-        x = self._batch_norm(x, is_train, name=name)
-        x = self._relu_activation(x, name=name)
+        x = self._batch_norm(x, is_train, name=f"{name}_Block")
+        x = self._relu_activation(x, name=f"{name}_Block")
 
         return x
-
-
-# class XceptionBlock(Block):
-#     def __call__(self, inputs, name=None, is_train=True):
-#         x = inputs
-
-#         if inputs.shape[-1] == self.filters:
-#             s = inputs
-#         else:
-#             # this is done to match filters in the shortcut
-#             s = self._conv_1x1(inputs)
-
-#         x = self._dw_sep_conv_kxk(x)
-#         x = self._batch_norm(x, is_train)
-#         x = self._relu_activation(x)
-
-#         x = self._dw_sep_conv_kxk(x)
-#         x = self._batch_norm(x, is_train)
-
-#         x = self._add([x, s])
-
-#         x = self._relu_activation(x)
-
-#         return x
-
-
-# class MBConvBlock(Block):
-#     def __call__(self, inputs, name=None, is_train=True):
-#         x = inputs
-
-#         if inputs.shape[-1] == self.filters:
-#             s = inputs
-#         else:
-#             # this is done to match filters in the shortcut
-#             s = self._conv_1x1(inputs)
-
-#         x = self._conv_1x1(x)
-#         x = self._batch_norm(x, is_train)
-#         x = self._relu6_activation(x)
-
-#         x = self._dw_conv_kxk(x)
-#         x = self._batch_norm(x, is_train)
-#         x = self._relu6_activation(x)
-
-#         x = self._conv_1x1(x)
-#         x = self._batch_norm(x, is_train)
-#         x = self._linear_activation(x)
-
-#         x = self._add([x, s])
-
-#         return x
 
 
 class IdentityBlock(Block):

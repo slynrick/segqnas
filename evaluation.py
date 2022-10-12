@@ -14,36 +14,37 @@ from util import init_log
 
 
 class EvalPopulation(object):
-    def __init__(self, params, fn_dict, log_level="INFO"):
+    def __init__(self, train_params, layer_dict, cell_list=None, log_level="INFO"):
         """Initialize EvalPopulation.
 
         Args:
-            params: dictionary with parameters.
-            fn_dict: dict with definitions of the functions (name and parameters);
-                format --> {'fn_name': ['FNClass', {'param1': value1, 'param2': value2}]}.
+            train_params: dictionary with parameters.
+            layer_dict: dict with definitions of the functions (name and parameters);
+                format --> {'layer_name': ['layerClass', {'param1': value1, 'param2': value2}]}.
+            cell_list: list of predefined cell types that define a topology;
+                format --> e.g. ['DownscalingCell', 'NonscalingCell', 'UpscalingCell', ...]
             log_level: (str) one of "INFO", "DEBUG" or "NONE".
         """
 
-        self.train_params = params
-        self.fn_dict = fn_dict
+        self.train_params = train_params
+        self.layer_dict = layer_dict
+        self.cell_list = cell_list
         self.timeout = 9000
         self.logger = init_log(log_level, name=__name__)
         self.comm = MPI.COMM_WORLD
         self.size = self.comm.Get_size()
         self.num_workers = self.size - 1
 
-    def __call__(self, decoded_params, decoded_nets, generation):
-        """Train and evaluate *decoded_nets* using the parameters defined in *decoded_params*.
+    def __call__(self, decoded_nets, generation):
+        """Train and evaluate *decoded_nets*
 
         Args:
-            decoded_params: list containing the dict of values of evolved parameters
-                (size = num_individuals).
             decoded_nets: list containing the lists of network layers descriptions
                 (size = num_individuals).
             generation: (int) generation number.
 
         Returns:
-            numpy array containing evaluations results of each model in *net_lists*.
+            numpy array containing evaluations results of each model in *net_list*.
         """
 
         pop_size = len(decoded_nets)
@@ -53,14 +54,15 @@ class EvalPopulation(object):
         evaluations = np.empty(shape=(pop_size,))
 
         try:
-            self.send_data(decoded_params, decoded_nets, generation)
+            self.send_data(decoded_nets, generation)
 
             # After sending tasks, Master starts its own work...
             evaluations[0] = train.fitness_calculation(
                 id_num=f"{generation}_0",
-                params={**self.train_params, **decoded_params[0]},
-                fn_dict=self.fn_dict,
+                train_params={**self.train_params},
+                layer_dict=self.layer_dict,
                 net_list=decoded_nets[0],
+                cell_list=self.cell_list,
             )
 
             # Master starts receiving results...
@@ -85,12 +87,10 @@ class EvalPopulation(object):
             self.logger.error(f"Pending request operations: {pending}")
             raise TimeoutError()
 
-    def send_data(self, decoded_params, decoded_nets, generation):
+    def send_data(self, decoded_nets, generation):
         """Send data to all workers.
 
         Args:
-            decoded_params: list containing the dict of values of evolved parameters
-                (size = num_individuals).
             decoded_nets: list containing the lists of network layers descriptions
                 (size = num_individuals).
             generation: (int) generation number.
@@ -103,9 +103,10 @@ class EvalPopulation(object):
 
             args = {
                 "id_num": id_num,
-                "params": {**self.train_params, **decoded_params[worker]},
-                "fn_dict": self.fn_dict,
+                "train_params": {**self.train_params},
+                "layer_dict": self.layer_dict,
                 "net_list": decoded_nets[worker],
+                "cell_list": self.cell_list,
             }
 
             requests[worker - 1] = self.comm.isend(args, dest=worker, tag=11)

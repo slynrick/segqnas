@@ -1,6 +1,6 @@
 import importlib
 
-from tensorflow.keras.initializers import HeNormal
+from tensorflow.keras.initializers import HeUniform
 from tensorflow.keras.layers import (
     Activation,
     BatchNormalization,
@@ -18,7 +18,7 @@ class Cell(object):
         self.block = self._instatiate_block(block, kernel_size, filters)
         self.data_format = "channels_last"
         self.filters = filters
-        self.initializer = HeNormal(seed=0)
+        self.initializer = HeUniform(seed=0)
         self.kernel_size = kernel_size
         self.padding = "same"
         self.regularizer = L2(1e-6)

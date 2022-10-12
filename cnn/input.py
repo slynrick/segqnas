@@ -57,7 +57,7 @@ def get_training_augmentation(image_height, image_width):
         A.HorizontalFlip(p=0.5),
         A.ShiftScaleRotate(p=0.75),
         # A.RandomBrightness(limit=0.001, p=0.5)
-        # A.PadIfNeeded(min_height=image_height, min_width=image_height, always_apply=True, border_mode=0),
+        # A.PadIlayereeded(min_height=image_height, min_width=image_height, always_apply=True, border_mode=0),
         # A.CropNonEmptyMaskIfExists(height=image_height, width=image_width, always_apply=True, ignore_channels=[0]),
         # A.GaussianBlur(p=0.5),
         # A.IAAAdditiveGaussianNoise(p=0.2),
@@ -90,11 +90,11 @@ def get_training_augmentation(image_height, image_width):
     return A.Compose(train_transform)
 
 
-def get_preprocessing(preprocessing_fn):
+def get_preprocessing(preprocessing_layer):
     """Construct preprocessing transform
 
     Args:
-        preprocessing_fn (callbale): data normalization function
+        preprocessing_layer (callbale): data normalization function
             (can be specific for each pretrained neural network)
     Return:
         transform: albumentations.Compose
@@ -102,7 +102,7 @@ def get_preprocessing(preprocessing_fn):
     """
 
     _transform = [
-        A.Lambda(image=preprocessing_fn),
+        A.Lambda(image=preprocessing_layer),
     ]
     return A.Compose(_transform)
 
@@ -111,7 +111,7 @@ def get_validation_augmentation(image_height, image_width):
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
         A.Resize(image_height, image_width),
-        # A.PadIfNeeded(min_height=None, min_width=None, pad_height_divisor=48, pad_width_divisor=48, always_apply=True, border_mode=0),
+        # A.PadIlayereeded(min_height=None, min_width=None, pad_height_divisor=48, pad_width_divisor=48, always_apply=True, border_mode=0),
     ]
     return A.Compose(test_transform)
 

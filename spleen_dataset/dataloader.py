@@ -2,8 +2,15 @@ import os
 import pickle
 from time import time
 
-import albumentations as A
 import numpy as np
+from albumentations import (
+    Compose,
+    Flip,
+    HorizontalFlip,
+    RandomBrightness,
+    Resize,
+    ShiftScaleRotate,
+)
 from tensorflow.keras.utils import Sequence
 
 from spleen_dataset.config import dataset_folder, num_threads, preprocessed_folder
@@ -12,19 +19,21 @@ from spleen_dataset.utils import get_list_of_patients, subfiles
 
 def get_training_augmentation(patch_size):
     train_transform = [
-        A.HorizontalFlip(p=0.5),
-        A.ShiftScaleRotate(p=1),
-        A.RandomBrightness(p=1, limit=(-0.1, 0.1)),
-        A.Resize(*patch_size),
+        # HorizontalFlip(p=0.5),
+        ShiftScaleRotate(
+            p=1.0
+        ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
+        RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        Resize(*patch_size),
     ]
-    return A.Compose(train_transform)
+    return Compose(train_transform)
 
 
 def get_validation_augmentation(patch_size):
     test_transform = [
-        A.Resize(*patch_size),
+        Resize(*patch_size),
     ]
-    return A.Compose(test_transform)
+    return Compose(test_transform)
 
 
 class SpleenDataloader(Sequence):
