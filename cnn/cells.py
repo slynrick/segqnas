@@ -10,8 +10,6 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.regularizers import L2
 
-from cnn.blocks import Block
-
 
 class Cell(object):
     def __init__(self, block, kernel_size, filters):
