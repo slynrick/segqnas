@@ -19,12 +19,9 @@ import pandas as pd
 import tensorflow as tf
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (
-    SpleenDataloader,
-    SpleenDataset,
-    get_training_augmentation,
-    get_validation_augmentation,
-)
+from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
+                                       get_training_augmentation,
+                                       get_validation_augmentation)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
@@ -44,8 +41,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     Returns:
         Mean dice coeficient of the model for the last 20% epochs for 3 times 5-fold cross validation.
     """
-
-    print(train_params)
 
     os.environ["TF_SYNC_ON_FINISH"] = "0"
     os.environ["TF_ENABLE_WINOGRAD_NONFUSED"] = "1"
