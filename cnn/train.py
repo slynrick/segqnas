@@ -81,6 +81,8 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     epochs = train_params["epochs"]
     num_folds = train_params["folds"]
     num_initializations = train_params["initializations"]
+    stem_filters = train_params["stem_filters"]
+    max_depth = train_params["max_depth"]
 
     patients = get_list_of_patients(dataset_folder)
     patch_size = (image_size, image_size)
@@ -107,8 +109,10 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         for initialization in range(num_initializations):
             for fold in range(num_folds):
                 net = model.build_net(
-                    (image_size, image_size, num_channels),
-                    num_classes,
+                    input_shape=(image_size, image_size, num_channels),
+                    num_classes=num_classes,
+                    stem_filters=stem_filters,
+                    max_depth=max_depth,
                     layer_dict=layer_dict,
                     net_list=net_list,
                     cell_list=cell_list,

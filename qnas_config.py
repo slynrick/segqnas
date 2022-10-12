@@ -91,6 +91,8 @@ class ConfigParameters(object):
                 ("crossover_rate", float),
                 ("max_generations", int),
                 ("max_num_nodes", int),
+                ("stem_filter", int),
+                ("max_depth", int),
                 ("num_quantum_ind", int),
                 ("repetition", int),
                 ("replace_method", str),
