@@ -37,8 +37,11 @@ def get_skip_connection(previous_cell, feature_maps):
 
 
 def fix_cell_for_feasibility(cell, depth, num_layers, layer_num, min_depth, max_depth):
-    if num_layers - layer_num <= depth + 1:
+    if num_layers - layer_num == depth:
         cell = "UpscalingCell"
+
+    if num_layers - layer_num == depth + 1 and cell == 'DownscalingCell':
+        cell = "NonscalingCell"
 
     if depth == min_depth and cell == "UpscalingCell":
         cell = "NonscalingCell"
