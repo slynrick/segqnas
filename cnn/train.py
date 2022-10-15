@@ -162,7 +162,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
                 tf.compat.v1.logging.log(
                     level=tf.compat.v1.logging.get_verbosity(),
-                    msg=f"[{id_num}] DSC last {evaluation_epochs} epochs of for {fold*initialization}/{num_folds*num_initializations}: {history.history['val_gen_dice_coef'][-evaluation_epochs:]}",
+                    msg=f"[{id_num}] DSC last {evaluation_epochs} epochs of for {fold+num_folds*initialization+1}/{num_folds*num_initializations}: {np.mean(history.history['val_gen_dice_coef'][-evaluation_epochs:])} +- {np.std(history.history['val_gen_dice_coef'][-evaluation_epochs:])})",
                 )
 
     except Exception as e:
@@ -177,7 +177,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     std_val_gen_dice_coef = np.std(val_gen_dice_coef_list)
     tf.compat.v1.logging.log(
         level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"val_gen_dice_coef {mean_val_gen_dice_coef} +- {std_val_gen_dice_coef}",
+        msg=f"[{id_num}] DSC: {mean_val_gen_dice_coef} +- {std_val_gen_dice_coef}",
     )
 
     # save net list as csv (layers)

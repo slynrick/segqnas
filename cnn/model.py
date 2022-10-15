@@ -40,7 +40,7 @@ def fix_cell_for_feasibility(cell, depth, num_layers, layer_num, min_depth, max_
     if num_layers - layer_num == depth:
         cell = "UpscalingCell"
 
-    if num_layers - layer_num == depth + 1 and cell == 'DownscalingCell':
+    if num_layers - layer_num == depth + 1 and cell == "DownscalingCell":
         cell = "NonscalingCell"
 
     if depth == min_depth and cell == "UpscalingCell":
