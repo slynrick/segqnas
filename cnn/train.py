@@ -19,12 +19,9 @@ import pandas as pd
 import tensorflow as tf
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (
-    SpleenDataloader,
-    SpleenDataset,
-    get_training_augmentation,
-    get_validation_augmentation,
-)
+from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
+                                       get_training_augmentation,
+                                       get_validation_augmentation)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
