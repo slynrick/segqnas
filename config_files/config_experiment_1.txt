@@ -1,4 +1,4 @@
-# Configuration file for experiment 1 (evolve topology with only VGG blocks with kernel 3)
+# Configuration file for experiment 1 (search topology with only VGG blocks with kernel 3)
 
 QNAS:
     crossover_rate: 0.5

@@ -1,4 +1,4 @@
-# Configuration file Unet-like
+# Configuration file resunet
 
 QNAS:
     crossover_rate: 0.5
@@ -12,7 +12,7 @@ QNAS:
     save_data_freq: 10
 
     layer_dict:  {
-        'vgg_3': {'block': 'VGGBlock', 'kernel': 3, 'prob': 1},
+        'res_3': {'block': 'ResNetBlock', 'kernel': 3, 'prob': 1},
     }
 
     cell_list: [
