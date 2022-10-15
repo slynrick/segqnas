@@ -162,7 +162,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
                 tf.compat.v1.logging.log(
                     level=tf.compat.v1.logging.get_verbosity(),
-                    msg=f"[{id_num}] DSC last {evaluation_epochs} epochs of for {fold+num_folds*initialization+1}/{num_folds*num_initializations}: {np.mean(history.history['val_gen_dice_coef'][-evaluation_epochs:])} +- {np.std(history.history['val_gen_dice_coef'][-evaluation_epochs:])})",
+                    msg=f"[{id_num}] DSC last {evaluation_epochs} epochs of for training {fold+num_folds*initialization+1}/{num_folds*num_initializations}: {np.mean(history.history['val_gen_dice_coef'][-evaluation_epochs:])} +- {np.std(history.history['val_gen_dice_coef'][-evaluation_epochs:])}",
                 )
 
     except Exception as e:
