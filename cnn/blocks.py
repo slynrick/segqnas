@@ -96,31 +96,6 @@ class Block(object):
             name=f"{name}_Convolution_1x1",
         )(inputs)
 
-    # def _dw_sep_conv_kxk(self, inputs, name=None):
-    #     return SeparableConv2D(
-    #         filters=self.filters,
-    #         kernel_size=self.kernel_size,
-    #         activation=None,
-    #         padding=self.padding,
-    #         data_format=self.data_format,
-    #         kernel_initializer=self.initializer,
-    #         kernel_regularizer=self.regularizer,
-    #         use_bias=False,
-    #         name=name,
-    #     )(inputs)
-
-    # def _dw_conv_kxk(self, inputs, name=None):
-    #     return DepthwiseConv2D(
-    #         kernel_size=self.kernel_size,
-    #         activation=None,
-    #         padding=self.padding,
-    #         data_format=self.data_format,
-    #         kernel_initializer=self.initializer,
-    #         kernel_regularizer=self.regularizer,
-    #         use_bias=False,
-    #         name=name,
-    #     )(inputs)
-
 
 class StemConvolution(Block):
     def __call__(self, inputs, name=None, is_train=True):
@@ -143,7 +118,7 @@ class OutputConvolution(Block):
             kernel_regularizer=self.regularizer,
             bias_initializer=GlorotUniform(seed=0),
             bias_regularizer=self.regularizer,
-            name=name,
+            name=f"{name}_{self.kernel_size}x{self.kernel_size}",
         )(inputs)
 
     def __call__(self, inputs, name=None, is_train=True):

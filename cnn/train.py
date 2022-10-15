@@ -62,14 +62,13 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
     tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
 
-    if len(gpus) > 1:
-        try:
-            tf.config.experimental.set_virtual_device_configuration(
-                gpus[gpu_id],
-                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)],
-            )
-        except RuntimeError as e:
-            print(e)
+    try:
+        tf.config.experimental.set_virtual_device_configuration(
+            gpus[gpu_id],
+            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)],
+        )
+    except RuntimeError as e:
+        print(e)
 
     data_path = train_params["data_path"]
     num_classes = train_params["num_classes"]
@@ -163,7 +162,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
                 tf.compat.v1.logging.log(
                     level=tf.compat.v1.logging.get_verbosity(),
-                    msg=f"DSC of last {evaluation_epochs} epochs of {id_num}: {history.history['val_gen_dice_coef'][-evaluation_epochs:]}",
+                    msg=f"[{id_num}] DSC last {evaluation_epochs} epochs of for {fold*initialization}/{num_folds*num_initializations}: {history.history['val_gen_dice_coef'][-evaluation_epochs:]}",
                 )
 
     except Exception as e:
