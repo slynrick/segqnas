@@ -5,9 +5,6 @@ from tensorflow.keras.layers import (
     AveragePooling2D,
     BatchNormalization,
     Conv2D,
-    DepthwiseConv2D,
-    ReLU,
-    SeparableConv2D,
     concatenate,
 )
 from tensorflow.keras.regularizers import L2

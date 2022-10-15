@@ -12,7 +12,7 @@ QNAS:
     save_data_freq: 10
 
     layer_dict:  {
-        'vgg_3': {'block': 'DenseBlock', 'kernel': 7, 'prob': 1},
+        'res_3': {'block': 'ResNetBlock', 'kernel': 3, 'prob': 1},
     }
 
     cell_list: [
@@ -31,7 +31,7 @@ QNAS:
 train:
     batch_size: 32
     epochs: 50
-    initializations: 3
+    initializations: 5
     folds: 5
     stem_filters: 16
     max_depth: 4

@@ -1,17 +1,17 @@
-# Configuration file 1
+# Configuration file for experiment 4 (search topology and blocks)
 
 QNAS:
     crossover_rate: 0.5
     max_generations: 50
-    max_num_nodes: 9
-    num_quantum_ind: 1
-    repetition: 1
+    max_num_nodes: 10
+    num_quantum_ind: 3
+    repetition: 3
     replace_method: best
     update_quantum_gen: 5
     update_quantum_rate: 0.1
     save_data_freq: 10
 
-    layer_dict:  {
+layer_dict:  {
         'den_d_3': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 3, 'prob': 1/39},
         'den_d_5': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 5, 'prob': 1/39},
         'den_d_7': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 7, 'prob': 1/39},
@@ -58,7 +58,7 @@ train:
     epochs: 50
     initializations: 3
     folds: 5
-    stem_filters: 32
+    stem_filters: 16
     max_depth: 4
 
     # Dataset
