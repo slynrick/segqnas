@@ -71,7 +71,7 @@ train:
     batch_size: 32
     epochs: 30
     eval_epochs: 5
-    initializations: 3
+    initializations: 1
     folds: 5
     stem_filters: 16
     max_depth: 4
