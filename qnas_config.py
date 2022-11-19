@@ -113,6 +113,7 @@ class ConfigParameters(object):
                 ("dataset", str),
                 ("image_size", int),
                 ("num_channels", int),
+                ("skip_slices", int),
                 ("num_classes", int),
                 ("data_augmentation", bool),
             ],

@@ -35,7 +35,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         cell_list: list of predefined cell types that defined a topology (if provided).
 
     Returns:
-        Mean dice coeficient of the model for the last 20% epochs for 3 times 5-fold cross validation.
+        Mean dice coeficient of the model for the last epochs for <initializations> times <folds>-fold cross validation.
     """
 
     os.environ["TF_SYNC_ON_FINISH"] = "0"
@@ -68,6 +68,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     data_path = train_params["data_path"]
     num_classes = train_params["num_classes"]
     num_channels = train_params["num_channels"]
+    skip_slices = train_params["skip_slices"]
     image_size = train_params["image_size"]
     batch_size = train_params["batch_size"]
     epochs = train_params["epochs"]
@@ -118,7 +119,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                 )
 
                 train_dataset = SpleenDataset(
-                    train_patients, only_non_empty_slices=True
+                    train_patients, only_non_empty_slices=True, skip_slices=skip_slices
                 )
 
                 val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
@@ -147,7 +148,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     train_dataloader,
                     validation_data=val_dataloader,
                     epochs=epochs,
-                    verbose=0,
+                    verbose=1,
                     callbacks=[lr_callback],
                 )
 

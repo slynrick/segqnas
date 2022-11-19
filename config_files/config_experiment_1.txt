@@ -22,7 +22,7 @@ QNAS:
 
 train:
     batch_size: 32
-    epochs: 50
+    epochs: 30
     eval_epochs: 5
     initializations: 3
     folds: 5
@@ -32,6 +32,7 @@ train:
     # Dataset
     dataset: Spleen
     image_size: 128
+    skip_slices: 1
     num_channels: 1
     num_classes: 2
     data_augmentation: True

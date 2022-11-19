@@ -97,6 +97,7 @@ train:
     dataset:             (str) Spleen or Prostate
     image_size:          (int) image input size
     num_channels:        (int) number of input channels
+    skip_slices:         (int) skip every other n slice in the dataset
     num_classes:         (int) number of output channels
     data_augmentation:   (bool) True if data augmentation methods should be applied
 ```

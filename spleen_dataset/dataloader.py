@@ -4,17 +4,12 @@ import random
 from time import time
 
 import numpy as np
-from albumentations import (
-    Compose,
-    Flip,
-    HorizontalFlip,
-    RandomBrightness,
-    Resize,
-    ShiftScaleRotate,
-)
+from albumentations import (Compose, Flip, HorizontalFlip, RandomBrightness,
+                            Resize, ShiftScaleRotate)
 from tensorflow.keras.utils import Sequence
 
-from spleen_dataset.config import dataset_folder, num_threads, preprocessed_folder
+from spleen_dataset.config import (dataset_folder, num_threads,
+                                   preprocessed_folder)
 from spleen_dataset.utils import get_list_of_patients, subfiles
 
 random.seed(0)
@@ -79,8 +74,9 @@ class SpleenDataloader(Sequence):
 
 
 class SpleenDataset:
-    def __init__(self, patients, only_non_empty_slices=False):
+    def __init__(self, patients, only_non_empty_slices=False, skip_slices=0):
         self.only_non_empty_slices = only_non_empty_slices
+        self.skip_slices=skip_slices
         self._get_list_of_files(patients)
 
     def _get_list_of_files(self, patients):
@@ -106,7 +102,7 @@ class SpleenDataset:
 
             files.extend(files_for_patient)
 
-        self.files = files
+        self.files = files[::self.skip_slices+1]
 
     def __getitem__(self, i):
         data = np.load(self.files[i])
