@@ -7,109 +7,87 @@
 import argparse
 
 import qnas_config as cfg
-from cnn import train_detailed as train
+from cnn import train
 from util import check_files, init_log
 
 
 def main(**args):
     logger = init_log(args["log_level"], name=__name__)
-    # Check if *experiment_path* contains all the necessary files to retrain an evolved model
-    check_files(args["experiment_path"])
 
     # Get all parameters
     logger.info(f"Getting parameters from evolution ...")
-    config = cfg.ConfigParameters(args, phase="retrain")
+    config = cfg.ConfigParameters(args, phase='retrain')
     config.get_parameters()
 
-    # Load log file and read it at the specified generation
-    s = (
-        f"last generation"
-        if args["generation"] is None
-        else f"generation {args['generation']}"
-    )
-    logger.info(
-        f"Loading {config.files_spec['data_file']} file to get {s}, individual "
-        f"{args['individual']} ..."
-    )
-    config.load_evolved_data(
-        generation=args["generation"], individual=args["individual"]
-    )
 
-    if args["lr_schedule"] is not None:
-        special_params = train.train_schemes_map[args["lr_schedule"]].get_params()
-        logger.info(
-            f"Overriding train parameters to use special scheme "
-            f"'{args['lr_schedule']}' ..."
-        )
-        config.override_train_params(special_params)
+    # print(config.args)
+    # print(config.QNAS_spec)
+    #print(config.files_spec)
+    # print(config.layer_dict)
+    # print(config.cell_list)
+    # print(config.previous_params_file)
+    # print(config.net_list)
 
-    # It is important to merge the dicts with the evolved_params first, as they need to be
-    # overwritten in case we are using one of the special train schemes.
-    train_params = {**config.evolved_params["params"], **config.train_spec}
+    # # It is important to merge the dicts with the evolved_params first, as they need to be
+    # # overwritten in case we are using one of the special train schemes.
+    # train_params = config.train_spec
+    # id_num = args['id_num']
+    # layer_dict = config.layer_dict
+    
 
-    logger.info(f"Starting training of model {config.evolved_params['net']}")
-    valid_mean_iou, test_info = train.train_and_eval(
-        data_info=config.data_info,
-        params=train_params,
-        layer_dict=config.layer_dict,
-        net_list=config.evolved_params["net"],
-        lr_schedule=args["lr_schedule"],
-        run_train_eval=args["run_train_eval"],
-    )
-    logger.info(f"Saving parameters...")
-    config.save_params_logfile()
+    results = train.fitness_calculation(args['id_num'], config.train_spec, config.layer_dict, config.net_list)
 
-    logger.info(f"Best mean iou in validation set: {valid_mean_iou:.5f}")
-    logger.info(f"Final test mean iou: {test_info['mean_iou']}")
-    # logger.info(f"Final test confusion matrix:\n{test_info['confusion_matrix']}")
+    # print(args)
+    # print(id_num)
+    # print(train_params)
+    # print(layer_dict)
 
+    # with open(os.path.join(args['experiment_path'], args['id_num'], 'net_list.csv'), newline='') as f:
+    #     reader = csv.reader(f)
+    #     for row in reader:
+    #         net_list = row
+
+    # logger.info(f"Starting training of model {config.evolved_params['net']}")
+    # valid_mean_iou, test_info = train.train_and_eval(
+    #     data_info=config.data_info,
+    #     params=train_params,
+    #     layer_dict=config.layer_dict,
+    #     net_list=config.evolved_params["net"],
+    #     lr_schedule=args["lr_schedule"],
+    #     run_train_eval=args["run_train_eval"],
+    # )
+    # logger.info(f"Saving parameters...")
+    # config.save_params_logfile()
+
+    logger.info(f"Final test: {results}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--experiment_path",
-        type=str,
-        required=True,
-        help="Directory where the evolved network logs are.",
+        "--experiment_path", 
+        type=str, 
+        required=True, 
+        help="Path to experiment_path."
     )
     parser.add_argument(
-        "--data_path", type=str, required=True, help="Path to input data."
+        "--data_path", 
+        type=str, 
+        required=True, 
+        help="Path to input data."
     )
     parser.add_argument(
-        "--retrain_folder",
-        type=str,
-        default="retrain",
-        help="Name of the folder with retrain model files that will be saved "
-        "inside *experiment_path*.",
+        "--retrain_folder", 
+        type=str, 
+        required=True, 
+        help="Path where the retrained results will be saved."
     )
     parser.add_argument(
-        "--generation",
-        type=int,
-        default=None,
-        help="Generation from which evolution data will be loaded. If None, "
-        "the last generation values will be used. Default = None.",
-    )
-    parser.add_argument(
-        "--individual",
-        type=int,
-        default=0,
-        help="Classical individual to be loaded number ID. Valid numbers: "
-        "0, ..., number of classical individuals - 1. Note that lower "
-        "numbers have higher fitness. Default = 0.",
+        "--id_num", 
+        type=str, 
+        required=True, 
+        help="id_num of the individual to be retrained."
     )
     # Training info
-    parser.add_argument(
-        "--log_level",
-        choices=["NONE", "INFO", "DEBUG"],
-        default="NONE",
-        help="Logging information level.",
-    )
-    parser.add_argument(
-        "--max_epochs",
-        type=int,
-        default=300,
-        help="The maximum number of epochs during training. Default = 300.",
-    )
     parser.add_argument(
         "--batch_size",
         type=int,
@@ -118,47 +96,34 @@ if __name__ == "__main__":
         " Default = 128.",
     )
     parser.add_argument(
-        "--eval_batch_size",
+        "--max_epochs",
         type=int,
-        default=0,
-        help="Size of the evaluation batch. Default = 0 (which means the "
-        "entire validation dataset at once).",
+        default=100,
+        help="The maximum number of epochs during training. Default = 100.",
     )
     parser.add_argument(
-        "--save_checkpoints_epochs",
+        "--eval_epochs",
         type=int,
         default=10,
-        help="Number of epochs to save a new checkpoint. Default = 10",
+        help="The number of epochs at the end of the training used to average the dice coeficient. Default = 10.",
     )
     parser.add_argument(
-        "--save_summary_epochs",
-        type=float,
-        default=0.25,
-        help="Number or ratio of epochs to save new info into summary. "
-        "Default = 0.25",
-    )
-    parser.add_argument(
-        "--threads",
+        "--initializations",
         type=int,
-        default=1,
-        help="Number of threads to parse dataset examples and for Tensorflow "
-        "parameters *intra_op_parallelism_threads* and "
-        "*inter_op_parallelism_threads*. If = 0, the system chooses the "
-        "number equal to logical cores available in each node.",
+        default=5,
+        help="The number of initializations for the cross validation. Default = 5.",
     )
     parser.add_argument(
-        "--lr_schedule",
-        choices=list(train.train_schemes_map.keys()),
-        default=None,
-        help="Learning rate schedule to be used. *cosine* and *cosine500* uses "
-        "cosine decay and *special* defines epoch intervals and learning "
-        "rate values for each one. Default = None (uses evolution setup).",
+        "--folds",
+        type=int,
+        default=5,
+        help="The number of folds for the cross validation. Default = 5.",
     )
     parser.add_argument(
-        "--run_train_eval",
-        action="store_true",
-        help="If present, periodic evaluation is conducted also on the "
-        "training set.",
+        "--log_level",
+        choices=["NONE", "INFO", "DEBUG"],
+        default="NONE",
+        help="Logging information level.",
     )
 
     arguments = parser.parse_args()

@@ -1,13 +1,23 @@
-# Q-NAS
+# SegQNAS
 
-## Seting up the environment
+## Neural Architecture Search for Semantic Segmentation using the QNAS algorithm
 
-```
+This repository contains code for the works presented in the following papers:
+
+### Requirements
+
+Before setting up the conda environment make sure you have `openmpi` (https://www.open-mpi.org/)
+
+After that run the following to setup the enviroment:
+
+```console
 git clone https://github.com/GuilhermeBaldo/segqnas.git
-conda create -n qnas python=3.8
-conda activate qnas
+cd segqnas/
+conda create -n segqnas python=3.8
+conda activate segqnas
 pip3 install --upgrade pip
 pip3 install tensorflow==2.4
+pip install SimpleITK
 conda install pyyaml=5.3.1
 conda install psutil
 conda install mpi4py=3.0.3
@@ -17,38 +27,9 @@ conda install -c conda-forge scikit-learn
 conda install -c conda-forge monai
 conda install -c conda-forge nibabel
 conda install -c conda-forge tqdm
-
+conda install -c conda-forge imgaug
+conda install -c conda-forge albumentations
 ```
-
-## Neural Architecture Search for Semantic Segmentation using the Q-NAS algorithm and Tensorflow.
-
-This repository contains code for the works presented in the following papers:
-
->1. D. Szwarcman, D. Civitarese and M. Vellasco, "Quantum-Inspired Neural Architecture Search,"   
-2019 International Joint Conference on Neural Networks (IJCNN), Budapest, Hungary, 2019, pp. 1-8.
-[DOI](https://doi.org/10.1109/IJCNN.2019.8852453)
->
->2. D. Szwarcman, D. Civitarese and M. Vellasco, "Q-NAS Revisited: Exploring Evolution Fitness to Improve
->  Efficiency," 2019 8th Brazilian Conference on Intelligent Systems (BRACIS), Salvador, Brazil, 2019, pp
->. 509-514. [DOI](https://doi.org/10.1109/BRACIS.2019.00095)
-
-### Requirements
-
-The required python packages are listed below. Make sure you have `openmpi` (https://www.open-mpi.org/)
-  installed before installing the project requirements. The program was tested using `openmpi-3.1.1`.
-
-The specific versions that we used in our runs are:
-
-```
-pyyaml==3.13
-numpy==last version
-mpi4py==3.0.0
-tensorflow==2.3.0
-psultil
-```
-
-All of our runs were executed in a multi-computer environment, with NVIDIA K80 GPUs and Power8 processors
- running Linux (Red Hat Enterprise Linux 7.4 3).
 
 ---
 ### Running Q-NAS
@@ -58,38 +39,23 @@ The entire process is divided in 3 steps (1 python script for each):
 2. Run architecture search
 3. Retrain final architecture
 
-Optionally, the user can run the script `run_profiling.py` to get the number of parameters and FLOPs of one
- of the discovered architectures.
-
+Optionally, the user can run the script `run_profiling.py` to get the number of parameters and FLOPs of one of the discovered architectures.
 
 #### 1. Dataset Preparation
 
-The user can choose to work with one of these datasets: CIFAR-10 or CIFAR-100 (dataset details [here](https://www.cs.toronto.edu/~kriz/cifar.html)).
+The user can choose to work with one of these datasets from the http://medicaldecathlon.com/:
+- Prostate segmentation (Task 05)
+- Spleen segmentation (Task 09)
 
-The script `run_dataset_prep.py` prepares the dataset, as described in the papers, to use for the
- architecture search and/or retraining. If the original CIFAR is already downloaded, just point to the folder
-   with the files using the parameter `--data_path`. Otherwise, the script will download it for you and
-    save it in the location defined by `--data_path`.
+The script `run_prostate_dataset_prep.py` and `run_spleen_dataset_prep.py` prepares the dataset for Task 05 and 09 respectively.
 
-Here's an example of how to prepare the CIFAR-10 dataset limited to 10k examples for training and validation:
+Here's an example of how to prepare the Task 09:
 
-```shell script
-python run_dataset_prep.py \
-    --data_path pascalvoc12 \
-    --output_folder pascalvoc12_tfr \
+```console
+python run_spleen_dataset_prep.py 
 ```
 
-At the end of the process, the folder `pascalvoc12/pascalvoc12_tfr` has the following files:
->pascalvoc12_train_mean.npz
-pascalvoc12_train_std.npz  
-test_1.tfrecords  
-train_1.tfrecords  
-valid_1.tfrecords  
-
-The tfrecords files contains the images and labels, `data_info.txt` includes basic information about this
- dataset, and `cifar_train_mean.npz` is the numpy array with the mean of the training images.
-
-Run `python run_dataset_prep.py --help` for additional parameter details.
+The dataset is going to be saved in the `spleen_dataset/`
 
 #### 2. Run architecture search
 
@@ -104,33 +70,34 @@ QNAS:
     max_generations:     (int) maximum number of generations to run the algorithm
     max_num_nodes:       (int) maximum number of nodes in the network
     num_quantum_ind:     (int) number of quantum individuals
-    penalize_number:     (int) maximum number of reducing layers in the networks without penalization
     repetition:          (int) number of classical individuals each quantum individual will generate
     replace_method:      (str) selection mechanism; 'best' or 'elitism'
     update_quantum_gen:  (int) generation frequency to update quantum genes
     update_quantum_rate: (float) rate for the quantum update (similar to crossover rate)
     save_data_freq:      (int) generation frequency to save train data of best model of current 
-                           generation in csv files; if user do not want this, set it to 0. 
 
-    params_ranges:       # Set to *value* if user wants this value instead of evolving the parameter
-        decay:           (float) or (list); ignored if optimizer = Momentum
-        learning_rate:   (float) or (list);
-        momentum:        (float) or (list);
-        weight_decay:    (float) or (list);
-
-    layer_dict: {'function_name': {'block': 'function_class', 
-                                  'params': {'parameter': value}, 
-                                  'prob': probability_value}}
+    layer_dict: {
+      'function_name': {'block': 'function_class', 'kernel': 'kernel_size', 'prob': probability_value}
+    }
+    
+    cell_list: [
+      'cell_type'
+    ]
 
 train:
     batch_size:          (int) number of examples in a batch to train the networks.
-    epochs:     (int) batch size for evaluation; if = 0, the number of valid image is used
-    
+    epochs:              (int) training epochs
+    eval_epochs:         (int) last epochs used to average the dice coeficient
+    initializations:     (int) number of initializations for the cross validation
+    folds:               (int) number of folds for the cross validation
+    stem_filters:        (int) number of filters in the depth 0
+    max_depth:           (int) max depth
+
     # Dataset
-    dataset:             (str) Cifar10 or CIFAR100
-    image_size:
-    num_channels:
-    num_classes:
+    dataset:             (str) Spleen or Prostate
+    image_size:          (int) image input size
+    num_channels:        (int) number of input channels
+    num_classes:         (int) number of output channels
     data_augmentation:   (bool) True if data augmentation methods should be applied
 ```
 
@@ -145,11 +112,7 @@ In summary, the files are:
 This is an example of how to run architecture search for dataset `cifar10/cifar_tfr_10000` with `config1.txt`:
 
 ```shell script
-mpirun -n 2 python run_evolution.py \
-    --experiment_path my_exp_config1 \
-    --config_file config_files/config1.txt \
-    --data_path pascalvoc12/pascalvoc12_tfr \
-    --log_level DEBUG
+nohup mpirun -n 9 python run_evolution.py --experiment_path experiment_1 --data_path spleen_dataset/data/Task09_Spleen_preprocessed/ --config_file config_files/config_experiment_1.txt --log_level DEBUG &
 ```
 
 The number of workers in the MPI execution must be equal to the number of classical individuals. In `config1.txt`,   
@@ -176,13 +139,12 @@ It is also possible to continue a finished evolution process. Note that all the 
   that can be overwritten is `max_generations`, so that one can set for how many generations the evolution
   will continue. To continue the above experiment for another 100 generations, the user can run:
 
-```shell script
-mpirun -n 20 python run_evolution.py \
-    --experiment_path my_exp_config1/continue \
-    --config_file config_files/config1.txt \
-    --data_path cifar10/cifar_tfr_10000 \
-    --log_level INFO \
-    --continue_path my_exp_config1
+```console
+  nohup mpirun -n 9 python run_evolution.py \
+  --experiment_path experiment_1 \
+  --data_path spleen_dataset/data/Task09_Spleen_preprocessed/ \
+  --config_file config_files/config_experiment_1.txt \
+  --log_level DEBUG &
 ```
 
 Run `python run_evolution.py --help` for additional parameter details.
@@ -195,16 +157,18 @@ After the evolution is complete, the final network can be retrained on the entir
   for 300 epochs with the dataset in `cifar10/cifar_tfr`, using the scheme (optimizer and hyperparameters) of
   the evolution:
 
-```shell script
-python run_retrain.py \
-    --experiment_path my_exp_config1 \
-    --data_path cifar10/cifar_tfr \
-    --log_level INFO \
-    --max_epochs 300 \
-    --batch_size 256 \
-    --eval_batch_size 1000 \
-    --threads 8 \
-    --run_train_eval
+```console
+  nohup python run_retrain.py \
+  --experiment_path experiment_1/ \
+  --data_path spleen_dataset/data/Task09_Spleen_preprocessed/ \
+  --retrain_folder retrained/ \
+  --id_num 24_5 \
+  --batch_size 32 \
+  --max_epochs 100 \
+  --eval_epochs 10 \
+  --initializations 5 \
+  --folds 5 \
+  --log_level DEBUG &
 ```
 
 After the training is complete, the directory `my_exp_config1/retrain` will contain the following files:
@@ -260,13 +224,3 @@ python run_profiling.py \
     --generation 50 \
     --individual 1
 ```
-
----
-### Acknowledgements
-
-This code was developed by Daniela Szwarcman while she was a PhD candidate in Electrical Engineering at
- PUC-Rio<sup>[1](#myfootnote1)</sup> and a PhD intern at IBM Research.
-
-<a name="myfootnote1">1</a>. Advisor: Prof. Marley Vellasco ([PUC-Rio](https://www.puc-rio.br/index.html))  
- Co-advisor: Daniel Civitarese ([IBM Research](https://www.research.ibm.com/labs/brazil/))
-

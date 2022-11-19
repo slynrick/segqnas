@@ -2,10 +2,6 @@
     * Licensed under The MIT License [see LICENSE for details]
 
     - Train a model (single GPU).
-
-    References:
-    https://github.com/tensorflow/models/blob/r1.10.0/tutorials/image/cifar10_estimator/cifar10_main.py
-
 """
 import csv
 import os
@@ -19,12 +15,9 @@ import pandas as pd
 import tensorflow as tf
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (
-    SpleenDataloader,
-    SpleenDataset,
-    get_training_augmentation,
-    get_validation_augmentation,
-)
+from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
+                                       get_training_augmentation,
+                                       get_validation_augmentation)
 from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
 from tensorflow.keras.optimizers import RMSprop
 
@@ -58,17 +51,19 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
 
-    gpu_id = int(id_num.split("_")[-1]) % len(gpus)
+    if(len(gpus)):
 
-    tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
+        gpu_id = int(id_num.split("_")[-1]) % len(gpus)
 
-    try:
-        tf.config.experimental.set_virtual_device_configuration(
-            gpus[gpu_id],
-            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)],
-        )
-    except RuntimeError as e:
-        print(e)
+        tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
+
+        try:
+            tf.config.experimental.set_virtual_device_configuration(
+                gpus[gpu_id],
+                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)],
+            )
+        except RuntimeError as e:
+            print(e)
 
     data_path = train_params["data_path"]
     num_classes = train_params["num_classes"]
@@ -76,6 +71,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     image_size = train_params["image_size"]
     batch_size = train_params["batch_size"]
     epochs = train_params["epochs"]
+    eval_epochs = train_params["eval_epochs"]
     num_folds = train_params["folds"]
     num_initializations = train_params["initializations"]
     stem_filters = train_params["stem_filters"]
@@ -100,7 +96,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     )
 
     val_gen_dice_coef_list = []
-    evaluation_epochs = int(0.2 * epochs)
 
     try:
         for initialization in range(num_initializations):
@@ -157,12 +152,12 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                 )
 
                 val_gen_dice_coef_list.extend(
-                    history.history["val_gen_dice_coef"][-evaluation_epochs:]
+                    history.history["val_gen_dice_coef"][-eval_epochs:]
                 )
 
                 tf.compat.v1.logging.log(
                     level=tf.compat.v1.logging.get_verbosity(),
-                    msg=f"[{id_num}] DSC last {evaluation_epochs} epochs of for training {fold+num_folds*initialization+1}/{num_folds*num_initializations}: {np.mean(history.history['val_gen_dice_coef'][-evaluation_epochs:])} +- {np.std(history.history['val_gen_dice_coef'][-evaluation_epochs:])}",
+                    msg=f"[{id_num}] DSC last {eval_epochs} epochs of for training {fold+num_folds*initialization+1}/{num_folds*num_initializations}: {np.mean(history.history['val_gen_dice_coef'][-eval_epochs:])} +- {np.std(history.history['val_gen_dice_coef'][-eval_epochs:])}",
                 )
 
     except Exception as e:

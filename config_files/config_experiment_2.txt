@@ -11,7 +11,7 @@ QNAS:
     update_quantum_rate: 0.1
     save_data_freq: 10
 
-layer_dict:  {
+    layer_dict:  {
         'den_3': {'block': 'DenseBlock',     'kernel': 3, 'prob': 1/13},
         'den_5': {'block': 'DenseBlock',     'kernel': 5, 'prob': 1/13},
         'den_7': {'block': 'DenseBlock',     'kernel': 7, 'prob': 1/13},
@@ -43,6 +43,7 @@ layer_dict:  {
 train:
     batch_size: 32
     epochs: 50
+    eval_epochs: 5
     initializations: 3
     folds: 5
     stem_filters: 16

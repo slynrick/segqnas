@@ -4,6 +4,7 @@
     - Q-NAS configuration.
 """
 
+import csv
 import inspect
 import os
 from collections import OrderedDict
@@ -35,6 +36,7 @@ class ConfigParameters(object):
         self.cell_list = []
         self.previous_params_file = None
         self.evolved_params = None
+        self.net_list = []
 
     def _check_vars(self, config_file):
         """Check if all variables are in *config_file* and if their types are correct.
@@ -103,6 +105,7 @@ class ConfigParameters(object):
             "train": [
                 ("batch_size", int),
                 ("epochs", int),
+                ("eval_epochs", int),
                 ("initializations", int),
                 ("folds", int),
                 ("stem_filters", int),
@@ -191,7 +194,7 @@ class ConfigParameters(object):
         )
 
         self.files_spec["previous_data_file"] = os.path.join(
-            self.args["continue_path"], "data_QNAS.pkl"
+            self.args["continue_path"], "net_list.csv"
         )
         self.load_old_params()
         self.QNAS_spec["max_generations"] = load_yaml(self.args["config_file"])["QNAS"][
@@ -213,10 +216,16 @@ class ConfigParameters(object):
         for key in self.args.keys():
             self.train_spec[key] = self.args[key]
 
+        with open(os.path.join(self.train_spec["experiment_path"], self.args["id_num"], 'net_list.csv'), newline='') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                self.net_list = row
+
         self.train_spec["experiment_path"] = os.path.join(
             self.train_spec["experiment_path"], self.args["retrain_folder"]
         )
         del self.args["retrain_folder"]
+
 
     def _get_common_params(self):
         """Get parameters that are combined/calculated the same way for all phases."""
@@ -230,7 +239,7 @@ class ConfigParameters(object):
             self.args["experiment_path"], "log_QNAS.txt"
         )
         self.files_spec["data_file"] = os.path.join(
-            self.args["experiment_path"], "data_QNAS.pkl"
+            self.args["experiment_path"], "net_list.csv"
         )
 
     def get_parameters(self):
@@ -256,7 +265,7 @@ class ConfigParameters(object):
 
         self.train_spec = dict(previous_params_file["train"])
         self.QNAS_spec = dict(previous_params_file["QNAS"])
-        self.QNAS_spec["params_ranges"] = eval(self.QNAS_spec["params_ranges"])
+        #self.QNAS_spec["params_ranges"] = eval(self.QNAS_spec["params_ranges"])
         self.layer_dict = previous_params_file["layer_dict"]
         self.cell_list = previous_params_file["cell_list"]
 
@@ -272,26 +281,13 @@ class ConfigParameters(object):
                 *generation*.
         """
 
-        log_data = load_pkl(self.files_spec["data_file"])
 
-        if generation is None:
-            generation = max(log_data.keys())
+        with open(self.files_spec["data_file"], newline='') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                net_list = row
 
-        log_data = log_data[generation]
-
-        params_pop = log_data["params_pop"]
-        net_pop = log_data["net_pop"]
-
-        assert (
-            individual < net_pop.shape[0]
-        ), "The individual number cannot be bigger than the size of the population!"
-
-        net = QChromosomeNetwork(
-            layer_list=self.QNAS_spec["layer_list"],
-            max_num_nodes=log_data["num_net_nodes"],
-        ).decode(net_pop[individual])
-
-        self.evolved_params = {"params": params, "net": net}
+        self.evolved_params = {"net": net}
 
     def override_train_params(self, new_params_dict):
         """Override *self.train_spec* parameters with the ones in *new_params_dict*. Update
