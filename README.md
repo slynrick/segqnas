@@ -17,12 +17,12 @@ conda create -n segqnas python=3.8
 conda activate segqnas
 pip3 install --upgrade pip
 pip3 install tensorflow==2.4
-pip install SimpleITK
 conda install pyyaml=5.3.1
 conda install psutil
 conda install mpi4py=3.0.3
 conda install pandas
 conda install Pillow
+conda install -c simpleitk simpleitk
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge monai
 conda install -c conda-forge nibabel
