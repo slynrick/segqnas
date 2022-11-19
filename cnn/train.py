@@ -148,7 +148,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     train_dataloader,
                     validation_data=val_dataloader,
                     epochs=epochs,
-                    verbose=1,
+                    verbose=0,
                     callbacks=[lr_callback],
                 )
 
