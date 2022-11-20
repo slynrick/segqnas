@@ -22,7 +22,7 @@ QNAS:
 
 train:
     batch_size: 32
-    epochs: 100
+    epochs: 50
     eval_epochs: 5
     initializations: 1
     folds: 5
@@ -34,5 +34,5 @@ train:
     image_size: 128
     skip_slices: 1
     num_channels: 2
-    num_classes: 2
+    num_classes: 3
     data_augmentation: True
