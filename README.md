@@ -8,11 +8,20 @@ This repository contains code for the works presented in the following papers:
 
 Before setting up the conda environment make sure you have `openmpi` (https://www.open-mpi.org/)
 
+The follow these steps to use GPU (https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html)
+
 After that run the following to setup the enviroment:
 
 ```console
 git clone https://github.com/GuilhermeBaldo/segqnas.git
 cd segqnas/
+
+python -m venv .venv
+source .venv/bin/activate
+pip install tensorflow-gpu
+
+
+
 conda create -n segqnas python=3.8
 conda activate segqnas
 pip3 install --upgrade pip

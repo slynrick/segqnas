@@ -1,3 +1,4 @@
+#https://github.com/MIC-DKFZ/batchgenerators/blob/master/batchgenerators/examples/brats2017/brats2017_preprocessing.py
 from multiprocessing import Pool
 
 import numpy as np
@@ -68,17 +69,17 @@ def load_and_preprocess(case, patient_name, output_folder):
     imgs_npy = [sitk.GetArrayFromImage(i) for i in imgs_sitk]
 
     # get some metadata
-    spacing = imgs_sitk[0].GetSpacing()
+    # spacing = imgs_sitk[0].GetSpacing()
     # the spacing returned by SimpleITK is in inverse order relative to the numpy array we receive. If we wanted to
     # resample the data and if the spacing was not isotropic (in BraTS all cases have already been resampled to 1x1x1mm
     # by the organizers) then we need to pay attention here. Therefore we bring the spacing into the correct order so
     # that spacing[0] actually corresponds to the spacing of the first axis of the numpy array
-    spacing = np.array(spacing)[::-1]
+    # spacing = np.array(spacing)[::-1]
 
-    direction = imgs_sitk[0].GetDirection()
-    origin = imgs_sitk[0].GetOrigin()
+    # direction = imgs_sitk[0].GetDirection()
+    # origin = imgs_sitk[0].GetOrigin()
 
-    original_shape = imgs_npy[0].shape
+    # original_shape = imgs_npy[0].shape
 
     # now stack the images into one 4d array, cast to float because we will get rounding problems if we don't
     imgs_npy = np.concatenate([i[None] for i in imgs_npy]).astype(np.float32)
@@ -117,6 +118,8 @@ def load_and_preprocess(case, patient_name, output_folder):
     # std = imgs_npy[0].std()
     # imgs_npy[0] = (imgs_npy[0] - mean) / (std + 1e-8)
 
+    print(imgs_npy.shape)
+
     for slice_idx in range(imgs_npy.shape[1]):
         slice_npy = imgs_npy[:, slice_idx, :, :]
 
@@ -134,15 +137,15 @@ def load_and_preprocess(case, patient_name, output_folder):
     # now save as npz
     # np.save(join(output_folder, patient_name + ".npy"), imgs_npy)
 
-    metadata = {
-        "spacing": spacing,
-        "direction": direction,
-        "origin": origin,
-        "original_shape": original_shape,
-        # "nonzero_region": nonzero,
-    }
+    # metadata = {
+    #     "spacing": spacing,
+    #     "direction": direction,
+    #     "origin": origin,
+    #     "original_shape": original_shape,
+    #     # "nonzero_region": nonzero,
+    # }
 
-    save_pickle(metadata, join(output_folder, patient_name + ".pkl"))
+    # save_pickle(metadata, join(output_folder, patient_name + ".pkl"))
 
 
 # def save_segmentation_as_nifti(segmentation, metadata, output_file):
