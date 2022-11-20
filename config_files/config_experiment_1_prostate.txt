@@ -22,7 +22,7 @@ QNAS:
 
 train:
     batch_size: 32
-    epochs: 30
+    epochs: 100
     eval_epochs: 5
     initializations: 1
     folds: 5
