@@ -6,22 +6,26 @@
 import csv
 import os
 import platform
-import random
 import time
 from logging import addLevelName
 
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
-from spleen_dataset.config import dataset_folder
-from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
-                                       get_training_augmentation,
-                                       get_validation_augmentation)
-from spleen_dataset.utils import get_list_of_patients, get_split_deterministic
-from tensorflow.keras.optimizers import RMSprop
 
-from cnn import input, loss, model
+from spleen_dataset.config import dataset_folder as spleen_dataset_folder
+from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
+                                       get_training_augmentation as get_spleen_training_augmentation,
+                                       get_validation_augmentation as get_spleen_validation_augmentation)
+from spleen_dataset.utils import get_list_of_patients as get_list_of_spleen_patients, get_split_deterministic as get_spleen_split_deterministic
+
+from prostate_dataset.config import dataset_folder as prostate_dataset_folder
+from prostate_dataset.dataloader import (ProstateDataloader, ProstateDataset,
+                                       get_training_augmentation as get_prostate_training_augmentation,
+                                       get_validation_augmentation as get_prostate_validation_augmentation)
+from prostate_dataset.utils import get_list_of_patients as get_list_of_prostate_patients, get_split_deterministic as get_prostate_split_deterministic
+
+from cnn import model
 
 
 def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=None):
@@ -65,6 +69,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         except RuntimeError as e:
             print(e)
 
+    dataset = train_params["dataset"]
     data_path = train_params["data_path"]
     num_classes = train_params["num_classes"]
     num_channels = train_params["num_channels"]
@@ -78,11 +83,18 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     stem_filters = train_params["stem_filters"]
     max_depth = train_params["max_depth"]
 
-    patients = get_list_of_patients(dataset_folder)
-    patch_size = (image_size, image_size)
+    if(dataset == 'Spleen'):
+        patients = get_list_of_spleen_patients(spleen_dataset_folder)
+        train_augmentation = get_spleen_training_augmentation(patch_size)
+        val_augmentation = get_spleen_validation_augmentation(patch_size)
+    elif(dataset == 'Prostate'):
+        patients = get_list_of_prostate_patients(prostate_dataset_folder)
+        train_augmentation = get_prostate_training_augmentation(patch_size)
+        val_augmentation = get_prostate_validation_augmentation(patch_size)
+    else:
+        raise Exception
 
-    train_augmentation = get_training_augmentation(patch_size)
-    val_augmentation = get_validation_augmentation(patch_size)
+    patch_size = (image_size, image_size)
 
     # Training time start counting here. It needs to be defined outside model_layer(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
@@ -111,25 +123,49 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     cell_list=cell_list,
                 )
 
-                train_patients, val_patients = get_split_deterministic(
-                    patients,
-                    fold=fold,
-                    num_splits=num_folds,
-                    random_state=initialization,
-                )
+                if(dataset == 'Spleen'):
+                    train_patients, val_patients = get_spleen_split_deterministic(
+                        patients,
+                        fold=fold,
+                        num_splits=num_folds,
+                        random_state=initialization,
+                    )
 
-                train_dataset = SpleenDataset(
-                    train_patients, only_non_empty_slices=True, skip_slices=skip_slices
-                )
+                    train_dataset = SpleenDataset(
+                        train_patients, only_non_empty_slices=True, skip_slices=skip_slices
+                    )
 
-                val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
-                train_dataloader = SpleenDataloader(
-                    train_dataset, batch_size, train_augmentation
-                )
+                    val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
+                    train_dataloader = SpleenDataloader(
+                        train_dataset, batch_size, train_augmentation
+                    )
 
-                val_dataloader = SpleenDataloader(
-                    val_dataset, batch_size, val_augmentation
-                )
+                    val_dataloader = SpleenDataloader(
+                        val_dataset, batch_size, val_augmentation
+                    )
+
+                elif(dataset == 'Prostate'):
+                    train_patients, val_patients = get_prostate_split_deterministic(
+                        patients,
+                        fold=fold,
+                        num_splits=num_folds,
+                        random_state=initialization,
+                    )
+                    
+                    train_dataset = ProstateDataset(
+                        train_patients, only_non_empty_slices=True, skip_slices=skip_slices
+                    )
+
+                    val_dataset = ProstateDataset(val_patients, only_non_empty_slices=True)
+                    train_dataloader = ProstateDataloader(
+                        train_dataset, batch_size, train_augmentation
+                    )
+
+                    val_dataloader = ProstateDataloader(
+                        val_dataset, batch_size, val_augmentation
+                    )
+                else:
+                    raise Exception             
 
                 def learning_rate_fn(epoch):
                     initial_learning_rate = 1e-3

@@ -125,7 +125,7 @@ def build_net(
 
     cell = "NonscalingCell"
     block = "OutputConvolution"
-    kernel = 1
+    kernel = num_classes
     filters = num_classes
     prediction_mask = Layer(cell, block, kernel, filters)(x, name=f"{block}")
 

@@ -8,9 +8,9 @@ from albumentations import (Compose, Flip, HorizontalFlip, RandomBrightness,
                             Resize, ShiftScaleRotate)
 from tensorflow.keras.utils import Sequence
 
-from spleen_dataset.config import (dataset_folder, num_threads,
+from prostate_dataset.config import (dataset_folder, num_threads,
                                    preprocessed_folder)
-from spleen_dataset.utils import get_list_of_patients, subfiles
+from prostate_dataset.utils import get_list_of_patients, subfiles
 
 random.seed(0)
 
@@ -21,7 +21,7 @@ def get_training_augmentation(patch_size):
         ShiftScaleRotate(
             p=1.0
         ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        #RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
         Resize(*patch_size),
     ]
     return Compose(train_transform)
@@ -34,7 +34,7 @@ def get_validation_augmentation(patch_size):
     return Compose(test_transform)
 
 
-class SpleenDataloader(Sequence):
+class ProstateDataloader(Sequence):
     def __init__(self, dataset, batch_size=1, augmentation=None, shuffle=True):
         self.dataset = dataset
         self.batch_size = batch_size
@@ -73,7 +73,7 @@ class SpleenDataloader(Sequence):
             self.indexes = np.random.permutation(self.indexes)
 
 
-class SpleenDataset:
+class ProstateDataset:
     def __init__(self, patients, only_non_empty_slices=False, skip_slices=0):
         self.only_non_empty_slices = only_non_empty_slices
         self.skip_slices=skip_slices
@@ -91,7 +91,7 @@ class SpleenDataset:
 
                 for file_for_patient in files_for_patient:
                     data = np.load(file_for_patient, allow_pickle=True)
-                    mask = data[1]
+                    mask = data[2]
                     labels = np.unique(mask)
                     if len(labels) == 1 and labels[0] == 0:
                         continue
@@ -107,8 +107,8 @@ class SpleenDataset:
     def __getitem__(self, i):
         data = np.load(self.files[i])
 
-        image = data[0]
-        mask = data[1]
+        image = np.moveaxis(data[0:2], 0, -1)        
+        mask = data[2]
 
         return image, mask
 

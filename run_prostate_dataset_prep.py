@@ -122,8 +122,6 @@ def load_and_preprocess(case, patient_name, output_folder):
     for slice_idx in range(imgs_npy.shape[1]):
         slice_npy = imgs_npy[:, slice_idx, :, :]
 
-        #print(slice_npy.shape)
-
         #slice_npy[0] = np.clip(slice_npy[0], -57, 164)
         #slice_npy[0] = (slice_npy[0] - np.min(slice_npy[0])) / np.ptp(slice_npy[0])
 

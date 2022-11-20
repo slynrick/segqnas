@@ -40,6 +40,9 @@ class Block(object):
 
     def _sigmoid_activation(self, inputs, name=None):
         return Activation("sigmoid", name=f"{name}_Sigmoid")(inputs)
+    
+    def _softmax_activation(self, inputs, name=None):
+        return Activation("softmax", name=f"{name}_Softmax")(inputs)
 
     def _conv_kxk(self, inputs, name=None):
         return Conv2D(
@@ -121,7 +124,11 @@ class OutputConvolution(Block):
     def __call__(self, inputs, name=None, is_train=True):
         x = inputs
         x = self._final_conv(x, name=f"{name}_Convolution")
-        x = self._sigmoid_activation(x, name=f"{name}_Activation")
+
+        if(self.kernel_size == 1):
+            x = self._sigmoid_activation(x, name=f"{name}_Activation")
+        else:
+            x = self._softmax_activation(x, name=f"{name}_Activation")
         return x
 
 

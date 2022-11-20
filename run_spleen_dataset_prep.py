@@ -118,8 +118,6 @@ def load_and_preprocess(case, patient_name, output_folder):
     # std = imgs_npy[0].std()
     # imgs_npy[0] = (imgs_npy[0] - mean) / (std + 1e-8)
 
-    print(imgs_npy.shape)
-
     for slice_idx in range(imgs_npy.shape[1]):
         slice_npy = imgs_npy[:, slice_idx, :, :]
 
