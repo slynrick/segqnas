@@ -83,6 +83,8 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     stem_filters = train_params["stem_filters"]
     max_depth = train_params["max_depth"]
 
+    patch_size = (image_size, image_size, num_channels)
+
     if(dataset == 'Spleen'):
         patients = get_list_of_spleen_patients(spleen_dataset_folder)
         train_augmentation = get_spleen_training_augmentation(patch_size)
@@ -93,8 +95,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         val_augmentation = get_prostate_validation_augmentation(patch_size)
     else:
         raise Exception
-
-    patch_size = (image_size, image_size)
 
     # Training time start counting here. It needs to be defined outside model_layer(), to make it
     # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
@@ -114,7 +114,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         for initialization in range(num_initializations):
             for fold in range(num_folds):
                 net = model.build_net(
-                    input_shape=(image_size, image_size, num_channels),
+                    input_shape=patch_size,
                     num_classes=num_classes,
                     stem_filters=stem_filters,
                     max_depth=max_depth,
