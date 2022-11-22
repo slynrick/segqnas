@@ -147,6 +147,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
             mean_dsc = np.mean(val_gen_dice_coef_list)
             std_dsc = np.std(val_gen_dice_coef_list)
+            print(f"{initialization + fold*num_initializations}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}")
 
     mean_dsc = np.mean(val_gen_dice_coef_list)
     std_dsc = np.std(val_gen_dice_coef_list)
