@@ -30,7 +30,7 @@ train:
     max_depth: 4
 
     # Dataset
-    dataset: Prostate
+    data_path: prostate_dataset/data/Task05_Prostate_preprocessed/
     image_size: 128
     skip_slices: 1
     num_channels: 2

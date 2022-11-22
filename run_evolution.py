@@ -140,18 +140,7 @@ if __name__ == "__main__":
         help="Directory where to write logs and model files.",
     )
     parser.add_argument(
-        "--data_path", type=str, required=True, help="Path to input data."
-    )
-    parser.add_argument(
         "--config_file", type=str, required=True, help="Configuration file name."
-    )
-    parser.add_argument(
-        "--continue_path",
-        type=str,
-        default="",
-        help="If the user wants to continue a previous evolution, point to "
-        "the corresponding experiment path. Evolution parameters will be "
-        "loaded from this folder.",
     )
     parser.add_argument(
         "--log_level",

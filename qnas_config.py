@@ -110,7 +110,7 @@ class ConfigParameters(object):
                 ("folds", int),
                 ("stem_filters", int),
                 ("max_depth", int),
-                ("dataset", str),
+                ("data_path", str),
                 ("image_size", int),
                 ("num_channels", int),
                 ("skip_slices", int),
@@ -217,7 +217,12 @@ class ConfigParameters(object):
         for key in self.args.keys():
             self.train_spec[key] = self.args[key]
 
-        with open(os.path.join(self.train_spec["experiment_path"], self.args["id_num"], 'net_list.csv'), newline='') as f:
+        with open(
+            os.path.join(
+                self.train_spec["experiment_path"], self.args["id_num"], "net_list.csv"
+            ),
+            newline="",
+        ) as f:
             reader = csv.reader(f)
             for row in reader:
                 self.net_list = row
@@ -226,7 +231,6 @@ class ConfigParameters(object):
             self.train_spec["experiment_path"], self.args["retrain_folder"]
         )
         del self.args["retrain_folder"]
-
 
     def _get_common_params(self):
         """Get parameters that are combined/calculated the same way for all phases."""
@@ -266,7 +270,7 @@ class ConfigParameters(object):
 
         self.train_spec = dict(previous_params_file["train"])
         self.QNAS_spec = dict(previous_params_file["QNAS"])
-        #self.QNAS_spec["params_ranges"] = eval(self.QNAS_spec["params_ranges"])
+        # self.QNAS_spec["params_ranges"] = eval(self.QNAS_spec["params_ranges"])
         self.layer_dict = previous_params_file["layer_dict"]
         self.cell_list = previous_params_file["cell_list"]
 
@@ -282,8 +286,7 @@ class ConfigParameters(object):
                 *generation*.
         """
 
-
-        with open(self.files_spec["data_file"], newline='') as f:
+        with open(self.files_spec["data_file"], newline="") as f:
             reader = csv.reader(f)
             for row in reader:
                 net_list = row

@@ -1,155 +1,128 @@
-""" Copyright (c) 2020, Daniela Szwarcman and IBM Research
-    * Licensed under The MIT License [see LICENSE for details]
-
-    - Input function and dataset info classes.
-
-    References:
-    https://github.com/tensorflow/models/blob/r1.10.0/tutorials/image/cifar10_estimator/cifar10.py
-
-"""
-
-import json
+import random
 import os
-from math import ceil
-
-import albumentations as A
-import cv2
-import matplotlib.pyplot as plt
+import pickle
 import numpy as np
-import tensorflow as tf
-from PIL import Image
-from sklearn.model_selection import train_test_split
-from tensorflow import keras
+from sklearn.model_selection import KFold
+
+from albumentations import (
+    Compose,
+    HorizontalFlip,
+    RandomBrightness,
+    Resize,
+    ShiftScaleRotate,
+)
+from tensorflow.keras.utils import Sequence
+
+random.seed(0)
 
 
-# helper function for data visualization
-def visualize(**images):
-    """PLot images in one row."""
-    cols = 6
-    rows = ceil(len(images) / 6)
-    plt.figure(figsize=(32, 10))
-    for i, (name, image) in enumerate(images.items()):
-        plt.subplot(rows, cols, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.title(" ".join(name.split("_")).title())
-        plt.imshow(image)
-    plt.show()
+def get_list_of_patients(data_path):
+    filenames = os.listdir(data_path)
+
+    def get_patient_from_filename(filename):
+        return (filename.split(".")[0]).split("_")[0]
+
+    patients = list(set(map(get_patient_from_filename, filenames)))
+    patients.sort(key=float)
+    return patients
 
 
-# helper function for data visualization
-def denormalize(x):
-    """Scale image to range 0..1 for correct plot"""
-    x_max = np.percentile(x, 98)
-    x_min = np.percentile(x, 2)
-    x = (x - x_min) / (x_max - x_min)
-    x = x.clip(0, 1)
-    return x
+def subfiles(folder, join=True, prefix=None, suffix=None, sort=True):
+    if join:
+        l = os.path.join
+    else:
+        l = lambda x, y: y
+    res = [
+        l(folder, i)
+        for i in os.listdir(folder)
+        if os.path.isfile(os.path.join(folder, i))
+        and (prefix is None or i.startswith(prefix))
+        and (suffix is None or i.endswith(suffix))
+    ]
+    if sort:
+        res.sort()
+    return res
 
 
-def round_clip_0_1(x, **kwargs):
-    return x.round().clip(0, 1)
+def load_pickle(file, mode="rb"):
+    with open(file, mode) as f:
+        a = pickle.load(f)
+    return a
 
 
-# define heavy augmentations
-def get_training_augmentation(image_height, image_width):
+def get_split_deterministic(all_keys, fold=0, num_splits=5, random_state=12345):
+    """
+    Splits a list of patient identifiers (or numbers) into num_splits folds and returns the split for fold fold.
+    :param all_keys:
+    :param fold:
+    :param num_splits:
+    :param random_state:
+    :return:
+    """
+    all_keys_sorted = np.sort(list(all_keys))
+    splits = KFold(n_splits=num_splits, shuffle=True, random_state=random_state)
+    for i, (train_idx, test_idx) in enumerate(splits.split(all_keys_sorted)):
+        if i == fold:
+            train_keys = np.array(all_keys_sorted)[train_idx]
+            test_keys = np.array(all_keys_sorted)[test_idx]
+            break
+    return train_keys, test_keys
+
+
+def get_training_augmentation(patch_size):
     train_transform = [
-        A.HorizontalFlip(p=0.5),
-        A.ShiftScaleRotate(p=0.75),
-        # A.RandomBrightness(limit=0.001, p=0.5)
-        # A.PadIlayereeded(min_height=image_height, min_width=image_height, always_apply=True, border_mode=0),
-        # A.CropNonEmptyMaskIfExists(height=image_height, width=image_width, always_apply=True, ignore_channels=[0]),
-        # A.GaussianBlur(p=0.5),
-        # A.IAAAdditiveGaussianNoise(p=0.2),
-        # A.IAAPerspective(p=0.5),
-        # A.OneOf(
-        #     [
-        #         A.CLAHE(p=1),
-        #         A.RandomBrightness(p=1),
-        #         A.RandomGamma(p=1),
-        #     ],
-        #     p=0.9,
-        # ),
-        # A.OneOf(
-        #     [
-        #         A.IAASharpen(p=1),
-        #         A.Blur(blur_limit=3, p=1),
-        #         A.MotionBlur(blur_limit=3, p=1),
-        #     ],
-        #     p=0.9,
-        # ),
-        # A.OneOf(
-        #     [
-        #         A.RandomContrast(p=1),
-        #         A.HueSaturationValue(p=1),
-        #     ],
-        #     p=0.9,
-        # ),
-        # A.Lambda(mask=round_clip_0_1)
+        # HorizontalFlip(p=0.5),
+        ShiftScaleRotate(
+            p=1.0
+        ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
+        RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        Resize(*patch_size),
     ]
-    return A.Compose(train_transform)
+    return Compose(train_transform)
 
 
-def get_preprocessing(preprocessing_layer):
-    """Construct preprocessing transform
-
-    Args:
-        preprocessing_layer (callbale): data normalization function
-            (can be specific for each pretrained neural network)
-    Return:
-        transform: albumentations.Compose
-
-    """
-
-    _transform = [
-        A.Lambda(image=preprocessing_layer),
-    ]
-    return A.Compose(_transform)
-
-
-def get_validation_augmentation(image_height, image_width):
-    """Add paddings to make image shape divisible by 32"""
+def get_validation_augmentation(patch_size):
     test_transform = [
-        A.Resize(image_height, image_width),
-        # A.PadIlayereeded(min_height=None, min_width=None, pad_height_divisor=48, pad_width_divisor=48, always_apply=True, border_mode=0),
+        Resize(*patch_size),
     ]
-    return A.Compose(test_transform)
+    return Compose(test_transform)
 
 
-class Dataloader(tf.keras.utils.Sequence):
-    """Load data from dataset and form batches
-
-    Args:
-        dataset: instance of Dataset class for image loading and preprocessing.
-        batch_size: Integet number of images in batch.
-        shuffle: Boolean, if `True` shuffle image indexes each epoch.
-    """
-
-    def __init__(self, dataset, batch_size=1, shuffle=False):
+class Dataloader(Sequence):
+    def __init__(
+        self, dataset, batch_size=1, skip_slices=0, augmentation=None, shuffle=True
+    ):
         self.dataset = dataset
         self.batch_size = batch_size
+        self.skip_slices = skip_slices
         self.shuffle = shuffle
+        self.augmentation = augmentation
         self.indexes = np.arange(len(dataset))
-
         self.on_epoch_end()
 
     def __getitem__(self, i):
 
         # collect batch data
-        start = i * self.batch_size
-        stop = (i + 1) * self.batch_size
-        data = []
+        start = (i * (self.skip_slices + 1)) * self.batch_size
+        stop = (i * (self.skip_slices + 1) + 1) * self.batch_size
+        batch_data = []
         for j in range(start, stop):
-            data.append(self.dataset[j])
+            image, label = self.dataset[j]
+
+            if self.augmentation:
+                sample = self.augmentation(image=image, mask=label)
+                image, label = sample["image"], sample["mask"]
+
+            batch_data.append([image, label])
 
         # transpose list of lists
-        batch = [np.stack(samples, axis=0) for samples in zip(*data)]
+        batch = [np.stack(samples, axis=0) for samples in zip(*batch_data)]
 
         return tuple(batch)
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
-        return len(self.indexes) // self.batch_size
+        return len(self.indexes) // (self.batch_size * (self.skip_slices + 1))
 
     def on_epoch_end(self):
         """Callback function to shuffle indexes each epoch"""
@@ -157,69 +130,44 @@ class Dataloader(tf.keras.utils.Sequence):
             self.indexes = np.random.permutation(self.indexes)
 
 
-class SpleenDataset:
-    def __init__(
-        self,
-        images_filepaths,
-        labels_filepaths,
-        augmentation=None,
-    ):
-        self.images_filepaths = images_filepaths
-        self.labels_filepaths = labels_filepaths
-        self.augmentation = augmentation
+class Dataset:
+    def __init__(self, data_path, patients, only_non_empty_slices=False):
+        self.only_non_empty_slices = only_non_empty_slices
+        self.data_path = data_path
+        self._get_list_of_files(patients)
+
+    def _get_list_of_files(self, patients):
+        files = []
+        for patient in patients:
+            files_for_patient = subfiles(
+                self.data_path, prefix=patient + "_", suffix="npy"
+            )
+
+            if self.only_non_empty_slices:
+                non_empty_files_for_patient = []
+
+                for file_for_patient in files_for_patient:
+                    data = np.load(file_for_patient, allow_pickle=True)
+                    mask = data[-1]
+                    labels = np.unique(mask)
+                    if len(labels) == 1 and labels[0] == 0:
+                        continue
+                    else:
+                        non_empty_files_for_patient.append(file_for_patient)
+
+                files_for_patient = non_empty_files_for_patient
+
+            files.extend(files_for_patient)
+
+        self.files = files
 
     def __getitem__(self, i):
-        image = np.load(self.images_filepaths[i])
-        label = np.load(self.labels_filepaths[i])
+        data = np.load(self.files[i])
 
-        image = image[..., np.newaxis]
-        label = label[..., np.newaxis]
+        image = np.moveaxis(data[0:-1], 0, -1)
+        mask = data[-1]
 
-        image = image.astype("float32")
-        mean = np.mean(image)
-        std = np.std(image)
-        image -= mean
-        image /= std
-
-        label = label.astype("float32")
-
-        if self.augmentation:
-            sample = self.augmentation(image=image, mask=label)
-            image, label = sample["image"], sample["mask"]
-
-        return image, label
+        return image, mask
 
     def __len__(self):
-        return len(self.images_filepaths)
-
-
-def get_train_val_filenames(data_path):
-    descriptor_filepath = os.path.join(data_path, "dataset.json")
-    with open(descriptor_filepath, "r") as fp:
-        descriptor_dict = json.load(fp)
-
-    patients = list(descriptor_dict.keys())
-
-    train_patients, val_patients = train_test_split(patients, test_size=0.2)
-
-    train_images_filepaths = []
-    train_labels_filepaths = []
-    val_images_filepaths = []
-    val_labels_filepaths = []
-
-    for patient in train_patients:
-        for slice_ in descriptor_dict[patient]:
-            train_images_filepaths.append(slice_[0])
-            train_labels_filepaths.append(slice_[1])
-
-    for patient in val_patients:
-        for slice_ in descriptor_dict[patient]:
-            val_images_filepaths.append(slice_[0])
-            val_labels_filepaths.append(slice_[1])
-
-    return (
-        train_images_filepaths,
-        val_images_filepaths,
-        train_labels_filepaths,
-        val_labels_filepaths,
-    )
+        return len(self.files)

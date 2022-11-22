@@ -103,7 +103,7 @@ train:
     max_depth:           (int) max depth
 
     # Dataset
-    dataset:             (str) Spleen or Prostate
+    data_path:           (str) spleen_dataset/data/Task09_Spleen_preprocessed/ or spleen_dataset/data/Task05_Prostate_preprocessed/
     image_size:          (int) image input size
     num_channels:        (int) number of input channels
     skip_slices:         (int) skip every other n slice in the dataset

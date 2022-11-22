@@ -30,7 +30,7 @@ train:
     max_depth: 4
 
     # Dataset
-    dataset: Spleen
+    data_path: spleen_dataset/data/Task09_Spleen_preprocessed/
     image_size: 128
     skip_slices: 1
     num_channels: 1

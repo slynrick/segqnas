@@ -16,13 +16,12 @@ def main(**args):
 
     # Get all parameters
     logger.info(f"Getting parameters from evolution ...")
-    config = cfg.ConfigParameters(args, phase='retrain')
+    config = cfg.ConfigParameters(args, phase="retrain")
     config.get_parameters()
-
 
     # print(config.args)
     # print(config.QNAS_spec)
-    #print(config.files_spec)
+    # print(config.files_spec)
     # print(config.layer_dict)
     # print(config.cell_list)
     # print(config.previous_params_file)
@@ -33,9 +32,10 @@ def main(**args):
     # train_params = config.train_spec
     # id_num = args['id_num']
     # layer_dict = config.layer_dict
-    
 
-    results = train.fitness_calculation(args['id_num'], config.train_spec, config.layer_dict, config.net_list)
+    results = train.fitness_calculation(
+        args["id_num"], config.train_spec, config.layer_dict, config.net_list
+    )
 
     # print(args)
     # print(id_num)
@@ -61,31 +61,26 @@ def main(**args):
 
     logger.info(f"Final test: {results}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--experiment_path", 
-        type=str, 
-        required=True, 
-        help="Path to experiment_path."
+        "--experiment_path", type=str, required=True, help="Path to experiment_path."
     )
     parser.add_argument(
-        "--data_path", 
-        type=str, 
-        required=True, 
-        help="Path to input data."
+        "--data_path", type=str, required=True, help="Path to input data."
     )
     parser.add_argument(
-        "--retrain_folder", 
-        type=str, 
-        required=True, 
-        help="Path where the retrained results will be saved."
+        "--retrain_folder",
+        type=str,
+        required=True,
+        help="Path where the retrained results will be saved.",
     )
     parser.add_argument(
-        "--id_num", 
-        type=str, 
-        required=True, 
-        help="id_num of the individual to be retrained."
+        "--id_num",
+        type=str,
+        required=True,
+        help="id_num of the individual to be retrained.",
     )
     # Training info
     parser.add_argument(

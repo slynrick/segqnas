@@ -4,12 +4,17 @@ import random
 from time import time
 
 import numpy as np
-from albumentations import (Compose, Flip, HorizontalFlip, RandomBrightness,
-                            Resize, ShiftScaleRotate)
+from albumentations import (
+    Compose,
+    Flip,
+    HorizontalFlip,
+    RandomBrightness,
+    Resize,
+    ShiftScaleRotate,
+)
 from tensorflow.keras.utils import Sequence
 
-from prostate_dataset.config import (dataset_folder, num_threads,
-                                   preprocessed_folder)
+from prostate_dataset.config import dataset_folder, num_threads, preprocessed_folder
 from prostate_dataset.utils import get_list_of_patients, subfiles
 
 random.seed(0)
@@ -21,7 +26,7 @@ def get_training_augmentation(patch_size):
         ShiftScaleRotate(
             p=1.0
         ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        #RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
         Resize(*patch_size),
     ]
     return Compose(train_transform)
@@ -35,9 +40,12 @@ def get_validation_augmentation(patch_size):
 
 
 class ProstateDataloader(Sequence):
-    def __init__(self, dataset, batch_size=1, augmentation=None, shuffle=True):
+    def __init__(
+        self, dataset, batch_size=1, skip_slices=0, augmentation=None, shuffle=True
+    ):
         self.dataset = dataset
         self.batch_size = batch_size
+        self.skip_slices = skip_slices
         self.shuffle = shuffle
         self.augmentation = augmentation
         self.indexes = np.arange(len(dataset))
@@ -46,8 +54,8 @@ class ProstateDataloader(Sequence):
     def __getitem__(self, i):
 
         # collect batch data
-        start = i * self.batch_size
-        stop = (i + 1) * self.batch_size
+        start = (i * (self.skip_slices + 1)) * self.batch_size
+        stop = (i * (self.skip_slices + 1) + 1) * self.batch_size
         batch_data = []
         for j in range(start, stop):
             image, label = self.dataset[j]
@@ -65,7 +73,7 @@ class ProstateDataloader(Sequence):
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
-        return len(self.indexes) // self.batch_size
+        return len(self.indexes) // (self.batch_size * (self.skip_slices + 1))
 
     def on_epoch_end(self):
         """Callback function to shuffle indexes each epoch"""
@@ -74,9 +82,8 @@ class ProstateDataloader(Sequence):
 
 
 class ProstateDataset:
-    def __init__(self, patients, only_non_empty_slices=False, skip_slices=0):
+    def __init__(self, patients, only_non_empty_slices=False):
         self.only_non_empty_slices = only_non_empty_slices
-        self.skip_slices=skip_slices
         self._get_list_of_files(patients)
 
     def _get_list_of_files(self, patients):
@@ -102,12 +109,12 @@ class ProstateDataset:
 
             files.extend(files_for_patient)
 
-        self.files = files[::self.skip_slices+1]
+        self.files = files
 
     def __getitem__(self, i):
         data = np.load(self.files[i])
 
-        image = np.moveaxis(data[0:2], 0, -1)        
+        image = np.moveaxis(data[0:2], 0, -1)
         mask = data[2]
 
         return image, mask

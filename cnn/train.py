@@ -13,17 +13,31 @@ import numpy as np
 import tensorflow as tf
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 
-from spleen_dataset.config import dataset_folder as spleen_dataset_folder
-from spleen_dataset.dataloader import (SpleenDataloader, SpleenDataset,
-                                       get_training_augmentation as get_spleen_training_augmentation,
-                                       get_validation_augmentation as get_spleen_validation_augmentation)
-from spleen_dataset.utils import get_list_of_patients as get_list_of_spleen_patients, get_split_deterministic as get_spleen_split_deterministic
+# from spleen_dataset.config import dataset_folder as spleen_dataset_folder
+# from spleen_dataset.dataloader import (
+#     SpleenDataloader,
+#     SpleenDataset,
+#     get_training_augmentation as get_spleen_training_augmentation,
+#     get_validation_augmentation as get_spleen_validation_augmentation,
+# )
+# from spleen_dataset.utils import (
+#     get_list_of_patients as get_list_of_spleen_patients,
+#     get_split_deterministic as get_spleen_split_deterministic,
+# )
 
-from prostate_dataset.config import dataset_folder as prostate_dataset_folder
-from prostate_dataset.dataloader import (ProstateDataloader, ProstateDataset,
-                                       get_training_augmentation as get_prostate_training_augmentation,
-                                       get_validation_augmentation as get_prostate_validation_augmentation)
-from prostate_dataset.utils import get_list_of_patients as get_list_of_prostate_patients, get_split_deterministic as get_prostate_split_deterministic
+from cnn.input import get_list_of_patients, get_training_augmentation, get_validation_augmentation, Dataset, Dataloader, get_split_deterministic
+
+# from prostate_dataset.config import dataset_folder as prostate_dataset_folder
+# from prostate_dataset.dataloader import (
+#     ProstateDataloader,
+#     ProstateDataset,
+#     get_training_augmentation as get_prostate_training_augmentation,
+#     get_validation_augmentation as get_prostate_validation_augmentation,
+# )
+# from prostate_dataset.utils import (
+#     get_list_of_patients as get_list_of_prostate_patients,
+#     get_split_deterministic as get_prostate_split_deterministic,
+# )
 
 from cnn import model
 
@@ -50,17 +64,19 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     elif train_params["log_level"] == "DEBUG":
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
-    model_path = os.path.join(train_params["experiment_path"], id_num)
-    maybe_mkdir_p(model_path)
+    if(train_params.get("test") != True):
+
+        model_path = os.path.join(train_params["experiment_path"], id_num)
+        maybe_mkdir_p(model_path)
+
+        # save net list as csv (layers)
+        net_list_file_path = os.path.join(model_path, "net_list.csv")
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
 
-    if(len(gpus)):
-
+    if gpus:
         gpu_id = int(id_num.split("_")[-1]) % len(gpus)
-
         tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
-
         try:
             tf.config.experimental.set_virtual_device_configuration(
                 gpus[gpu_id],
@@ -69,7 +85,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         except RuntimeError as e:
             print(e)
 
-    dataset = train_params["dataset"]
     data_path = train_params["data_path"]
     num_classes = train_params["num_classes"]
     num_channels = train_params["num_channels"]
@@ -85,19 +100,10 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
     patch_size = (image_size, image_size, num_channels)
 
-    if(dataset == 'Spleen'):
-        patients = get_list_of_spleen_patients(spleen_dataset_folder)
-        train_augmentation = get_spleen_training_augmentation(patch_size)
-        val_augmentation = get_spleen_validation_augmentation(patch_size)
-    elif(dataset == 'Prostate'):
-        patients = get_list_of_prostate_patients(prostate_dataset_folder)
-        train_augmentation = get_prostate_training_augmentation(patch_size)
-        val_augmentation = get_prostate_validation_augmentation(patch_size)
-    else:
-        raise Exception
+    patients = get_list_of_patients(data_path)
+    train_augmentation = get_training_augmentation(patch_size)
+    val_augmentation = get_validation_augmentation(patch_size)
 
-    # Training time start counting here. It needs to be defined outside model_layer(), to make it
-    # valid in the multiple calls to segmentation_model.train(). Otherwise, it would be restarted.
     train_params["t0"] = time.time()
 
     node = platform.uname()[1]
@@ -113,6 +119,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     try:
         for initialization in range(num_initializations):
             for fold in range(num_folds):
+
                 net = model.build_net(
                     input_shape=patch_size,
                     num_classes=num_classes,
@@ -123,49 +130,40 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     cell_list=cell_list,
                 )
 
-                if(dataset == 'Spleen'):
-                    train_patients, val_patients = get_spleen_split_deterministic(
-                        patients,
-                        fold=fold,
-                        num_splits=num_folds,
-                        random_state=initialization,
-                    )
+                train_patients, val_patients = get_split_deterministic(
+                    patients,
+                    fold=fold,
+                    num_splits=num_folds,
+                    random_state=initialization
+                )
 
-                    train_dataset = SpleenDataset(
-                        train_patients, only_non_empty_slices=True, skip_slices=skip_slices
-                    )
+                train_dataset = Dataset(
+                    data_path=data_path,
+                    patients=train_patients,
+                    only_non_empty_slices=True
+                )
 
-                    val_dataset = SpleenDataset(val_patients, only_non_empty_slices=True)
-                    train_dataloader = SpleenDataloader(
-                        train_dataset, batch_size, train_augmentation
-                    )
+                val_dataset = Dataset(
+                    data_path=data_path,
+                    patients=val_patients,
+                    only_non_empty_slices=True
+                )
 
-                    val_dataloader = SpleenDataloader(
-                        val_dataset, batch_size, val_augmentation
-                    )
+                train_dataloader = Dataloader(
+                    dataset=train_dataset,
+                    batch_size=batch_size,
+                    skip_slices=skip_slices,
+                    augmentation=train_augmentation,
+                    shuffle=True
+                )
 
-                elif(dataset == 'Prostate'):
-                    train_patients, val_patients = get_prostate_split_deterministic(
-                        patients,
-                        fold=fold,
-                        num_splits=num_folds,
-                        random_state=initialization,
-                    )
-                    
-                    train_dataset = ProstateDataset(
-                        train_patients, only_non_empty_slices=True, skip_slices=skip_slices
-                    )
-
-                    val_dataset = ProstateDataset(val_patients, only_non_empty_slices=True)
-                    train_dataloader = ProstateDataloader(
-                        train_dataset, batch_size, train_augmentation
-                    )
-
-                    val_dataloader = ProstateDataloader(
-                        val_dataset, batch_size, val_augmentation
-                    )
-                else:
-                    raise Exception             
+                val_dataloader = Dataloader(
+                    dataset=val_dataset,
+                    batch_size=batch_size,
+                    skip_slices=0,
+                    augmentation=val_augmentation,
+                    shuffle=False
+                )
 
                 def learning_rate_fn(epoch):
                     initial_learning_rate = 1e-3
@@ -211,9 +209,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         level=tf.compat.v1.logging.get_verbosity(),
         msg=f"[{id_num}] DSC: {mean_val_gen_dice_coef} +- {std_val_gen_dice_coef}",
     )
-
-    # save net list as csv (layers)
-    net_list_file_path = os.path.join(model_path, "net_list.csv")
 
     with open(net_list_file_path, mode="w") as f:
         write = csv.writer(f)
