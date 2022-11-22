@@ -25,7 +25,14 @@ from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 #     get_split_deterministic as get_spleen_split_deterministic,
 # )
 
-from cnn.input import get_list_of_patients, get_training_augmentation, get_validation_augmentation, Dataset, Dataloader, get_split_deterministic
+from cnn.input import (
+    get_list_of_patients,
+    get_training_augmentation,
+    get_validation_augmentation,
+    Dataset,
+    Dataloader,
+    get_split_deterministic,
+)
 
 # from prostate_dataset.config import dataset_folder as prostate_dataset_folder
 # from prostate_dataset.dataloader import (
@@ -64,7 +71,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     elif train_params["log_level"] == "DEBUG":
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
-    if(train_params.get("test") != True):
+    if train_params.get("test") != True:
 
         model_path = os.path.join(train_params["experiment_path"], id_num)
         maybe_mkdir_p(model_path)
@@ -134,19 +141,19 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     patients,
                     fold=fold,
                     num_splits=num_folds,
-                    random_state=initialization
+                    random_state=initialization,
                 )
 
                 train_dataset = Dataset(
                     data_path=data_path,
                     patients=train_patients,
-                    only_non_empty_slices=True
+                    only_non_empty_slices=True,
                 )
 
                 val_dataset = Dataset(
                     data_path=data_path,
                     patients=val_patients,
-                    only_non_empty_slices=True
+                    only_non_empty_slices=True,
                 )
 
                 train_dataloader = Dataloader(
@@ -154,7 +161,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     batch_size=batch_size,
                     skip_slices=skip_slices,
                     augmentation=train_augmentation,
-                    shuffle=True
+                    shuffle=True,
                 )
 
                 val_dataloader = Dataloader(
@@ -162,7 +169,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
                     batch_size=batch_size,
                     skip_slices=0,
                     augmentation=val_augmentation,
-                    shuffle=False
+                    shuffle=False,
                 )
 
                 def learning_rate_fn(epoch):
