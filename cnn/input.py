@@ -9,6 +9,7 @@ from albumentations import (
     HorizontalFlip,
     RandomBrightness,
     Resize,
+    RandomBrightnessContrast,
     ShiftScaleRotate,
 )
 from tensorflow.keras.utils import Sequence
@@ -75,7 +76,8 @@ def get_training_augmentation(patch_size):
         ShiftScaleRotate(
             p=1.0
         ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        # RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        RandomBrightnessContrast(p=1.0, brightness_limit=(-0.00001, 0.00001), contrast_limit=(-0.00001, 0.00001)),
         Resize(*patch_size),
     ]
     return Compose(train_transform)

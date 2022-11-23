@@ -147,7 +147,9 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
             mean_dsc = np.mean(val_gen_dice_coef_list)
             std_dsc = np.std(val_gen_dice_coef_list)
-            print(f"{initialization + fold*num_initializations}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}")
+            print(
+                f"{initialization + fold*num_initializations}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}"
+            )
 
     mean_dsc = np.mean(val_gen_dice_coef_list)
     std_dsc = np.std(val_gen_dice_coef_list)
@@ -207,7 +209,9 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
     )
 
     try:
-        mean_dsc, std_dsc = cross_val_train(train_params, layer_dict, net_list, cell_list)
+        mean_dsc, std_dsc = cross_val_train(
+            train_params, layer_dict, net_list, cell_list
+        )
     except Exception as e:
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
@@ -225,7 +229,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         write = csv.writer(f)
         write.writerow(net_list)
 
-    #train_params["net"] = net
+    # train_params["net"] = net
     train_params["net_list"] = net_list
 
     return mean_dsc
