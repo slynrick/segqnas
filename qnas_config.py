@@ -235,7 +235,7 @@ class ConfigParameters(object):
     def _get_common_params(self):
         """Get parameters that are combined/calculated the same way for all phases."""
 
-        self.train_spec["data_path"] = self.args["data_path"]
+        #self.train_spec["data_path"] = self.args["data_path"]
 
         self.train_spec["phase"] = self.phase
         self.train_spec["log_level"] = self.args["log_level"]

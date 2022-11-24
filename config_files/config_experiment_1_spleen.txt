@@ -23,7 +23,7 @@ QNAS:
 train:
     batch_size: 32
     epochs: 30
-    eval_epochs: 5
+    eval_epochs: 6
     initializations: 1
     folds: 5
     stem_filters: 16

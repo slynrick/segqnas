@@ -41,15 +41,16 @@ def master(args, comm):
         logger.info(f"Creating {args['experiment_path']} ...")
         os.makedirs(args["experiment_path"])
 
-    # Evolution or continue previous evolution
-    if not args["continue_path"]:
-        phase = "evolution"
-    else:
-        phase = "continue_evolution"
-        logger.info(
-            f"Continue evolution from: {args['continue_path']}. Checking files ..."
-        )
-        check_files(args["continue_path"])
+    # # Evolution or continue previous evolution
+    # if not args["continue_path"]:
+    #     phase = "evolution"
+    # else:
+    #     phase = "continue_evolution"
+    #     logger.info(
+    #         f"Continue evolution from: {args['continue_path']}. Checking files ..."
+    #     )
+    #     check_files(args["continue_path"])
+    phase="evolution"
 
     logger.info(f"Getting parameters from {args['config_file']} ...")
     config = cfg.ConfigParameters(args, phase=phase)
