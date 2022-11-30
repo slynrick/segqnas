@@ -13,18 +13,6 @@ import numpy as np
 import tensorflow as tf
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 
-# from spleen_dataset.config import dataset_folder as spleen_dataset_folder
-# from spleen_dataset.dataloader import (
-#     SpleenDataloader,
-#     SpleenDataset,
-#     get_training_augmentation as get_spleen_training_augmentation,
-#     get_validation_augmentation as get_spleen_validation_augmentation,
-# )
-# from spleen_dataset.utils import (
-#     get_list_of_patients as get_list_of_spleen_patients,
-#     get_split_deterministic as get_spleen_split_deterministic,
-# )
-
 from cnn.input import (
     get_list_of_patients,
     get_training_augmentation,
@@ -34,20 +22,7 @@ from cnn.input import (
     get_split_deterministic,
 )
 
-# from prostate_dataset.config import dataset_folder as prostate_dataset_folder
-# from prostate_dataset.dataloader import (
-#     ProstateDataloader,
-#     ProstateDataset,
-#     get_training_augmentation as get_prostate_training_augmentation,
-#     get_validation_augmentation as get_prostate_validation_augmentation,
-# )
-# from prostate_dataset.utils import (
-#     get_list_of_patients as get_list_of_prostate_patients,
-#     get_split_deterministic as get_prostate_split_deterministic,
-# )
-
 from cnn import model
-
 
 def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
@@ -148,7 +123,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             mean_dsc = np.mean(val_gen_dice_coef_list)
             std_dsc = np.std(val_gen_dice_coef_list)
             print(
-                f"{initialization + fold*num_initializations}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}"
+                f"{fold + initialization*num_folds}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}"
             )
 
     mean_dsc = np.mean(val_gen_dice_coef_list)

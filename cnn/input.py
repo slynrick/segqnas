@@ -72,12 +72,11 @@ def get_split_deterministic(all_keys, fold=0, num_splits=5, random_state=12345):
 
 def get_training_augmentation(patch_size):
     train_transform = [
-        # HorizontalFlip(p=0.5),
+        #HorizontalFlip(p=0.5),
         ShiftScaleRotate(
             p=1.0
         ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        RandomBrightness(p=1.0, limit=(-0.01, 0.01)),
-        #RandomBrightnessContrast(p=1.0, brightness_limit=(-0.00001, 0.00001), contrast_limit=(-0.00001, 0.00001)),
+        #RandomBrightness(p=1.0, limit=(-0.01, 0.01)),
         Resize(*patch_size),
     ]
     return Compose(train_transform)

@@ -4,11 +4,11 @@ QNAS:
     crossover_rate: 0.5
     max_generations: 50
     max_num_nodes: 10
-    num_quantum_ind: 3
-    repetition: 3
+    num_quantum_ind: 9
+    repetition: 1
     replace_method: best
     update_quantum_gen: 5
-    update_quantum_rate: 0.1
+    update_quantum_rate: 0.9
     save_data_freq: 10
 
     layer_dict:  {
@@ -18,7 +18,7 @@ QNAS:
         'inc_3': {'block': 'InceptionBlock', 'kernel': 3, 'prob': 1/13},
         'inc_5': {'block': 'InceptionBlock', 'kernel': 5, 'prob': 1/13},
         'inc_7': {'block': 'InceptionBlock', 'kernel': 7, 'prob': 1/13},
-        'ind':   {'block': 'IdentityBlock',               'prob': 1/13},
+        'ide':   {'block': 'IdentityBlock',               'prob': 1/13},
         'res_3': {'block': 'ResNetBlock',    'kernel': 3, 'prob': 1/13},
         'res_5': {'block': 'ResNetBlock',    'kernel': 5, 'prob': 1/13},
         'res_7': {'block': 'ResNetBlock',    'kernel': 7, 'prob': 1/13},
@@ -43,7 +43,7 @@ QNAS:
 train:
     batch_size: 32
     epochs: 30
-    eval_epochs: 5
+    eval_epochs: 6
     initializations: 1
     folds: 5
     stem_filters: 16

@@ -151,9 +151,8 @@ It is also possible to continue a finished evolution process. Note that all the 
 
 ```console
   nohup mpirun -n 9 python run_evolution.py \
-  --experiment_path experiment_1 \
-  --data_path spleen_dataset/data/Task09_Spleen_preprocessed/ \
-  --config_file config_files/config_experiment_1.txt \
+  --experiment_path experiment_1_8 \
+  --config_file config_files/config_experiment_1_spleen.txt \
   --log_level DEBUG &
 ```
 
