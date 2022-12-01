@@ -76,7 +76,7 @@ def get_training_augmentation(patch_size):
         ShiftScaleRotate(
             p=1.0
         ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        #RandomBrightness(p=1.0, limit=(-0.01, 0.01)),
+        RandomBrightness(p=1.0, limit=(-0.01, 0.01)),
         Resize(*patch_size),
     ]
     return Compose(train_transform)
