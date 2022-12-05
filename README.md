@@ -83,7 +83,6 @@ QNAS:
     replace_method:      (str) selection mechanism; 'best' or 'elitism'
     update_quantum_gen:  (int) generation frequency to update quantum genes
     update_quantum_rate: (float) rate for the quantum update (similar to crossover rate)
-    save_data_freq:      (int) generation frequency to save train data of best model of current 
 
     layer_dict: {
       'function_name': {'block': 'function_class', 'kernel': 'kernel_size', 'prob': probability_value}

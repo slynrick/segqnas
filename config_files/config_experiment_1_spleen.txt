@@ -2,14 +2,13 @@
 
 QNAS:
     crossover_rate: 0.1
-    max_generations: 50
+    max_generations: 100
     max_num_nodes: 10
     num_quantum_ind: 9
     repetition: 1
     replace_method: best
     update_quantum_gen: 1
     update_quantum_rate: 0.9
-    save_data_freq: 10
 
     layer_dict:  {
         'vgg_d_3': {'cell': 'DownscalingCell', 'block': 'VGGBlock', 'kernel': 3, 'prob': 1/3},

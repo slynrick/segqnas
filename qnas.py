@@ -47,7 +47,6 @@ class QNAS(object):
         self.raw_fitnesses = None
         self.reducing_layers_list = []
         self.replace_method = None
-        self.save_data_freq = np.Inf
         self.total_eval = 0
 
         self.qpop_net = None
@@ -65,7 +64,6 @@ class QNAS(object):
         update_quantum_rate,
         max_num_nodes,
         cell_list=None,
-        save_data_freq=0,
     ):
 
         """Initialize algorithm with several parameter values.
@@ -86,17 +84,11 @@ class QNAS(object):
             update_quantum_rate: (float) probability that a quantum gene will be updated,
                 if using update_center() and/or update_width_decay().
             max_num_nodes: (int) initial number of nodes in the network to be evolved.
-            save_data_freq: generation frequency in which train loss and mean iou of the best
-                model (of current generation) will be extracted from events.out.tfevents file
-                and saved in a csv file.
         """
 
         self.generations = max_generations
         self.update_quantum_gen = update_quantum_gen
         self.replace_method = replace_method
-
-        if save_data_freq:
-            self.save_data_freq = save_data_freq
 
         self.qpop_net = QPopulationNetwork(
             num_quantum_ind=num_quantum_ind,

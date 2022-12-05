@@ -98,7 +98,6 @@ class ConfigParameters(object):
                 ("replace_method", str),
                 ("update_quantum_rate", float),
                 ("update_quantum_gen", int),
-                ("save_data_freq", int),
                 ("layer_dict", dict),
                 ("cell_list", Optional[list]),
             ],
