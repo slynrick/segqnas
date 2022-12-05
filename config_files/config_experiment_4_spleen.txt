@@ -1,17 +1,17 @@
-# Configuration file for experiment 3 (search blocks but keeping topology found in experiment_1)
+# Configuration file for experiment 4 (search topology and blocks)
 
 QNAS:
-    crossover_rate: 0.5
+    crossover_rate: 0.1
     max_generations: 50
     max_num_nodes: 10
-    num_quantum_ind: 3
-    repetition: 3
+    num_quantum_ind: 9
+    repetition: 1
     replace_method: best
-    update_quantum_gen: 5
-    update_quantum_rate: 0.1
+    update_quantum_gen: 1
+    update_quantum_rate: 0.9
     save_data_freq: 10
 
-layer_dict:  {
+    layer_dict:  {
         'den_d_3': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 3, 'prob': 1/39},
         'den_d_5': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 5, 'prob': 1/39},
         'den_d_7': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 7, 'prob': 1/39},
@@ -30,9 +30,9 @@ layer_dict:  {
         'inc_u_3': {'cell': 'UpscalingCell',   'block': 'InceptionBlock', 'kernel': 3, 'prob': 1/39},
         'inc_u_5': {'cell': 'UpscalingCell',   'block': 'InceptionBlock', 'kernel': 5, 'prob': 1/39},
         'inc_u_7': {'cell': 'UpscalingCell',   'block': 'InceptionBlock', 'kernel': 7, 'prob': 1/39},
-        'ind_d':   {'cell': 'DownscalingCell', 'block': 'IdentityBlock',               'prob': 1/39},
-        'ind_n':   {'cell': 'NonscalingCell',  'block': 'IdentityBlock',               'prob': 1/39},   
-        'ind_u':   {'cell': 'UpscalingCell',   'block': 'IdentityBlock',               'prob': 1/39},
+        'ide_d':   {'cell': 'DownscalingCell', 'block': 'IdentityBlock',               'prob': 1/39},
+        'ide_n':   {'cell': 'NonscalingCell',  'block': 'IdentityBlock',               'prob': 1/39},   
+        'ide_u':   {'cell': 'UpscalingCell',   'block': 'IdentityBlock',               'prob': 1/39},
         'res_d_3': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',    'kernel': 3, 'prob': 1/39},
         'res_d_5': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',    'kernel': 5, 'prob': 1/39},
         'res_d_7': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',    'kernel': 7, 'prob': 1/39},
@@ -53,24 +53,10 @@ layer_dict:  {
         'vgg_u_7': {'cell': 'UpscalingCell',   'block': 'VGGBlock',       'kernel': 7, 'prob': 1/39},
     }
 
-    # the cell list must be set accordingly to experiment_1 output
-    cell_list: [
-        'NonscalingCell',
-        'DownscalingCell', 
-        'DownscalingCell', 
-        'DownscalingCell', 
-        'DownscalingCell', 
-        'UpscalingCell', 
-        'UpscalingCell', 
-        'UpscalingCell', 
-        'UpscalingCell',
-        'NonscalingCell',
-    ]
-
 train:
     batch_size: 32
     epochs: 30
-    eval_epochs: 5
+    eval_epochs: 6
     initializations: 1
     folds: 5
     stem_filters: 16

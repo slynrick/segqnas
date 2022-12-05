@@ -1,4 +1,4 @@
-# Configuration file for experiment 2 (search blocks but keeping unet-like topology)
+# Configuration file for experiment 3 (search blocks but keeping topology found in experiment_1)
 
 QNAS:
     crossover_rate: 0.1
@@ -27,6 +27,7 @@ QNAS:
         'vgg_7': {'block': 'VGGBlock',       'kernel': 7, 'prob': 1/13},
     }
 
+    # the cell list must be set accordingly to experiment_1 output
     cell_list: [
         'NonscalingCell',
         'DownscalingCell', 

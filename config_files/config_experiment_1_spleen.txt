@@ -12,12 +12,9 @@ QNAS:
     save_data_freq: 10
 
     layer_dict:  {
-        'ide_d':   {'cell': 'DownscalingCell', 'block': 'IdentityBlock',               'prob': 1/6},
-        'ide_n':   {'cell': 'NonscalingCell',  'block': 'IdentityBlock',               'prob': 1/6},
-        'ide_u':   {'cell': 'UpscalingCell',   'block': 'IdentityBlock',               'prob': 1/6},
-        'vgg_d_3': {'cell': 'DownscalingCell', 'block': 'VGGBlock',       'kernel': 3, 'prob': 1/6},
-        'vgg_n_3': {'cell': 'NonscalingCell',  'block': 'VGGBlock',       'kernel': 3, 'prob': 1/6},
-        'vgg_u_3': {'cell': 'UpscalingCell',   'block': 'VGGBlock',       'kernel': 3, 'prob': 1/6},
+        'vgg_d_3': {'cell': 'DownscalingCell', 'block': 'VGGBlock', 'kernel': 3, 'prob': 1/3},
+        'vgg_n_3': {'cell': 'NonscalingCell',  'block': 'VGGBlock', 'kernel': 3, 'prob': 1/3},
+        'vgg_u_3': {'cell': 'UpscalingCell',   'block': 'VGGBlock', 'kernel': 3, 'prob': 1/3},
     }
 
 train:
