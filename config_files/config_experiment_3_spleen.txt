@@ -30,14 +30,14 @@ QNAS:
     cell_list: [
         'NonscalingCell',
         'DownscalingCell', 
+        'UpscalingCell', 
         'DownscalingCell', 
         'DownscalingCell', 
         'DownscalingCell', 
-        'UpscalingCell', 
-        'UpscalingCell', 
-        'UpscalingCell', 
-        'UpscalingCell',
+        'DownscalingCell', 
+        'DownscalingCell', 
         'NonscalingCell',
+        'UpscalingCell', 
     ]
 
 train:

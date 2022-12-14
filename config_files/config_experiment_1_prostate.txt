@@ -26,9 +26,9 @@ train:
     max_depth: 4
 
     # Dataset
-    data_path: spleen_dataset/data/Task09_Spleen_preprocessed/
+    data_path: prostate_dataset/data/Task05_Prostate_preprocessed/
     image_size: 128
     skip_slices: 1
-    num_channels: 1
-    num_classes: 2
+    num_channels: 2
+    num_classes: 3
     data_augmentation: True
