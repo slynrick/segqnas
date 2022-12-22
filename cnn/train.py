@@ -120,8 +120,8 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
             val_gen_dice_coef_list.extend(history_eval_epochs)
 
-            mean_dsc = np.mean(val_gen_dice_coef_list)
-            std_dsc = np.std(val_gen_dice_coef_list)
+            mean_dsc = np.mean(history_eval_epochs)
+            std_dsc = np.std(history_eval_epochs)
             print(
                 f"{fold + initialization*num_folds}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}"
             )
