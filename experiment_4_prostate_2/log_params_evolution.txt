@@ -1,0 +1,191 @@
+QNAS:
+    crossover_rate: 0.1000
+    initial_probs: [0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564, 0.02564102564102564]
+    layer_list: ['den_d_3', 'den_d_5', 'den_d_7', 'den_n_3', 'den_n_5', 'den_n_7', 'den_u_3', 'den_u_5', 'den_u_7', 'ide_d', 'ide_n', 'ide_u', 'inc_d_3', 'inc_d_5', 'inc_d_7', 'inc_n_3', 'inc_n_5', 'inc_n_7', 'inc_u_3', 'inc_u_5', 'inc_u_7', 'res_d_3', 'res_d_5', 'res_d_7', 'res_n_3', 'res_n_5', 'res_n_7', 'res_u_3', 'res_u_5', 'res_u_7', 'vgg_d_3', 'vgg_d_5', 'vgg_d_7', 'vgg_n_3', 'vgg_n_5', 'vgg_n_7', 'vgg_u_3', 'vgg_u_5', 'vgg_u_7']
+    max_generations: 100
+    max_num_nodes: 10
+    num_quantum_ind: 9
+    repetition: 1
+    replace_method: best
+    update_quantum_gen: 1
+    update_quantum_rate: 0.9000
+
+cell_list: None
+
+files:
+    data_file: experiment_4_prostate_2/net_list.csv
+    log_file: experiment_4_prostate_2/log_QNAS.txt
+
+layer_dict:
+    den_d_3:
+        block: DenseBlock
+        cell: DownscalingCell
+        kernel: 3
+    den_d_5:
+        block: DenseBlock
+        cell: DownscalingCell
+        kernel: 5
+    den_d_7:
+        block: DenseBlock
+        cell: DownscalingCell
+        kernel: 7
+    den_n_3:
+        block: DenseBlock
+        cell: NonscalingCell
+        kernel: 3
+    den_n_5:
+        block: DenseBlock
+        cell: NonscalingCell
+        kernel: 5
+    den_n_7:
+        block: DenseBlock
+        cell: NonscalingCell
+        kernel: 7
+    den_u_3:
+        block: DenseBlock
+        cell: UpscalingCell
+        kernel: 3
+    den_u_5:
+        block: DenseBlock
+        cell: UpscalingCell
+        kernel: 5
+    den_u_7:
+        block: DenseBlock
+        cell: UpscalingCell
+        kernel: 7
+    ide_d:
+        block: IdentityBlock
+        cell: DownscalingCell
+    ide_n:
+        block: IdentityBlock
+        cell: NonscalingCell
+    ide_u:
+        block: IdentityBlock
+        cell: UpscalingCell
+    inc_d_3:
+        block: InceptionBlock
+        cell: DownscalingCell
+        kernel: 3
+    inc_d_5:
+        block: InceptionBlock
+        cell: DownscalingCell
+        kernel: 5
+    inc_d_7:
+        block: InceptionBlock
+        cell: DownscalingCell
+        kernel: 7
+    inc_n_3:
+        block: InceptionBlock
+        cell: NonscalingCell
+        kernel: 3
+    inc_n_5:
+        block: InceptionBlock
+        cell: NonscalingCell
+        kernel: 5
+    inc_n_7:
+        block: InceptionBlock
+        cell: NonscalingCell
+        kernel: 7
+    inc_u_3:
+        block: InceptionBlock
+        cell: UpscalingCell
+        kernel: 3
+    inc_u_5:
+        block: InceptionBlock
+        cell: UpscalingCell
+        kernel: 5
+    inc_u_7:
+        block: InceptionBlock
+        cell: UpscalingCell
+        kernel: 7
+    res_d_3:
+        block: ResNetBlock
+        cell: DownscalingCell
+        kernel: 3
+    res_d_5:
+        block: ResNetBlock
+        cell: DownscalingCell
+        kernel: 5
+    res_d_7:
+        block: ResNetBlock
+        cell: DownscalingCell
+        kernel: 7
+    res_n_3:
+        block: ResNetBlock
+        cell: NonscalingCell
+        kernel: 3
+    res_n_5:
+        block: ResNetBlock
+        cell: NonscalingCell
+        kernel: 5
+    res_n_7:
+        block: ResNetBlock
+        cell: NonscalingCell
+        kernel: 7
+    res_u_3:
+        block: ResNetBlock
+        cell: UpscalingCell
+        kernel: 3
+    res_u_5:
+        block: ResNetBlock
+        cell: UpscalingCell
+        kernel: 5
+    res_u_7:
+        block: ResNetBlock
+        cell: UpscalingCell
+        kernel: 7
+    vgg_d_3:
+        block: VGGBlock
+        cell: DownscalingCell
+        kernel: 3
+    vgg_d_5:
+        block: VGGBlock
+        cell: DownscalingCell
+        kernel: 5
+    vgg_d_7:
+        block: VGGBlock
+        cell: DownscalingCell
+        kernel: 7
+    vgg_n_3:
+        block: VGGBlock
+        cell: NonscalingCell
+        kernel: 3
+    vgg_n_5:
+        block: VGGBlock
+        cell: NonscalingCell
+        kernel: 5
+    vgg_n_7:
+        block: VGGBlock
+        cell: NonscalingCell
+        kernel: 7
+    vgg_u_3:
+        block: VGGBlock
+        cell: UpscalingCell
+        kernel: 3
+    vgg_u_5:
+        block: VGGBlock
+        cell: UpscalingCell
+        kernel: 5
+    vgg_u_7:
+        block: VGGBlock
+        cell: UpscalingCell
+        kernel: 7
+
+train:
+    batch_size: 32
+    data_augmentation: True
+    data_path: prostate_dataset/data/Task05_Prostate_preprocessed/
+    epochs: 30
+    eval_epochs: 6
+    experiment_path: experiment_4_prostate_2
+    folds: 5
+    image_size: 128
+    initializations: 1
+    log_level: DEBUG
+    max_depth: 4
+    num_channels: 2
+    num_classes: 3
+    phase: evolution
+    skip_slices: 1
+    stem_filters: 16
+

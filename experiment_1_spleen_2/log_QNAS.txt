@@ -1,0 +1,801 @@
+INFO: qnas: 2023-01-15 23:51:56.409 - Evaluating new population ...
+INFO: qnas: 2023-01-15 23:52:39.345 - Evaluating new population ...
+INFO: qnas: 2023-01-16 00:13:05.715 - New generation finished running!
+
+- Generation: 0
+- Best so far: [0, 0] --> 0.91110
+- Fitnesses: [0.9111 0.9101 0.9099 0.894  0.886  0.8813 0.881  0.8342 0.8342]
+- Fitnesses without penalties: [0.9111 0.9101 0.9099 0.894  0.886  0.8813 0.881  0.8342 0.8342]
+
+INFO: qnas: 2023-01-16 00:13:05.718 - Evaluating new population ...
+INFO: qnas: 2023-01-16 00:33:34.571 - New generation finished running!
+
+- Generation: 1
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9127 0.9111 0.9101 0.9099 0.9062 0.9001 0.8981]
+- Fitnesses without penalties: [0.9259 0.9246 0.9127 0.9111 0.9101 0.9099 0.9062 0.9001 0.8981]
+
+INFO: qnas: 2023-01-16 00:33:34.574 - Evaluating new population ...
+INFO: qnas: 2023-01-16 00:53:58.439 - New generation finished running!
+
+- Generation: 2
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9171 0.9127 0.9125 0.9111 0.9101 0.9099]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9171 0.9127 0.9125 0.9111 0.9101 0.9099]
+
+INFO: qnas: 2023-01-16 00:53:58.443 - Evaluating new population ...
+INFO: qnas: 2023-01-16 01:14:25.433 - New generation finished running!
+
+- Generation: 3
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9171 0.9166 0.9136 0.9127 0.9125 0.9111]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9171 0.9166 0.9136 0.9127 0.9125 0.9111]
+
+INFO: qnas: 2023-01-16 01:14:25.437 - Evaluating new population ...
+INFO: qnas: 2023-01-16 01:35:02.664 - New generation finished running!
+
+- Generation: 4
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9171 0.9166 0.9136 0.9127 0.9125 0.9111]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9171 0.9166 0.9136 0.9127 0.9125 0.9111]
+
+INFO: qnas: 2023-01-16 01:35:02.668 - Evaluating new population ...
+INFO: qnas: 2023-01-16 01:55:03.978 - New generation finished running!
+
+- Generation: 5
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9173 0.9171 0.917  0.9166 0.9165 0.9136]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9173 0.9171 0.917  0.9166 0.9165 0.9136]
+
+INFO: qnas: 2023-01-16 01:55:03.981 - Evaluating new population ...
+INFO: qnas: 2023-01-16 02:15:21.617 - New generation finished running!
+
+- Generation: 6
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9173 0.9171 0.917  0.9166 0.9165 0.9136]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9173 0.9171 0.917  0.9166 0.9165 0.9136]
+
+INFO: qnas: 2023-01-16 02:15:21.621 - Evaluating new population ...
+INFO: qnas: 2023-01-16 02:35:45.946 - New generation finished running!
+
+- Generation: 7
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9216 0.9173 0.9173 0.9171 0.917  0.9166]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9216 0.9173 0.9173 0.9171 0.917  0.9166]
+
+INFO: qnas: 2023-01-16 02:35:45.950 - Evaluating new population ...
+INFO: qnas: 2023-01-16 02:56:03.262 - New generation finished running!
+
+- Generation: 8
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9216 0.9173 0.9173 0.9171 0.9171 0.917 ]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9216 0.9173 0.9173 0.9171 0.9171 0.917 ]
+
+INFO: qnas: 2023-01-16 02:56:03.266 - Evaluating new population ...
+INFO: qnas: 2023-01-16 03:16:30.086 - New generation finished running!
+
+- Generation: 9
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9216 0.9173 0.9173 0.9171 0.9171 0.917 ]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9216 0.9173 0.9173 0.9171 0.9171 0.917 ]
+
+INFO: qnas: 2023-01-16 03:16:30.090 - Evaluating new population ...
+INFO: qnas: 2023-01-16 03:37:07.678 - New generation finished running!
+
+- Generation: 10
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9216 0.9179 0.9177 0.9173 0.9173 0.9171]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9216 0.9179 0.9177 0.9173 0.9173 0.9171]
+
+INFO: qnas: 2023-01-16 03:37:07.682 - Evaluating new population ...
+INFO: qnas: 2023-01-16 03:57:16.239 - New generation finished running!
+
+- Generation: 11
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9216 0.9215 0.9183 0.9179 0.9177 0.9173]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9216 0.9215 0.9183 0.9179 0.9177 0.9173]
+
+INFO: qnas: 2023-01-16 03:57:16.243 - Evaluating new population ...
+INFO: qnas: 2023-01-16 04:17:35.523 - New generation finished running!
+
+- Generation: 12
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9236 0.9216 0.9215 0.9183 0.9179 0.9177 0.9175]
+- Fitnesses without penalties: [0.9259 0.9246 0.9236 0.9216 0.9215 0.9183 0.9179 0.9177 0.9175]
+
+INFO: qnas: 2023-01-16 04:17:35.527 - Evaluating new population ...
+INFO: qnas: 2023-01-16 04:37:20.299 - New generation finished running!
+
+- Generation: 13
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9245 0.9236 0.9216 0.9215 0.9183 0.9179 0.9179]
+- Fitnesses without penalties: [0.9259 0.9246 0.9245 0.9236 0.9216 0.9215 0.9183 0.9179 0.9179]
+
+INFO: qnas: 2023-01-16 04:37:20.302 - Evaluating new population ...
+INFO: qnas: 2023-01-16 04:57:35.706 - New generation finished running!
+
+- Generation: 14
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.9216 0.9215 0.9206]
+- Fitnesses without penalties: [0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.9216 0.9215 0.9206]
+
+INFO: qnas: 2023-01-16 04:57:35.710 - Evaluating new population ...
+INFO: qnas: 2023-01-16 05:18:02.595 - New generation finished running!
+
+- Generation: 15
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.9216 0.9215 0.9211]
+- Fitnesses without penalties: [0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.9216 0.9215 0.9211]
+
+INFO: qnas: 2023-01-16 05:18:02.598 - Evaluating new population ...
+INFO: qnas: 2023-01-16 05:38:43.868 - New generation finished running!
+
+- Generation: 16
+- Best so far: [1, 5] --> 0.92588
+- Fitnesses: [0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.9216 0.9215 0.9211]
+- Fitnesses without penalties: [0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.9216 0.9215 0.9211]
+
+INFO: qnas: 2023-01-16 05:38:43.871 - Evaluating new population ...
+INFO: qnas: 2023-01-16 05:58:50.346 - New generation finished running!
+
+- Generation: 17
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.922  0.9219]
+- Fitnesses without penalties: [0.9263 0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.922  0.9219]
+
+INFO: qnas: 2023-01-16 05:58:50.349 - Evaluating new population ...
+INFO: qnas: 2023-01-16 06:19:21.542 - New generation finished running!
+
+- Generation: 18
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.922  0.9219]
+- Fitnesses without penalties: [0.9263 0.9259 0.9246 0.9245 0.9236 0.9224 0.9223 0.922  0.9219]
+
+INFO: qnas: 2023-01-16 06:19:21.545 - Evaluating new population ...
+INFO: qnas: 2023-01-16 06:39:30.877 - New generation finished running!
+
+- Generation: 19
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9246 0.9245 0.9242 0.9236 0.9224 0.9223 0.922 ]
+- Fitnesses without penalties: [0.9263 0.9259 0.9246 0.9245 0.9242 0.9236 0.9224 0.9223 0.922 ]
+
+INFO: qnas: 2023-01-16 06:39:30.880 - Evaluating new population ...
+INFO: qnas: 2023-01-16 06:59:46.767 - New generation finished running!
+
+- Generation: 20
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9224 0.9223]
+- Fitnesses without penalties: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9224 0.9223]
+
+INFO: qnas: 2023-01-16 06:59:46.771 - Evaluating new population ...
+INFO: qnas: 2023-01-16 07:20:10.602 - New generation finished running!
+
+- Generation: 21
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+- Fitnesses without penalties: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+
+INFO: qnas: 2023-01-16 07:20:10.605 - Evaluating new population ...
+INFO: qnas: 2023-01-16 07:40:23.907 - New generation finished running!
+
+- Generation: 22
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+- Fitnesses without penalties: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+
+INFO: qnas: 2023-01-16 07:40:23.910 - Evaluating new population ...
+INFO: qnas: 2023-01-16 08:00:32.428 - New generation finished running!
+
+- Generation: 23
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+- Fitnesses without penalties: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+
+INFO: qnas: 2023-01-16 08:00:32.431 - Evaluating new population ...
+INFO: qnas: 2023-01-16 08:20:42.237 - New generation finished running!
+
+- Generation: 24
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+- Fitnesses without penalties: [0.9263 0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229 0.9224]
+
+INFO: qnas: 2023-01-16 08:20:42.241 - Evaluating new population ...
+INFO: qnas: 2023-01-16 08:40:33.186 - New generation finished running!
+
+- Generation: 25
+- Best so far: [17, 4] --> 0.92626
+- Fitnesses: [0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229]
+- Fitnesses without penalties: [0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236 0.9229]
+
+INFO: qnas: 2023-01-16 08:40:33.189 - Evaluating new population ...
+INFO: qnas: 2023-01-16 09:00:40.138 - New generation finished running!
+
+- Generation: 26
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236]
+
+INFO: qnas: 2023-01-16 09:00:40.142 - Evaluating new population ...
+INFO: qnas: 2023-01-16 09:20:51.915 - New generation finished running!
+
+- Generation: 27
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236]
+
+INFO: qnas: 2023-01-16 09:20:51.918 - Evaluating new population ...
+INFO: qnas: 2023-01-16 09:40:39.819 - New generation finished running!
+
+- Generation: 28
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9236]
+
+INFO: qnas: 2023-01-16 09:40:39.822 - Evaluating new population ...
+INFO: qnas: 2023-01-16 10:01:00.221 - New generation finished running!
+
+- Generation: 29
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9237]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9237]
+
+INFO: qnas: 2023-01-16 10:01:00.225 - Evaluating new population ...
+INFO: qnas: 2023-01-16 10:21:19.447 - New generation finished running!
+
+- Generation: 30
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9237]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9246 0.9245 0.9242 0.9237]
+
+INFO: qnas: 2023-01-16 10:21:19.451 - Evaluating new population ...
+INFO: qnas: 2023-01-16 10:41:38.574 - New generation finished running!
+
+- Generation: 31
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+
+INFO: qnas: 2023-01-16 10:41:38.577 - Evaluating new population ...
+INFO: qnas: 2023-01-16 11:01:50.505 - New generation finished running!
+
+- Generation: 32
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+
+INFO: qnas: 2023-01-16 11:01:50.508 - Evaluating new population ...
+INFO: qnas: 2023-01-16 11:21:51.624 - New generation finished running!
+
+- Generation: 33
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+
+INFO: qnas: 2023-01-16 11:21:51.628 - Evaluating new population ...
+INFO: qnas: 2023-01-16 11:42:03.146 - New generation finished running!
+
+- Generation: 34
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+
+INFO: qnas: 2023-01-16 11:42:03.150 - Evaluating new population ...
+INFO: qnas: 2023-01-16 12:01:55.313 - New generation finished running!
+
+- Generation: 35
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9246 0.9245 0.9242]
+
+INFO: qnas: 2023-01-16 12:01:55.316 - Evaluating new population ...
+INFO: qnas: 2023-01-16 12:21:54.295 - New generation finished running!
+
+- Generation: 36
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+
+INFO: qnas: 2023-01-16 12:21:54.299 - Evaluating new population ...
+INFO: qnas: 2023-01-16 12:41:41.343 - New generation finished running!
+
+- Generation: 37
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+
+INFO: qnas: 2023-01-16 12:41:41.347 - Evaluating new population ...
+INFO: qnas: 2023-01-16 13:01:28.038 - New generation finished running!
+
+- Generation: 38
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+
+INFO: qnas: 2023-01-16 13:01:28.041 - Evaluating new population ...
+INFO: qnas: 2023-01-16 13:21:10.567 - New generation finished running!
+
+- Generation: 39
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9253 0.9247 0.9246 0.9245]
+
+INFO: qnas: 2023-01-16 13:21:10.570 - Evaluating new population ...
+INFO: qnas: 2023-01-16 13:40:53.342 - New generation finished running!
+
+- Generation: 40
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9253 0.9247 0.9246]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9253 0.9247 0.9246]
+
+INFO: qnas: 2023-01-16 13:40:53.345 - Evaluating new population ...
+INFO: qnas: 2023-01-16 14:01:10.114 - New generation finished running!
+
+- Generation: 41
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9253 0.9247 0.9246]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9253 0.9247 0.9246]
+
+INFO: qnas: 2023-01-16 14:01:10.117 - Evaluating new population ...
+INFO: qnas: 2023-01-16 14:21:01.413 - New generation finished running!
+
+- Generation: 42
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9247]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9247]
+
+INFO: qnas: 2023-01-16 14:21:01.416 - Evaluating new population ...
+INFO: qnas: 2023-01-16 14:41:11.010 - New generation finished running!
+
+- Generation: 43
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9247]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9247]
+
+INFO: qnas: 2023-01-16 14:41:11.013 - Evaluating new population ...
+INFO: qnas: 2023-01-16 15:01:00.921 - New generation finished running!
+
+- Generation: 44
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+
+INFO: qnas: 2023-01-16 15:01:00.925 - Evaluating new population ...
+INFO: qnas: 2023-01-16 15:21:38.227 - New generation finished running!
+
+- Generation: 45
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+
+INFO: qnas: 2023-01-16 15:21:38.230 - Evaluating new population ...
+INFO: qnas: 2023-01-16 15:41:56.067 - New generation finished running!
+
+- Generation: 46
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+
+INFO: qnas: 2023-01-16 15:41:56.070 - Evaluating new population ...
+INFO: qnas: 2023-01-16 16:01:37.900 - New generation finished running!
+
+- Generation: 47
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+
+INFO: qnas: 2023-01-16 16:01:37.903 - Evaluating new population ...
+INFO: qnas: 2023-01-16 16:21:37.318 - New generation finished running!
+
+- Generation: 48
+- Best so far: [26, 6] --> 0.92670
+- Fitnesses: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+- Fitnesses without penalties: [0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253 0.9251]
+
+INFO: qnas: 2023-01-16 16:21:37.322 - Evaluating new population ...
+INFO: qnas: 2023-01-16 16:41:41.680 - New generation finished running!
+
+- Generation: 49
+- Best so far: [49, 7] --> 0.92821
+- Fitnesses: [0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253]
+- Fitnesses without penalties: [0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256 0.9253]
+
+INFO: qnas: 2023-01-16 16:41:41.684 - Evaluating new population ...
+INFO: qnas: 2023-01-16 17:01:53.047 - New generation finished running!
+
+- Generation: 50
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256]
+
+INFO: qnas: 2023-01-16 17:01:53.050 - Evaluating new population ...
+INFO: qnas: 2023-01-16 17:22:05.167 - New generation finished running!
+
+- Generation: 51
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256]
+
+INFO: qnas: 2023-01-16 17:22:05.171 - Evaluating new population ...
+INFO: qnas: 2023-01-16 17:42:06.899 - New generation finished running!
+
+- Generation: 52
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9263 0.926  0.9259 0.9259 0.9257 0.9256]
+
+INFO: qnas: 2023-01-16 17:42:06.903 - Evaluating new population ...
+INFO: qnas: 2023-01-16 18:01:54.517 - New generation finished running!
+
+- Generation: 53
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 18:01:54.522 - Evaluating new population ...
+INFO: qnas: 2023-01-16 18:22:06.655 - New generation finished running!
+
+- Generation: 54
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 18:22:06.659 - Evaluating new population ...
+INFO: qnas: 2023-01-16 18:42:04.207 - New generation finished running!
+
+- Generation: 55
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 18:42:04.210 - Evaluating new population ...
+INFO: qnas: 2023-01-16 19:02:16.770 - New generation finished running!
+
+- Generation: 56
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 19:02:16.773 - Evaluating new population ...
+INFO: qnas: 2023-01-16 19:21:56.474 - New generation finished running!
+
+- Generation: 57
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 19:21:56.478 - Evaluating new population ...
+INFO: qnas: 2023-01-16 19:41:57.180 - New generation finished running!
+
+- Generation: 58
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 19:41:57.184 - Evaluating new population ...
+INFO: qnas: 2023-01-16 20:01:45.685 - New generation finished running!
+
+- Generation: 59
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 20:01:45.689 - Evaluating new population ...
+INFO: qnas: 2023-01-16 20:21:55.433 - New generation finished running!
+
+- Generation: 60
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 20:21:55.437 - Evaluating new population ...
+INFO: qnas: 2023-01-16 20:41:35.516 - New generation finished running!
+
+- Generation: 61
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 20:41:35.520 - Evaluating new population ...
+INFO: qnas: 2023-01-16 21:01:20.239 - New generation finished running!
+
+- Generation: 62
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 21:01:20.244 - Evaluating new population ...
+INFO: qnas: 2023-01-16 21:20:59.262 - New generation finished running!
+
+- Generation: 63
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 21:20:59.265 - Evaluating new population ...
+INFO: qnas: 2023-01-16 21:40:37.583 - New generation finished running!
+
+- Generation: 64
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 21:40:37.586 - Evaluating new population ...
+INFO: qnas: 2023-01-16 22:00:26.796 - New generation finished running!
+
+- Generation: 65
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 22:00:26.800 - Evaluating new population ...
+INFO: qnas: 2023-01-16 22:20:07.988 - New generation finished running!
+
+- Generation: 66
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 22:20:07.991 - Evaluating new population ...
+INFO: qnas: 2023-01-16 22:39:52.243 - New generation finished running!
+
+- Generation: 67
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 22:39:52.247 - Evaluating new population ...
+INFO: qnas: 2023-01-16 22:59:20.253 - New generation finished running!
+
+- Generation: 68
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+- Fitnesses without penalties: [0.9284 0.9282 0.9267 0.9267 0.9263 0.926  0.9259 0.9259 0.9257]
+
+INFO: qnas: 2023-01-16 22:59:20.256 - Evaluating new population ...
+INFO: qnas: 2023-01-16 23:19:17.433 - New generation finished running!
+
+- Generation: 69
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9267 0.9267 0.9263 0.926  0.9259 0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9267 0.9267 0.9263 0.926  0.9259 0.9259]
+
+INFO: qnas: 2023-01-16 23:19:17.436 - Evaluating new population ...
+INFO: qnas: 2023-01-16 23:39:11.128 - New generation finished running!
+
+- Generation: 70
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9267 0.9267 0.9263 0.926  0.9259 0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9267 0.9267 0.9263 0.926  0.9259 0.9259]
+
+INFO: qnas: 2023-01-16 23:39:11.132 - Evaluating new population ...
+INFO: qnas: 2023-01-16 23:58:49.963 - New generation finished running!
+
+- Generation: 71
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-16 23:58:49.967 - Evaluating new population ...
+INFO: qnas: 2023-01-17 00:18:56.764 - New generation finished running!
+
+- Generation: 72
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-17 00:18:56.768 - Evaluating new population ...
+INFO: qnas: 2023-01-17 00:39:11.101 - New generation finished running!
+
+- Generation: 73
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-17 00:39:11.104 - Evaluating new population ...
+INFO: qnas: 2023-01-17 00:58:54.581 - New generation finished running!
+
+- Generation: 74
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-17 00:58:54.585 - Evaluating new population ...
+INFO: qnas: 2023-01-17 01:18:27.589 - New generation finished running!
+
+- Generation: 75
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-17 01:18:27.592 - Evaluating new population ...
+INFO: qnas: 2023-01-17 01:38:14.009 - New generation finished running!
+
+- Generation: 76
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-17 01:38:14.012 - Evaluating new population ...
+INFO: qnas: 2023-01-17 01:57:52.975 - New generation finished running!
+
+- Generation: 77
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9267 0.9267 0.9263 0.926  0.9259]
+
+INFO: qnas: 2023-01-17 01:57:52.979 - Evaluating new population ...
+INFO: qnas: 2023-01-17 02:17:42.830 - New generation finished running!
+
+- Generation: 78
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9272 0.9267 0.9267 0.9263 0.926 ]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9272 0.9267 0.9267 0.9263 0.926 ]
+
+INFO: qnas: 2023-01-17 02:17:42.834 - Evaluating new population ...
+INFO: qnas: 2023-01-17 02:37:37.690 - New generation finished running!
+
+- Generation: 79
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9277 0.9272 0.9267 0.9267 0.9263 0.926 ]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9277 0.9272 0.9267 0.9267 0.9263 0.926 ]
+
+INFO: qnas: 2023-01-17 02:37:37.694 - Evaluating new population ...
+INFO: qnas: 2023-01-17 02:57:21.636 - New generation finished running!
+
+- Generation: 80
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 02:57:21.639 - Evaluating new population ...
+INFO: qnas: 2023-01-17 03:17:09.906 - New generation finished running!
+
+- Generation: 81
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 03:17:09.910 - Evaluating new population ...
+INFO: qnas: 2023-01-17 03:36:39.135 - New generation finished running!
+
+- Generation: 82
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 03:36:39.139 - Evaluating new population ...
+INFO: qnas: 2023-01-17 03:56:40.601 - New generation finished running!
+
+- Generation: 83
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 03:56:40.604 - Evaluating new population ...
+INFO: qnas: 2023-01-17 04:16:41.035 - New generation finished running!
+
+- Generation: 84
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 04:16:41.038 - Evaluating new population ...
+INFO: qnas: 2023-01-17 04:36:25.897 - New generation finished running!
+
+- Generation: 85
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 04:36:25.901 - Evaluating new population ...
+INFO: qnas: 2023-01-17 04:56:19.975 - New generation finished running!
+
+- Generation: 86
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.928  0.9277 0.9272 0.9267 0.9267 0.9263]
+
+INFO: qnas: 2023-01-17 04:56:19.979 - Evaluating new population ...
+INFO: qnas: 2023-01-17 05:16:01.070 - New generation finished running!
+
+- Generation: 87
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.9267 0.9267]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.9267 0.9267]
+
+INFO: qnas: 2023-01-17 05:16:01.073 - Evaluating new population ...
+INFO: qnas: 2023-01-17 05:36:02.060 - New generation finished running!
+
+- Generation: 88
+- Best so far: [50, 5] --> 0.92837
+- Fitnesses: [0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.927  0.9267]
+- Fitnesses without penalties: [0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.927  0.9267]
+
+INFO: qnas: 2023-01-17 05:36:02.063 - Evaluating new population ...
+INFO: qnas: 2023-01-17 05:55:34.764 - New generation finished running!
+
+- Generation: 89
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.927 ]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.927 ]
+
+INFO: qnas: 2023-01-17 05:55:34.768 - Evaluating new population ...
+INFO: qnas: 2023-01-17 06:15:12.655 - New generation finished running!
+
+- Generation: 90
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.927 ]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9272 0.927 ]
+
+INFO: qnas: 2023-01-17 06:15:12.659 - Evaluating new population ...
+INFO: qnas: 2023-01-17 06:34:46.694 - New generation finished running!
+
+- Generation: 91
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9273 0.9272]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9273 0.9272]
+
+INFO: qnas: 2023-01-17 06:34:46.699 - Evaluating new population ...
+INFO: qnas: 2023-01-17 06:54:30.193 - New generation finished running!
+
+- Generation: 92
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9273 0.9272]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9273 0.9272]
+
+INFO: qnas: 2023-01-17 06:54:30.196 - Evaluating new population ...
+INFO: qnas: 2023-01-17 07:14:12.474 - New generation finished running!
+
+- Generation: 93
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
+INFO: qnas: 2023-01-17 07:14:12.478 - Evaluating new population ...
+INFO: qnas: 2023-01-17 07:33:55.678 - New generation finished running!
+
+- Generation: 94
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
+INFO: qnas: 2023-01-17 07:33:55.682 - Evaluating new population ...
+INFO: qnas: 2023-01-17 07:53:37.908 - New generation finished running!
+
+- Generation: 95
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
+INFO: qnas: 2023-01-17 07:53:37.912 - Evaluating new population ...
+INFO: qnas: 2023-01-17 08:13:21.956 - New generation finished running!
+
+- Generation: 96
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
+INFO: qnas: 2023-01-17 08:13:21.959 - Evaluating new population ...
+INFO: qnas: 2023-01-17 08:33:38.238 - New generation finished running!
+
+- Generation: 97
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
+INFO: qnas: 2023-01-17 08:33:38.242 - Evaluating new population ...
+INFO: qnas: 2023-01-17 08:53:32.474 - New generation finished running!
+
+- Generation: 98
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
+INFO: qnas: 2023-01-17 08:53:32.477 - Evaluating new population ...
+INFO: qnas: 2023-01-17 09:13:14.373 - New generation finished running!
+
+- Generation: 99
+- Best so far: [89, 8] --> 0.92917
+- Fitnesses: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+- Fitnesses without penalties: [0.9292 0.9284 0.9282 0.9281 0.9281 0.928  0.9277 0.9277 0.9273]
+
