@@ -1,5 +1,5 @@
-from tensorflow.keras.initializers import GlorotUniform, HeUniform
-from tensorflow.keras.layers import (
+from keras.initializers import GlorotUniform, HeUniform
+from keras.layers import (
     Activation,
     Add,
     AveragePooling2D,
@@ -7,7 +7,7 @@ from tensorflow.keras.layers import (
     Conv2D,
     concatenate,
 )
-from tensorflow.keras.regularizers import L2
+from keras.regularizers import L2
 
 
 class Block(object):

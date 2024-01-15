@@ -9,7 +9,8 @@ import inspect
 import os
 from collections import OrderedDict
 from math import sqrt
-from typing import Optional, Union, get_args, get_origin
+from typing import Optional, Union#, get_args, get_origin
+from typing_extensions import get_args, get_origin
 
 import numpy as np
 
@@ -115,6 +116,8 @@ class ConfigParameters(object):
                 ("skip_slices", int),
                 ("num_classes", int),
                 ("data_augmentation", bool),
+                ('gpu_selected', str),
+                ('threads', int),
             ],
         }
 

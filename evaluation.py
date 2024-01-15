@@ -7,7 +7,7 @@
 import time
 
 import numpy as np
-from mpi4py import MPI
+from multiprocessing import Process, Value
 
 from cnn import train
 from util import init_log
@@ -29,11 +29,7 @@ class EvalPopulation(object):
         self.train_params = train_params
         self.layer_dict = layer_dict
         self.cell_list = cell_list
-        self.timeout = 9000
         self.logger = init_log(log_level, name=__name__)
-        self.comm = MPI.COMM_WORLD
-        self.size = self.comm.Get_size()
-        self.num_workers = self.size - 1
 
     def __call__(self, decoded_nets, generation):
         """Train and evaluate *decoded_nets*
@@ -49,104 +45,48 @@ class EvalPopulation(object):
 
         pop_size = len(decoded_nets)
 
-        assert pop_size == self.size
-
         evaluations = np.empty(shape=(pop_size,))
+        print(self.layer_dict)
 
-        try:
-            self.send_data(decoded_nets, generation)
+        variables = [Value('f', 0.0) for _ in range(pop_size)]
+        selected_thread = 0
+        individual_per_thread = []
+        for idx in range(len(variables)):
+            self.logger.info(f"Going to start fitness of individual {idx} on thread {selected_thread}")
+            individual_per_thread.append((idx, selected_thread, decoded_nets[idx], variables[idx]))
+            selected_thread += 1
+            if selected_thread >= self.train_params['threads']:
+                selected_thread = selected_thread % self.train_params['threads']
+            
+            
+        processes = []
+        for idx in range(self.train_params['threads']):
+            individuals_selected_thread = list(filter(lambda x: x[1]==idx, individual_per_thread))
+            print(individuals_selected_thread)
+            process = Process(target=self.run_individuals, args=(generation, individuals_selected_thread))
+            process.start()
+            processes.append(process)
 
-            # After sending tasks, Master starts its own work...
-            evaluations[0] = train.fitness_calculation(
-                id_num=f"{generation}_0",
-                train_params={**self.train_params},
-                layer_dict=self.layer_dict,
-                net_list=decoded_nets[0],
-                cell_list=self.cell_list,
-            )
-
-            # Master starts receiving results...
-            self.receive_data(results=evaluations)
-
-        except TimeoutError:
-            self.comm.Abort()
+        for p in processes:
+            p.join()
+                    
+        for idx, val in enumerate(variables):
+            evaluations[idx] = val.value
+        
 
         return evaluations
+    
+    def run_individuals(self, generation, individuals_selected_thread):
+        for individual, selected_gpu, decoded_net, return_val in individuals_selected_thread:
+            print(f"starting individual {individual}")
+            train.fitness_calculation(
+                id_num=f"{generation}_{individual}",
+                train_params={**self.train_params},
+                layer_dict=self.layer_dict,
+                net_list=decoded_net,
+                cell_list=self.cell_list,
+                return_val=return_val
+            )
+            print(f"finishing individual {individual} - {return_val.value}")
+            self.logger.info(f"Clculated fitness of individual {individual} on thread {selected_gpu} with {return_val.value}")
 
-    def check_timeout(self, t0, requests):
-        """Check if communication has reached self.timeout and raise an error if it did.
-
-        Args:
-            t0: initial time as time.time() instance.
-            requests: list of MPI.Request.
-        """
-
-        t1 = time.time()
-        if t1 - t0 >= self.timeout:
-            pending = [i + 1 for i in range(len(requests)) if requests[i] is not None]
-            self.logger.error(f"Pending request operations: {pending}")
-            raise TimeoutError()
-
-    def send_data(self, decoded_nets, generation):
-        """Send data to all workers.
-
-        Args:
-            decoded_nets: list containing the lists of network layers descriptions
-                (size = num_individuals).
-            generation: (int) generation number.
-        """
-
-        requests = [None] * self.num_workers
-
-        for worker in range(1, self.size):
-            id_num = f"{generation}_{worker}"
-
-            args = {
-                "id_num": id_num,
-                "train_params": {**self.train_params},
-                "layer_dict": self.layer_dict,
-                "net_list": decoded_nets[worker],
-                "cell_list": self.cell_list,
-            }
-
-            requests[worker - 1] = self.comm.isend(args, dest=worker, tag=11)
-
-        t0 = time.time()
-
-        # Checking if all messages were sent
-        while not all(r is None for r in requests):
-            for i in range(self.num_workers):
-                if requests[i] is not None:
-                    check_result = requests[i].test()
-                    if check_result[0]:
-                        self.logger.info(f"Sent message to worker {i+1}!")
-                        requests[i] = None
-
-            self.check_timeout(t0, requests)
-
-    def receive_data(self, results):
-        """Receive data from all workers.
-
-        Args:
-            results: ndarray that will store all results.
-
-        Returns:
-            modified ndarray containing the received results.
-        """
-
-        requests = [self.comm.irecv(source=i, tag=10) for i in range(1, self.size)]
-
-        t0 = time.time()
-
-        while not all(r is None for r in requests):
-            for i in range(self.num_workers):
-                if requests[i] is not None:
-                    check_result = requests[i].test()
-                    if check_result[0]:
-                        self.logger.info(f"Received message from worker {i+1}!")
-                        results[i + 1] = check_result[1]
-                        requests[i] = None
-
-            self.check_timeout(t0, requests)
-
-        return results

@@ -6,38 +6,17 @@ This repository contains code for the works presented in the following papers:
 
 ### Requirements
 
-Before setting up the conda environment make sure you have `openmpi` (https://www.open-mpi.org/)
-
-The follow these steps to use GPU (https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html)
-
-After that run the following to setup the enviroment:
+Using anaconda you should change the versions based on [this webpage](https://www.tensorflow.org/install/source#gpu). Run the following to setup the enviroment:
 
 ```console
-git clone https://github.com/GuilhermeBaldo/segqnas.git
-cd segqnas/
-
-python -m venv .venv
-source .venv/bin/activate
-pip install tensorflow-gpu
-
-
-
-conda create -n segqnas python=3.8
-conda activate segqnas
-pip3 install --upgrade pip
-pip3 install tensorflow==2.4
-conda install pyyaml=5.3.1
-conda install psutil
-conda install mpi4py=3.0.3
-conda install pandas
-conda install Pillow
-conda install -c simpleitk simpleitk
-conda install -c conda-forge scikit-learn
-conda install -c conda-forge monai
-conda install -c conda-forge nibabel
-conda install -c conda-forge tqdm
-conda install -c conda-forge imgaug
-conda install -c conda-forge albumentations
+conda create --prefix /caminho/para/seu/diretorio python=3.9
+conda activate diretorio
+conda install -c conda-forge cudatoolkit=11.2.* cudnn=8.1.*
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
+python -m pip install pip -U
+python -m pip install tensorflow==2.11.*
+# Verify install:
+python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 ```
 
 ---
@@ -121,7 +100,10 @@ In summary, the files are:
 This is an example of how to run architecture search for dataset `cifar10/cifar_tfr_10000` with `config1.txt`:
 
 ```shell script
-nohup mpirun -n 9 python run_evolution.py --experiment_path experiment_1 --data_path spleen_dataset/data/Task09_Spleen_preprocessed/ --config_file config_files/config_experiment_1.txt --log_level DEBUG &
+nohup mpirun -n 9 python run_evolution.py --experiment_path experiment_1 --config_file config_files/config_experiment_1.txt --log_level DEBUG &
+
+
+python run_evolution.py --experiment_path config_experiment_3_prostate_2 --config_file config_files/config_experiment_3_prostate_2.yaml
 ```
 
 The number of workers in the MPI execution must be equal to the number of classical individuals. In `config1.txt`,   

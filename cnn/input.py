@@ -12,7 +12,7 @@ from albumentations import (
     RandomBrightnessContrast,
     ShiftScaleRotate,
 )
-from tensorflow.keras.utils import Sequence
+from keras.utils import Sequence
 
 random.seed(0)
 

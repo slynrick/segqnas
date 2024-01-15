@@ -1,4 +1,4 @@
-from tensorflow.keras import backend as K
+from keras import backend as K
 
 
 def soft_gen_dice_coef(y_true, y_pred, smooth=1e-7):

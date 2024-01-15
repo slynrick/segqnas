@@ -6,7 +6,7 @@ import SimpleITK as sitk
 from batchgenerators.utilities.file_and_folder_operations import *
 from monai.apps import download_and_extract
 
-from spleen_dataset.config import (
+from datasets.spleen_dataset.config import (
     dataset_folder,
     num_threads,
     preprocessed_folder,

@@ -8,9 +8,12 @@ import os
 import platform
 import time
 from logging import addLevelName
+from multiprocessing import Value
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.util import deprecation
+deprecation._PRINT_DEPRECATION_WARNINGS = False
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 
 from cnn.input import (
@@ -132,7 +135,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     return mean_dsc, std_dsc
 
 
-def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=None):
+def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val: Value, cell_list=None):
     """Train and evaluate a model using evolved parameters.
 
     Args:
@@ -146,65 +149,54 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
         Mean dice coeficient of the model for the last epochs for <initializations> times <folds>-fold cross validation.
     """
 
-    os.environ["TF_SYNC_ON_FINISH"] = "0"
-    os.environ["TF_ENABLE_WINOGRAD_NONFUSED"] = "1"
-    if train_params["log_level"] == "INFO":
-        addLevelName(25, "INFO1")
-        tf.compat.v1.logging.set_verbosity(25)
-    elif train_params["log_level"] == "DEBUG":
-        tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
-
     model_path = os.path.join(train_params["experiment_path"], id_num)
     maybe_mkdir_p(model_path)
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = f"{train_params['gpu_selected']}"
 
     # save net list as csv (layers)
     net_list_file_path = os.path.join(model_path, "net_list.csv")
 
-    gpus = tf.config.experimental.list_physical_devices("GPU")
+    logical_gpus = tf.config.experimental.list_logical_devices("GPU")
+    gpu_id = int(id_num.split("_")[-1]) % len(logical_gpus)
+    #tf.config.experimental.set_memory_growth(logical_gpus[gpu_id], True)
 
-    if gpus:
-        gpu_id = int(id_num.split("_")[-1]) % len(gpus)
-        tf.config.experimental.set_visible_devices(gpus[gpu_id], "GPU")
-        try:
-            tf.config.experimental.set_virtual_device_configuration(
-                gpus[gpu_id],
-                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=6144)],
-            )
-        except RuntimeError as e:
-            print(e)
+    with tf.device(logical_gpus[gpu_id]):
+    
+        train_params["t0"] = time.time()
 
-    train_params["t0"] = time.time()
+        node = platform.uname()[1]
 
-    node = platform.uname()[1]
-
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"I am node {node}! Running fitness calculation of {id_num} with "
-        f"structure:\n{net_list}",
-    )
-
-    try:
-        mean_dsc, std_dsc = cross_val_train(
-            train_params, layer_dict, net_list, cell_list
-        )
-    except Exception as e:
         tf.compat.v1.logging.log(
             level=tf.compat.v1.logging.get_verbosity(),
-            msg=f"Exception: {e}",
+            msg=f"I am node {node}! Running fitness calculation of {id_num} with "
+            f"structure:\n{net_list}",
         )
 
-        return 0
+        try:
+            mean_dsc, std_dsc = cross_val_train(
+                train_params, layer_dict, net_list, cell_list
+            )
+        except Exception as e:
+            tf.compat.v1.logging.log(
+                level=tf.compat.v1.logging.get_verbosity(),
+                msg=f"Exception: {e}",
+            )
 
-    tf.compat.v1.logging.log(
-        level=tf.compat.v1.logging.get_verbosity(),
-        msg=f"[{id_num}] DSC: {mean_dsc} +- {std_dsc}",
-    )
+            return 0
 
-    with open(net_list_file_path, mode="w") as f:
-        write = csv.writer(f)
-        write.writerow(net_list)
+        tf.compat.v1.logging.log(
+            level=tf.compat.v1.logging.get_verbosity(),
+            msg=f"[{id_num}] DSC: {mean_dsc} +- {std_dsc}",
+        )
 
-    # train_params["net"] = net
-    train_params["net_list"] = net_list
+        with open(net_list_file_path, mode="w") as f:
+            write = csv.writer(f)
+            write.writerow(net_list)
 
-    return mean_dsc
+        # train_params["net"] = net
+        train_params["net_list"] = net_list
+
+        return_val.value = mean_dsc
+
+        return mean_dsc

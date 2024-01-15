@@ -1,14 +1,14 @@
 import importlib
 
-from tensorflow.keras.initializers import HeUniform
-from tensorflow.keras.layers import (
+from keras.initializers import HeUniform
+from keras.layers import (
     Activation,
     BatchNormalization,
     Conv2D,
     Conv2DTranspose,
     concatenate,
 )
-from tensorflow.keras.regularizers import L2
+from keras.regularizers import L2
 
 
 class Cell(object):
