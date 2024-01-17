@@ -13,10 +13,10 @@ conda create --prefix /caminho/para/seu/diretorio python=3.9
 conda activate diretorio
 conda install -c conda-forge cudatoolkit=11.2.* cudnn=8.1.*
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
-python -m pip install pip -U
-python -m pip install tensorflow==2.11.*
+python3 -m pip install pip -U
+python3 -m pip install tensorflow==2.11.*
 # Verify install:
-python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 ```
 
 ---
