@@ -99,16 +99,11 @@ In summary, the files are:
 
 This is an example of how to run architecture search for dataset `cifar10/cifar_tfr_10000` with `config1.txt`:
 
-```shell script
-nohup mpirun -n 9 python run_evolution.py --experiment_path experiment_1 --config_file config_files/config_experiment_1.txt --log_level DEBUG &
-
-
-python run_evolution.py --experiment_path config_experiment_3_prostate_2 --config_file config_files/config_experiment_3_prostate_2.yaml
+```sh
+nohup python run_evolution.py --experiment_path config_experiment_3_prostate_2 --config_file config_files/config_experiment_3_prostate_2.yaml --log_level DEBUG &
 ```
 
-The number of workers in the MPI execution must be equal to the number of classical individuals. In `config1.txt`,   
-this number is 20 (_num_quantum_ind_ (=5) x _repetition_ (=4) = 20). The output folder `my_exp_config1`   
-looks like this:
+The output folder `my_exp_config1` looks like this:
 
 >12_7   
 csv_data   
@@ -130,8 +125,8 @@ It is also possible to continue a finished evolution process. Note that all the 
   that can be overwritten is `max_generations`, so that one can set for how many generations the evolution
   will continue. To continue the above experiment for another 100 generations, the user can run:
 
-```console
-  nohup mpirun -n 9 python run_evolution.py \
+```sh
+  nohup python run_evolution.py \
   --experiment_path experiment_1_8 \
   --config_file config_files/config_experiment_1_spleen.txt \
   --log_level DEBUG &
@@ -147,7 +142,7 @@ After the evolution is complete, the final network can be retrained on the entir
   for 300 epochs with the dataset in `cifar10/cifar_tfr`, using the scheme (optimizer and hyperparameters) of
   the evolution:
 
-```console
+```sh
   nohup python run_retrain.py \
   --experiment_path experiment_1/ \
   --data_path spleen_dataset/data/Task09_Spleen_preprocessed/ \
@@ -184,7 +179,7 @@ It is also possible to retrain the network with training schemes defined in the 
  message for the `--lr_schedule` parameter). For example, to retrain the best network of experiment
   `my_exp_config2` using the `cosine` scheme, one can run:
 
-```shell script
+```sh
 python run_retrain.py \
     --experiment_path my_exp_config2 \
     --data_path cifar10/cifar_tfr \
@@ -208,7 +203,7 @@ If one wants to get the number of weights and the MFLOPs in a specific individua
  `run_profiling.py`. For example, to get the values for individual `1` of generation `50` of the experiment
   saved in `my_exp_config3`, run:
 
-```shell script
+```sh
 python run_profiling.py \
     --exp_path my_exp_config3 \
     --generation 50 \

@@ -197,7 +197,7 @@ class ConfigParameters(object):
         )
 
         self.files_spec["previous_data_file"] = os.path.join(
-            self.args["continue_path"], "net_list.csv"
+            self.args["continue_path"], "net_list.pkl"
         )
         self.load_old_params()
         self.QNAS_spec["max_generations"] = load_yaml(self.args["config_file"])["QNAS"][
@@ -246,7 +246,7 @@ class ConfigParameters(object):
             self.args["experiment_path"], "log_QNAS.txt"
         )
         self.files_spec["data_file"] = os.path.join(
-            self.args["experiment_path"], "net_list.csv"
+            self.args["experiment_path"], "net_list.pkl"
         )
 
     def get_parameters(self):
@@ -276,7 +276,7 @@ class ConfigParameters(object):
         self.layer_dict = previous_params_file["layer_dict"]
         self.cell_list = previous_params_file["cell_list"]
 
-    def load_evolved_data(self, generation=None, individual=0):
+    def load_evolved_data(self, generation=0, individual=0):
         """Read the yaml log *self.files_spec['data_file']* and get values from the individual
             specified by *generation* and *individual*.
 
@@ -287,13 +287,13 @@ class ConfigParameters(object):
                 specified, individual 0 is loaded (the one with highest fitness on the given
                 *generation*.
         """
+        print(self.files_spec["data_file"])
+        net_list_evol = load_pkl(self.files_spec["data_file"])
+        ind_selected = net_list_evol[generation]['net_pop'][individual]
+        nets = list(self.layer_dict.keys())
+        net_list = [nets[i] for i in ind_selected]
 
-        with open(self.files_spec["data_file"], newline="") as f:
-            reader = csv.reader(f)
-            for row in reader:
-                net_list = row
-
-        self.evolved_params = {"net": net}
+        self.evolved_params = {"net": net_list}
 
     def override_train_params(self, new_params_dict):
         """Override *self.train_spec* parameters with the ones in *new_params_dict*. Update

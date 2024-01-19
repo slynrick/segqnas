@@ -41,6 +41,8 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     num_initializations = train_params["initializations"]
     stem_filters = train_params["stem_filters"]
     max_depth = train_params["max_depth"]
+    
+    experiment_path = train_params["experiment_path"]
 
     patch_size = (image_size, image_size, num_channels)
 
@@ -49,6 +51,9 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     val_augmentation = get_validation_augmentation(patch_size)
 
     val_gen_dice_coef_list = []
+    
+    best_model = None
+    best_metric = 0.0
 
     for initialization in range(num_initializations):
         for fold in range(num_folds):
@@ -128,9 +133,15 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             print(
                 f"{fold + initialization*num_folds}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}"
             )
+            
+            if mean_dsc > best_metric:
+                best_metric = mean_dsc
+                best_model = net
 
     mean_dsc = np.mean(val_gen_dice_coef_list)
     std_dsc = np.std(val_gen_dice_coef_list)
+    
+    best_model.save(os.path.join(experiment_path, "bestmodel"))
 
     return mean_dsc, std_dsc
 
@@ -159,8 +170,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val: 
 
     logical_gpus = tf.config.experimental.list_logical_devices("GPU")
     gpu_id = int(id_num.split("_")[-1]) % len(logical_gpus)
-    #tf.config.experimental.set_memory_growth(logical_gpus[gpu_id], True)
-
+        
     with tf.device(logical_gpus[gpu_id]):
     
         train_params["t0"] = time.time()
@@ -173,6 +183,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val: 
             f"structure:\n{net_list}",
         )
 
+
         try:
             mean_dsc, std_dsc = cross_val_train(
                 train_params, layer_dict, net_list, cell_list
@@ -182,7 +193,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val: 
                 level=tf.compat.v1.logging.get_verbosity(),
                 msg=f"Exception: {e}",
             )
-
             return 0
 
         tf.compat.v1.logging.log(

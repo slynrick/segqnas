@@ -121,3 +121,5 @@ old
 .tar
 .h5
 log
+
+config_experiment*/

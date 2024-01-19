@@ -3,8 +3,8 @@
 QNAS:
     crossover_rate: 0.1
     max_generations: 100
-    max_num_nodes: 4
-    num_quantum_ind: 2
+    max_num_nodes: 10
+    num_quantum_ind: 6
     repetition: 1
     replace_method: best
     update_quantum_gen: 1
@@ -57,4 +57,4 @@ train:
     num_classes: 3
     data_augmentation: True
     gpu_selected: '0'
-    threads: 2
+    threads: 4
