@@ -90,14 +90,14 @@ def build_net(
             cell = cell_list[layer_num]
         else:
             cell = layer_dict[layer].get("cell")
-
+        
         block = layer_dict[layer].get("block", None)
         kernel = layer_dict[layer].get("kernel", None)
 
         cell = fix_cell_for_feasibility(
             cell, depth, num_layers, layer_num, min_depth, max_depth
         )
-
+        
         # if cell == "DownscalingCell":
         #     filters *= 2
         # elif cell == "UpscalingCell":
@@ -111,7 +111,6 @@ def build_net(
 
         if skip is not None:
             x = [x, skip]
-
         x = Layer(cell, block, kernel, filters)(
             x, name=f"Layer_{layer_num}_{cell}_{block}"
         )

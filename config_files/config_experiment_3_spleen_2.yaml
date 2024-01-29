@@ -49,6 +49,9 @@ train:
     stem_filters: 16
     max_depth: 4
 
+    gpu_selected: '0'
+    threads: 4
+
     # Dataset
     data_path: spleen_dataset/data/Task09_Spleen_preprocessed/
     image_size: 128

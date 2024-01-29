@@ -207,7 +207,7 @@ class QNAS(object):
         self.random = np.random.rand()
 
         new_pop_net = self.qpop_net.generate_classical()
-        # self.logger.info("new population created", new_pop_net)
+        self.logger.info("new population created", new_pop_net)
         # Evaluate population
         new_fitnesses, raw_fitnesses = self.eval_pop(new_pop_net)
 

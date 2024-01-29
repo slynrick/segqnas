@@ -14,6 +14,11 @@ from util import check_files, init_log
 from multiprocessing import set_start_method
 set_start_method('spawn', True)
 
+import tensorflow as tf
+
+physical_devices = tf.config.list_physical_devices('GPU')
+for gpu_instance in physical_devices:
+    tf.config.experimental.set_memory_growth(gpu_instance, True)
 
 def run(**args):
     logger = init_log(args['log_level'], name=__name__)

@@ -10,12 +10,17 @@
 
 import argparse
 import os
-
-import tensorflow as tf
-
 from chromosome import QChromosomeNetwork
 from cnn import model
 from util import load_pkl, load_yaml
+
+import tensorflow as tf
+
+physical_devices = tf.config.list_physical_devices('GPU')
+for gpu_instance in physical_devices:
+    tf.config.experimental.set_memory_growth(gpu_instance, True)
+
+
 
 
 def load_params(exp_path, generation=None, individual=0):
