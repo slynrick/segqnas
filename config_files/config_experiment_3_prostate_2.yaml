@@ -59,3 +59,5 @@ train:
     num_channels: 2
     num_classes: 3
     data_augmentation: True
+    gpu_selected: '0'
+    threads: 4
