@@ -41,6 +41,8 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     num_initializations = train_params["initializations"]
     stem_filters = train_params["stem_filters"]
     max_depth = train_params["max_depth"]
+    use_es_patience = train_params["use_early_stopping_patience"]
+    es_patience = train_params["early_stopping_patience"]
     
     experiment_path = train_params["experiment_path"]
 
@@ -112,16 +114,25 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                     * (1 - epoch / float(epochs)) ** (power)
                 ) + end_learning_rate
 
+            callbacks = []
+
             lr_callback = tf.keras.callbacks.LearningRateScheduler(
                 learning_rate_fn, verbose=False
             )
+            callbacks.append(lr_callback)
+
+            if use_es_patience:
+                es_callback = tf.keras.callbacks.EarlyStopping(
+                    monitor='loss',patience=es_patience
+                )
+                callbacks.append(es_callback)
 
             history = net.fit(
                 train_dataloader,
                 validation_data=val_dataloader,
                 epochs=epochs,
                 verbose=0,
-                callbacks=[lr_callback],
+                callbacks=callbacks,
             )
 
             history_eval_epochs = history.history["val_gen_dice_coef"][-eval_epochs:]

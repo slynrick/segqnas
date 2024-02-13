@@ -4,6 +4,7 @@
     - Q-NAS algorithm class.
 """
 
+import copy
 import datetime
 import os
 from pickle import HIGHEST_PROTOCOL, dump
@@ -17,7 +18,7 @@ from util import ExtractData, delete_old_dirs, init_log, load_pkl
 class QNAS(object):
     """Quantum Inspired Neural Architecture Search"""
 
-    def __init__(self, eval_func, experiment_path, log_file, log_level, data_file):
+    def __init__(self, eval_func, experiment_path, log_file, log_level, data_file, max_patience):
         """Initialize QNAS.
 
         Args:
@@ -38,6 +39,10 @@ class QNAS(object):
         self.eval_func = eval_func
         self.experiment_path = experiment_path
         self.fitnesses = None  # TF calculates mean iou with float32 precision
+        self.max_fitness = 0
+        self.last_max_fitness = 0
+        self.evol_patience = 0
+        self.max_patience = max_patience
         self.generations = None
         self.update_quantum_gen = None
         self.logger = init_log(log_level, name=__name__, file_path=log_file)
@@ -113,7 +118,9 @@ class QNAS(object):
                 *new_pop* before the penalization method. Note that, if no penalization method
                 is applied, *raw_fitnesses* = *new_fitnesses*.
         """
-
+        if self.fitnesses is not None:
+            self.last_max_fitness = self.max_fitness
+            self.max_fitness = max(self.fitnesses.max(), self.max_fitness)
         if self.current_gen == 0:
             # In the 1st generation, the current population is the one that was just generated.
             self.qpop_net.current_pop = new_pop_net
@@ -419,5 +426,12 @@ class QNAS(object):
             self.current_gen += 1
 
         while self.current_gen < max_generations:
+            if self.current_gen > 0:
+                if self.max_fitness <= self.last_max_fitness:
+                    self.evol_patience += 1
+                if self.evol_patience > self.max_patience:
+                    self.logger.info(f"Evolution did not improve the best fitness in {self.max_patience} generations, the evolution is being stopped with max fitness of : {self.max_fitness}")
+                    return
+                
             self.generate_classical()
             self.go_next_gen()

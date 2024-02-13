@@ -101,6 +101,7 @@ class ConfigParameters(object):
                 ("update_quantum_gen", int),
                 ("layer_dict", dict),
                 ("cell_list", Optional[list]),
+                ("evolution_patience", int),
             ],
             "train": [
                 ("batch_size", int),
@@ -118,6 +119,8 @@ class ConfigParameters(object):
                 ("data_augmentation", bool),
                 ('gpu_selected', str),
                 ('threads', int),
+                ('use_early_stopping_patience', bool),
+                ('early_stopping_patience', int)
             ],
         }
 

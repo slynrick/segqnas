@@ -60,6 +60,49 @@ def calculate_number_of_filters(cell, filters):
     return filters
 
 
+def build_net_mirror(side, net_list, cell_list, layer_dict):
+    feature_maps = []
+    for layer_num, layer in enumerate(net_list):
+        previous_cell = cell
+
+        if cell_list:
+            cell = cell_list[layer_num]
+        else:
+            cell = layer_dict[layer].get("cell")
+        
+        if side == 'decoder':
+            # mirror logic
+            if cell == "DownscalingCell":
+                cell = "UpscalingCell"
+        
+        block = layer_dict[layer].get("block", None)
+        kernel = layer_dict[layer].get("kernel", None)
+
+        # cell = fix_cell_for_feasibility(
+        #     cell, depth, num_layers, layer_num, min_depth, max_depth
+        # )
+
+        filters = calculate_number_of_filters(cell, filters)
+
+        skip = get_skip_connection(
+            previous_cell=previous_cell, feature_maps=feature_maps
+        )
+
+        if skip is not None:
+            x = [x, skip]
+        x = Layer(cell, block, kernel, filters)(
+            x, name=f"Layer_{layer_num}_{cell}_{block}"
+        )
+
+        if cell == "DownscalingCell":
+            depth += 1
+        elif cell == "UpscalingCell":
+            depth -= 1
+
+        feature_maps.append(x)
+    return feature_maps
+
+
 def build_net(
     input_shape,
     stem_filters,
@@ -83,44 +126,10 @@ def build_net(
     filters = stem_filters
     x = Layer(cell, block, kernel, filters)(inputs, name=f"{block}")
 
-    for layer_num, layer in enumerate(net_list):
-        previous_cell = cell
-
-        if cell_list:
-            cell = cell_list[layer_num]
-        else:
-            cell = layer_dict[layer].get("cell")
-        
-        block = layer_dict[layer].get("block", None)
-        kernel = layer_dict[layer].get("kernel", None)
-
-        cell = fix_cell_for_feasibility(
-            cell, depth, num_layers, layer_num, min_depth, max_depth
-        )
-        
-        # if cell == "DownscalingCell":
-        #     filters *= 2
-        # elif cell == "UpscalingCell":
-        #     filters /= 2
-
-        filters = calculate_number_of_filters(cell, filters)
-
-        skip = get_skip_connection(
-            previous_cell=previous_cell, feature_maps=feature_maps
-        )
-
-        if skip is not None:
-            x = [x, skip]
-        x = Layer(cell, block, kernel, filters)(
-            x, name=f"Layer_{layer_num}_{cell}_{block}"
-        )
-
-        if cell == "DownscalingCell":
-            depth += 1
-        elif cell == "UpscalingCell":
-            depth -= 1
-
-        feature_maps.append(x)
+    # encoder 
+    feature_maps += build_net_mirror('encoder', net_list, cell_list, layer_dict)
+    # decoder
+    feature_maps += build_net_mirror('decoder', net_list, cell_list, layer_dict)
 
     cell = "NonscalingCell"
     block = "OutputConvolution"
