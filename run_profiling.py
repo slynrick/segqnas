@@ -13,7 +13,8 @@ import os
 from chromosome import QChromosomeNetwork
 from cnn import model
 from util import load_pkl, load_yaml
-
+from cnn.loss import gen_dice_coef_loss
+from cnn.metric import gen_dice_coef, soft_gen_dice_coef
 import tensorflow as tf
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -39,16 +40,16 @@ def load_params(exp_path, generation=None, individual=0):
     """
 
     log_file_path = os.path.join(exp_path, "log_params_evolution.txt")
-    log_data_path = os.path.join(exp_path, "data_QNAS.pkl")
+    log_data_path = os.path.join(exp_path, "net_list.pkl")
 
     params = load_yaml(log_file_path)
     log_data = load_pkl(log_data_path)
 
     input_shape = (
         1,
-        params["train_data_info"]["height"],
-        params["train_data_info"]["width"],
-        params["train_data_info"]["num_channels"],
+        params["train"]["image_size"],
+        params["train"]["image_size"],
+        params["train"]["num_channels"],
     )
 
     # Load last generation, if it is not specified
@@ -65,11 +66,15 @@ def load_params(exp_path, generation=None, individual=0):
     loaded_params = {
         "individual_id_str": f"Generation {generation} - individual {individual}",
         "individual_id": (generation, individual),
+        "experiment_path": params["train"]["experiment_path"],
         "net_list": net,
         "input_shape": input_shape,
-        "num_classes": params["train_data_info"]["num_classes"],
+        "num_classes": params["train"]["num_classes"],
+        "max_depth": params["train"]["max_depth"],
+        "stem_filters": params["train"]["stem_filters"],
         "layer_dict": params["layer_dict"],
         "layer_list": params["QNAS"]["layer_list"],
+        "cell_list": params["cell_list"],
     }
 
     return loaded_params
@@ -105,7 +110,7 @@ def profile_model(file_path, model_name):
         print(f"total_float_ops (MFLOPS): {total_float_ops/1e6:.2f}", file=text_file)
 
 
-def main(exp_path, generation, individual):
+def main(exp_path, generation, individual, retrained):
 
     params = load_params(exp_path, generation, individual)
 
@@ -115,20 +120,12 @@ def main(exp_path, generation, individual):
     with tf.Graph().as_default():
         with tf.compat.v1.variable_scope("q_net"):
             # Adding input placeholder into the graph
-            input_image = tf.compat.v1.placeholder(
-                tf.float32, shape=params["input_shape"], name="input_image"
-            )
-
-            net = model.NetworkGraph(num_classes=params["num_classes"], mu=0.99)
-            filtered_dict = {
-                key: item
-                for key, item in params["layer_dict"].items()
-                if key in params["net_list"]
-            }
-            net.create_functions(layer_dict=filtered_dict)
-            net.create_network(
-                inputs=input_image, net_list=params["net_list"], is_train=False
-            )
+            net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  f"retrained" if retrained else '', "bestmodel"),
+                                             custom_objects={
+                                                 'gen_dice_coef': gen_dice_coef,
+                                                 'gen_dice_coef_loss': gen_dice_coef_loss,
+                                                 'soft_gen_dice_coef': soft_gen_dice_coef
+                                             })
             profile_model(profile_path, params["individual_id_str"])
 
 
@@ -150,6 +147,13 @@ if __name__ == "__main__":
         default=0,
         help="Individual number the user wants to profile. "
         'Default is individual "0" in the specified generation.',
+    )
+    
+    parser.add_argument(
+        "--retrained",
+        action='store_true',
+        help="If should check the retrained path "
+        'Default "True".',
     )
 
     args = parser.parse_args()
