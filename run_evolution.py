@@ -53,8 +53,7 @@ def run(**args):
         eval_f, config.train_spec['experiment_path'],
         log_file=config.files_spec['log_file'],
         log_level=config.train_spec['log_level'],
-        data_file=config.files_spec['data_file'],
-        max_patience=config.QNAS_spec['evolution_patience']
+        data_file=config.files_spec['data_file']
     )
 
     qnas_cnn.initialize_qnas(**config.QNAS_spec)

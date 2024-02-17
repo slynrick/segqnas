@@ -18,7 +18,7 @@ from util import ExtractData, delete_old_dirs, init_log, load_pkl
 class QNAS(object):
     """Quantum Inspired Neural Architecture Search"""
 
-    def __init__(self, eval_func, experiment_path, log_file, log_level, data_file, max_patience):
+    def __init__(self, eval_func, experiment_path, log_file, log_level, data_file):
         """Initialize QNAS.
 
         Args:
@@ -42,7 +42,7 @@ class QNAS(object):
         self.max_fitness = 0
         self.last_max_fitness = 0
         self.evol_patience = 0
-        self.max_patience = max_patience
+        self.max_patience = 99999
         self.generations = None
         self.update_quantum_gen = None
         self.logger = init_log(log_level, name=__name__, file_path=log_file)
@@ -68,6 +68,7 @@ class QNAS(object):
         initial_probs,
         update_quantum_rate,
         max_num_nodes,
+        evolution_patience,
         cell_list=None,
     ):
 
@@ -94,6 +95,7 @@ class QNAS(object):
         self.generations = max_generations
         self.update_quantum_gen = update_quantum_gen
         self.replace_method = replace_method
+        self.max_patience = evolution_patience
 
         self.qpop_net = QPopulationNetwork(
             num_quantum_ind=num_quantum_ind,

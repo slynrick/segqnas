@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any, List
 
 import tensorflow as tf
 
@@ -60,9 +61,14 @@ def calculate_number_of_filters(cell, filters):
     return filters
 
 
-def build_net_mirror(side, net_list, cell_list, layer_dict):
-    feature_maps = []
+def build_net_mirror(side, net_list, cell_list, layer_dict, last_cell, last_filters, last_layer, last_feature_maps = []):
+    feature_maps: List[Any] = last_feature_maps
+    depth = 0
+    x = last_layer
+    cell = last_cell
+    filters = last_filters
     for layer_num, layer in enumerate(net_list):
+        real_layer_num = layer_num + len(last_feature_maps)
         previous_cell = cell
 
         if cell_list:
@@ -91,16 +97,15 @@ def build_net_mirror(side, net_list, cell_list, layer_dict):
         if skip is not None:
             x = [x, skip]
         x = Layer(cell, block, kernel, filters)(
-            x, name=f"Layer_{layer_num}_{cell}_{block}"
+            x, name=f"Layer_{real_layer_num}_{cell}_{block}"
         )
 
         if cell == "DownscalingCell":
             depth += 1
         elif cell == "UpscalingCell":
             depth -= 1
-
         feature_maps.append(x)
-    return feature_maps
+    return feature_maps, x, cell, filters, depth
 
 
 def build_net(
@@ -127,9 +132,11 @@ def build_net(
     x = Layer(cell, block, kernel, filters)(inputs, name=f"{block}")
 
     # encoder 
-    feature_maps += build_net_mirror('encoder', net_list, cell_list, layer_dict)
+    feature_maps, x, cell, filters, dp = build_net_mirror('encoder', net_list, cell_list, layer_dict, cell, filters, x)
+    depth += dp
     # decoder
-    feature_maps += build_net_mirror('decoder', net_list, cell_list, layer_dict)
+    feature_maps, x, cell, filters, dp = build_net_mirror('decoder', net_list, cell_list, layer_dict, cell, filters, x, feature_maps)
+    depth += dp
 
     cell = "NonscalingCell"
     block = "OutputConvolution"
@@ -146,5 +153,7 @@ def build_net(
         loss=gen_dice_coef_loss,
         metrics=[gen_dice_coef, soft_gen_dice_coef],
     )
+    
+    #print(model.summary())
 
     return model
