@@ -50,6 +50,8 @@ def main(**args):
 
     logger.info(f"Starting training of model")
     results = Value('f', 0.0)
+    if config.cell_list == 'None':
+        config.cell_list = None
     train.fitness_calculation(
         args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], results, config.cell_list
     )
