@@ -56,6 +56,9 @@ class QNAS(object):
 
         self.qpop_net = None
 
+
+        self.arch_memory = {}
+
     def initialize_qnas(
         self,
         num_quantum_ind,
@@ -254,7 +257,8 @@ class QNAS(object):
 
         decoded_nets = self.decode_pop(pop_net)
         self.logger.info("Evaluating new population ...")
-        fitnesses = self.eval_func(decoded_nets, generation=self.current_gen)
+        fitnesses = self.eval_func(decoded_nets, generation=self.current_gen, arch_memory=self.arch_memory)
+        self.update_arch_memory(decoded_nets=decoded_nets, fitnesses=fitnesses)
         penalized_fitnesses = np.copy(fitnesses)
 
         if self.penalize_number:
@@ -437,3 +441,15 @@ class QNAS(object):
                 
             self.generate_classical()
             self.go_next_gen()
+
+    def update_arch_memory(self, decoded_nets, fitnesses):
+        for idx, net in enumerate(decoded_nets):
+            key = '+'.join(net)
+            if key not in self.arch_memory:
+                self.arch_memory[key] = {
+                    'fitness': fitnesses[idx],
+                    'count': 1
+                }
+            else:
+                self.arch_memory[key]['count'] += 1
+

@@ -31,7 +31,7 @@ class EvalPopulation(object):
         self.cell_list = cell_list
         self.logger = init_log(log_level, name=__name__)
 
-    def __call__(self, decoded_nets, generation):
+    def __call__(self, decoded_nets, generation, arch_memory):
         """Train and evaluate *decoded_nets*
 
         Args:
@@ -53,7 +53,11 @@ class EvalPopulation(object):
         individual_per_thread = []
         for idx in range(len(variables)):
             self.logger.info(f"Going to start fitness of individual {idx} on thread {selected_thread}")
-            individual_per_thread.append((idx, selected_thread, decoded_nets[idx], variables[idx]))
+            fitness = None
+            key = '+'.join(decoded_nets[idx])
+            if key in arch_memory:
+                fitness = arch_memory[key]['fitness']
+            individual_per_thread.append((idx, selected_thread, decoded_nets[idx], variables[idx], fitness))
             selected_thread += 1
             if selected_thread >= self.train_params['threads']:
                 selected_thread = selected_thread % self.train_params['threads']
@@ -77,16 +81,20 @@ class EvalPopulation(object):
         return evaluations
     
     def run_individuals(self, generation, individuals_selected_thread):
-        for individual, selected_gpu, decoded_net, return_val in individuals_selected_thread:
+        for individual, selected_gpu, decoded_net, return_val, fitness in individuals_selected_thread:
             print(f"starting individual {individual}")
-            train.fitness_calculation(
-                id_num=f"{generation}_{individual}",
-                train_params={**self.train_params},
-                layer_dict=self.layer_dict,
-                net_list=decoded_net,
-                cell_list=self.cell_list,
-                return_val=return_val
-            )
+            if fitness is not None:
+                train.fitness_calculation(
+                    id_num=f"{generation}_{individual}",
+                    train_params={**self.train_params},
+                    layer_dict=self.layer_dict,
+                    net_list=decoded_net,
+                    cell_list=self.cell_list,
+                    return_val=return_val
+                )
+            else:
+                return_val.value = fitness
+                print(f"cached individual")
             print(f"finishing individual {individual} - {return_val.value}")
             self.logger.info(f"Clculated fitness of individual {individual} on thread {selected_gpu} with {return_val.value}")
 
