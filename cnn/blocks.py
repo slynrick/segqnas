@@ -8,6 +8,7 @@ from keras.layers import (
     concatenate,
 )
 from keras.regularizers import L2
+import custom_layers
 
 
 class Block(object):
@@ -93,6 +94,11 @@ class Block(object):
             kernel_initializer=self.initializer,
             kernel_regularizer=self.regularizer,
             use_bias=False,
+            name=f"{name}_Convolution_1x1",
+        )(inputs)
+    
+    def _selfattention(self, inputs, name=None):
+        return custom_layers.SelfAttentionLayer(
             name=f"{name}_Convolution_1x1",
         )(inputs)
 
@@ -227,3 +233,11 @@ class InceptionBlock(Block):
 class IdentityBlock(Block):
     def __call__(self, inputs, name=None, is_train=True):
         return inputs
+    
+
+class SelfAttentionBlock(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+        x = self._selfattention(x, name=f"{name}_Block")
+
+        return x
