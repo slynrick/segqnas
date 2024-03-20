@@ -8,7 +8,7 @@ from keras.layers import (
     concatenate,
 )
 from keras.regularizers import L2
-import custom_layers
+import cnn.custom_layers as custom_layers
 
 
 class Block(object):
@@ -99,7 +99,7 @@ class Block(object):
     
     def _selfattention(self, inputs, name=None):
         return custom_layers.SelfAttentionLayer(
-            name=f"{name}_Convolution_1x1",
+            name=f"{name}_SelfAttention",
         )(inputs)
 
 

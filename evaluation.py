@@ -83,7 +83,7 @@ class EvalPopulation(object):
     def run_individuals(self, generation, individuals_selected_thread):
         for individual, selected_gpu, decoded_net, return_val, fitness in individuals_selected_thread:
             print(f"starting individual {individual}")
-            if fitness is not None:
+            if fitness is None:
                 train.fitness_calculation(
                     id_num=f"{generation}_{individual}",
                     train_params={**self.train_params},

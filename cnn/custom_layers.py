@@ -1,30 +1,31 @@
-from keras.layers import Layer, Dense, Softmax
+from keras.layers import Layer, Conv2D, Activation, Multiply
 import tensorflow as tf
+
 
 class SelfAttentionLayer(Layer):
     def __init__(self, **kwargs):
         super(SelfAttentionLayer, self).__init__(**kwargs)
+        self.channels = -1
+        self.filters_f = None
+        self.filters_g = None
+        self.filters_h = None
 
     def build(self, input_shape):
-        self.units = input_shape[-1]
-        self.query_dense = Dense(units=self.units)
-        self.key_dense = Dense(units=self.units)
-        self.value_dense = Dense(units=self.units)
-        self.softmax = Softmax(axis=-1)
+        self.channels = input_shape[-1]
+        self.filters_f = Conv2D(filters=self.channels, kernel_size=1, strides=1, padding='same')
+        self.filters_g = Conv2D(filters=self.channels, kernel_size=1, strides=1, padding='same')
+        self.filters_h = Conv2D(filters=self.channels, kernel_size=1, strides=1, padding='same')
         super(SelfAttentionLayer, self).build(input_shape)
 
     def call(self, inputs):
-        # Reshape the input to (batch_size, height*width, channels)
-        batch_size, height, width, channels = inputs.shape
-        reshaped_inputs = tf.reshape(inputs, (batch_size, height * width, channels))
+        f = self.filters_f(inputs)
+        g = self.filters_g(inputs)
+        h = self.filters_h(inputs)
 
-        query = self.query_dense(reshaped_inputs)
-        key = self.key_dense(reshaped_inputs)
-        value = self.value_dense(reshaped_inputs)
+        s = tf.matmul(g, f, transpose_b=True) 
+        beta = Activation('softmax')(s)
 
-        attention_weights = tf.matmul(query, key, transpose_b=True)
-        attention_weights = self.softmax(attention_weights)
+        o = tf.matmul(beta, h)
 
-        output = tf.matmul(attention_weights, value)
-        output = tf.reshape(output, (batch_size, height, width, channels))
-        return output
+        x = Multiply()([o, inputs])
+        return x

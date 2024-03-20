@@ -157,7 +157,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     return mean_dsc, std_dsc
 
 
-def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val: Value, cell_list=None):
+def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val, cell_list=None):
     """Train and evaluate a model using evolved parameters.
 
     Args:
