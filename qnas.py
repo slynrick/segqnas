@@ -8,7 +8,7 @@ import copy
 import datetime
 import os
 from pickle import HIGHEST_PROTOCOL, dump
-
+import json
 import numpy as np
 
 from population import QPopulationNetwork
@@ -437,10 +437,11 @@ class QNAS(object):
                     self.evol_patience += 1
                 if self.evol_patience > self.max_patience:
                     self.logger.info(f"Evolution did not improve the best fitness in {self.max_patience} generations, the evolution is being stopped with max fitness of : {self.max_fitness}")
-                    return
+                    break
                 
             self.generate_classical()
             self.go_next_gen()
+        print('Evolution memory: \n', json.dumps(self.arch_memory, sort_keys=True, indent=4))
 
     def update_arch_memory(self, decoded_nets, fitnesses):
         for idx, net in enumerate(decoded_nets):
