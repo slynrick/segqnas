@@ -126,6 +126,7 @@ def main(exp_path, generation, individual, retrained):
                                                  'gen_dice_coef_loss': gen_dice_coef_loss,
                                                  'soft_gen_dice_coef': soft_gen_dice_coef
                                              })
+            print(net.summary())
             profile_model(profile_path, params["individual_id_str"])
 
 
