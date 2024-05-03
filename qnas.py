@@ -441,7 +441,7 @@ class QNAS(object):
                 
             self.generate_classical()
             self.go_next_gen()
-        print('Evolution memory: \n', json.dumps(self.arch_memory, sort_keys=True, indent=4))
+        self.logger.info(f"\n\nEvolution memory: \n {json.dumps(self.arch_memory, sort_keys=True, indent=4)}")
 
     def update_arch_memory(self, decoded_nets, fitnesses):
         for idx, net in enumerate(decoded_nets):
