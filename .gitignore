@@ -122,4 +122,6 @@ old
 .h5
 log
 
+*_dataset*/
+
 config_experiment*/

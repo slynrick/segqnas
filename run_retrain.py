@@ -37,16 +37,6 @@ def main(**args):
     ind = int(ind)
 
     config.load_evolved_data(gen, ind)
-    # print(config.args)
-    # print(config.QNAS_spec)
-    # print(config.files_spec)
-    # print(config.layer_dict)
-    # print(config.cell_list)
-    # print(config.previous_params_file)
-    # print(config.evolved_params['net'])
-
-    # It is important to merge the dicts with the evolved_params first, as they need to be
-    # overwritten in case we are using one of the special train schemes.
 
     logger.info(f"Starting training of model")
     results = Value('f', 0.0)
@@ -56,25 +46,6 @@ def main(**args):
         args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], results, config.cell_list
     )
 
-    # print(args)
-    # print(id_num)
-    # print(train_params)
-    # print(layer_dict)
-
-    # with open(os.path.join(args['experiment_path'], args['id_num'], 'net_list.csv'), newline='') as f:
-    #     reader = csv.reader(f)
-    #     for row in reader:
-    #         net_list = row
-
-    # logger.info(f"Starting training of model {config.evolved_params['net']}")
-    # valid_mean_iou, test_info = train.train_and_eval(
-    #     data_info=config.data_info,
-    #     params=train_params,
-    #     layer_dict=config.layer_dict,
-    #     net_list=config.evolved_params["net"],
-    #     lr_schedule=args["lr_schedule"],
-    #     run_train_eval=args["run_train_eval"],
-    # )
     logger.info(f"Saving parameters...")
     config.save_params_logfile()
 
