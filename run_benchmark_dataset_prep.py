@@ -6,6 +6,8 @@ import datasets.spleen_dataset.config as spleen_config
 import numpy as np
 import SimpleITK as sitk
 from batchgenerators.utilities.file_and_folder_operations import *
+import shutil
+from sklearn.model_selection import train_test_split
 from monai.apps import download_and_extract
 
 
@@ -83,6 +85,37 @@ def load_and_preprocess(case, patient_name, output_folder):
             join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), slice_npy
         )
 
+def split_by_train_val_test(preprocessed_folder, mode='image'):
+    if mode not in ['image', 'patiente']:
+        print("Not splitted because the mode selected is not implemented")
+    files = list((f, f.replace(".npy", ""), f.replace(".npy", "").split('_')[0]) for f in os.listdir(preprocessed_folder))
+    patients = np.unique([f[-1] for f in files])
+    images = np.unique([f[0] for f in files])
+
+    maybe_mkdir_p(join(preprocessed_folder, 'train'))
+    maybe_mkdir_p(join(preprocessed_folder, 'test'))
+    if mode == 'image':
+        train, test = train_test_split(images, test_size=0.2)
+        print(f"Images in train/val: {train}")
+        print(f"Images in test: {test}")
+        print("Starting split")
+        for fname, _, _ in files:
+            if fname in train:
+                shutil.copy(join(preprocessed_folder, fname), join(preprocessed_folder, 'train'))
+            if fname in test:
+                shutil.copy(join(preprocessed_folder, fname), join(preprocessed_folder, 'test'))
+    elif mode == 'patiente':
+        train, test = train_test_split(patients, test_size=0.2)
+        print(f"Patients in train/val: {train}")
+        print(f"Patients in test: {test}")
+        print("Starting split")
+        for fname, _, patient in files:
+            if patient in train:
+                shutil.copy(join(preprocessed_folder, fname), join(preprocessed_folder, 'train'))
+            if patient in test:
+                shutil.copy(join(preprocessed_folder, fname), join(preprocessed_folder, 'test'))
+    
+
 def download_dataset(root_folder, dataset_folder, output_tar, resource, md5):
     compressed_file = os.path.join(root_folder, output_tar)
 
@@ -90,7 +123,7 @@ def download_dataset(root_folder, dataset_folder, output_tar, resource, md5):
         download_and_extract(resource, compressed_file, root_folder, md5)
 
 
-def main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, output_tar, patient_filename_prefix, patient_filename_suffix):
+def main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, output_tar, patient_filename_prefix, patient_filename_suffix, split_mode):
     download_dataset(root_folder, dataset_folder, output_tar, resource, md5)
 
     list_of_lists = get_list_of_files(dataset_folder, patient_filename_prefix, patient_filename_suffix)
@@ -110,11 +143,14 @@ def main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource
     p.close()
     p.join()
 
+    split_by_train_val_test(preprocessed_folder, split_mode)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download datasets')
     parser.add_argument('-d','--dataset', type=str, required=True, help="Select a dataset to be downloaded: 'prostate' or 'spleen'")
     parser.add_argument('-t','--threads', type=int, default=4, help="Number os threads to download the dataset")
+    parser.add_argument('-s','--split_mode', type=str, required=True, help="Select a split mode: 'image' or 'patiente'")
 
 
     args = parser.parse_args()
@@ -128,6 +164,7 @@ if __name__ == "__main__":
     output_tar = ""
     patient_filename_prefix = ""
     patient_filename_suffix = ""
+    split_mode = args.split_mode
     if args.dataset == 'prostate':
         root_folder = prostate_config.root_folder
         dataset_folder = prostate_config.dataset_folder
@@ -148,4 +185,4 @@ if __name__ == "__main__":
         patient_filename_suffix = spleen_config.patient_filename_suffix
 
     main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, 
-         output_tar, patient_filename_prefix, patient_filename_suffix)
+         output_tar, patient_filename_prefix, patient_filename_suffix, split_mode)

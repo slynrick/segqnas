@@ -17,7 +17,7 @@ deprecation._PRINT_DEPRECATION_WARNINGS = False
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 
 from cnn.input import (
-    get_list_of_patients,
+    # get_list_of_patients,
     get_training_augmentation,
     get_validation_augmentation,
     Dataset,
@@ -48,7 +48,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
     patch_size = (image_size, image_size, num_channels)
 
-    patients = get_list_of_patients(data_path)
+    #patients = get_list_of_patients(data_path)
     train_augmentation = get_training_augmentation(patch_size)
     val_augmentation = get_validation_augmentation(patch_size)
 
@@ -71,21 +71,24 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             )
 
             train_patients, val_patients = get_split_deterministic(
-                patients,
+                # patients,
+                os.path.join(data_path, 'train'),
                 fold=fold,
                 num_splits=num_folds,
                 random_state=initialization,
             )
 
             train_dataset = Dataset(
-                data_path=data_path,
-                patients=train_patients,
+                data_path=os.path.join(data_path, 'train'),
+                # patients=train_patients,
+                selected=train_patients,
                 only_non_empty_slices=True,
             )
 
             val_dataset = Dataset(
-                data_path=data_path,
-                patients=val_patients,
+                data_path=os.path.join(data_path, 'train'),
+                # patients=val_patients,
+                selected=val_patients,
                 only_non_empty_slices=True,
             )
 
@@ -102,7 +105,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 batch_size=batch_size,
                 skip_slices=0,
                 augmentation=val_augmentation,
-                shuffle=False,
+                shuffle=True,
             )
 
             def learning_rate_fn(epoch):

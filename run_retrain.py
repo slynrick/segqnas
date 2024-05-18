@@ -14,7 +14,7 @@ for gpu_instance in physical_devices:
     tf.config.experimental.set_memory_growth(gpu_instance, True)
 
 import qnas_config as cfg
-from cnn import train
+from cnn import train_detailed
 from util import init_log
 
 
@@ -42,7 +42,7 @@ def main(**args):
     results = Value('f', 0.0)
     if config.cell_list == 'None':
         config.cell_list = None
-    train.fitness_calculation(
+    mean_dsc, std_dsc, test_dice = train_detailed.fitness_calculation(
         args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], results, config.cell_list
     )
 
