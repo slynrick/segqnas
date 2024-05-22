@@ -163,16 +163,27 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
         selected=None,
         only_non_empty_slices=True,
     )
-
+    
     test_dataloader = Dataloader(
         dataset=test_dataset,
-        batch_size=batch_size,
-        skip_slices=0,
+        augmentation=val_augmentation,
         shuffle=False,
     )
+    
+    input_d = None
+    label = []
+    for t in test_dataloader:
+        if input_d is None:
+            input_d = t[0]
+        else:
+            input_d = np.vstack((input_d, t[0]))
+        label.append(t[1])
+    prediction = best_model.predict(input_d, verbose=0)
 
-    prediction = best_model.predict(test_dataloader) # for and get img, msk
-    test_dice = gen_dice_coef(prediction, prediction)
+    prediction = np.array(prediction)
+    label = np.array(label)
+    
+    test_dice = gen_dice_coef(label, prediction)
 
     return mean_dsc, std_dsc, test_dice
 
