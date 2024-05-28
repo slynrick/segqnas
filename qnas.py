@@ -107,6 +107,7 @@ class QNAS(object):
             update_quantum_rate=update_quantum_rate,
             layer_list=layer_list,
             initial_probs=initial_probs,
+            crossover_rate=crossover_rate
         )
 
     def replace_pop(self, new_pop_net, new_fitnesses, raw_fitnesses):
@@ -219,6 +220,8 @@ class QNAS(object):
         self.random = np.random.rand()
 
         new_pop_net = self.qpop_net.generate_classical()
+        if self.current_gen > 0:
+            new_pop_net = self.qpop_net.classic_crossover(new_pop=new_pop_net)
         self.logger.info("new population created", new_pop_net)
         # Evaluate population
         new_fitnesses, raw_fitnesses = self.eval_pop(new_pop_net)

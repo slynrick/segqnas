@@ -56,6 +56,7 @@ class QPopulationNetwork(QPopulation):
         update_quantum_rate,
         layer_list,
         initial_probs,
+        crossover_rate
     ):
         """Initialize QPopulationNetwork.
 
@@ -69,6 +70,7 @@ class QPopulationNetwork(QPopulation):
             layer_list: list of possible functions.
             initial_probs: list defining the initial probabilities for each function; if empty,
                 the algorithm will give the same probability for each function.
+            crossover_rate: (float) crossover rate.
         """
 
         super(QPopulationNetwork, self).__init__(
@@ -78,6 +80,8 @@ class QPopulationNetwork(QPopulation):
 
         self.max_update = 0.05
         self.max_prob = 0.99
+
+        self.crossover = crossover_rate
 
         self.chromosome = QChromosomeNetwork(max_num_nodes, layer_list, self.dtype)
 
@@ -113,6 +117,22 @@ class QPopulationNetwork(QPopulation):
         for ind in range(self.num_ind * self.repetition):
             for node in range(self.chromosome.num_genes):
                 new_pop[ind, node] = sample(ind, node)
+
+        return new_pop
+    
+    def classic_crossover(self, new_pop):
+        """ Perform arithmetic crossover of the old classic population with the new one.
+
+        Args:
+            new_pop: float numpy array representing the new classical population.
+        """
+
+        mask = np.random.rand(self.num_ind * self.repetition)
+        pt1, pt2 = np.random.shuffle(np.arange(self.chromosome.num_genes))[:2]
+        for ind in np.where(mask <= self.crossover)[0]:
+            child1 = np.concatenate((self.current_pop[ind][:pt1], new_pop[pt1:pt2], self.current_pop[pt2:]), axis=0)
+            child2 = np.concatenate((new_pop[ind][:pt1], self.current_pop[pt1:pt2], new_pop[pt2:]), axis=0)
+            new_pop = np.vstack((new_pop, child1, child2))
 
         return new_pop
 
