@@ -128,7 +128,9 @@ class QPopulationNetwork(QPopulation):
         """
 
         mask = np.random.rand(self.num_ind * self.repetition)
-        pt1, pt2 = np.random.shuffle(np.arange(self.chromosome.num_genes))[:2]
+        genes = np.arange(self.chromosome.num_genes)
+        np.random.shuffle(genes)
+        pt1, pt2 = np.sort(genes[:2])
         for ind in np.where(mask <= self.crossover)[0]:
             child1 = np.concatenate((self.current_pop[ind][:pt1], new_pop[pt1:pt2], self.current_pop[pt2:]), axis=0)
             child2 = np.concatenate((new_pop[ind][:pt1], self.current_pop[pt1:pt2], new_pop[pt2:]), axis=0)
