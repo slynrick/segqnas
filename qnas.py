@@ -430,7 +430,7 @@ class QNAS(object):
 
         # Update maximum number of generations if continue previous evolution process
         if self.current_gen > 0:
-            max_generations += self.current_gen + 1
+            # max_generations += self.current_gen + 1
             # Increment current generation, as in the log file we have the completed generations
             self.current_gen += 1
 

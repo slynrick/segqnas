@@ -158,7 +158,7 @@ def build_net(
         feature_maps.append(x)
     
     #decoder
-    for layer_num, layer in enumerate(net_list):
+    for layer_num, layer in enumerate(net_list[::-1]):
         real_layer_num += 1
         previous_cell = cell
 

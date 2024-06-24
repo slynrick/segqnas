@@ -211,7 +211,7 @@ def check_files(exp_path):
             "evolution or to retrain a model."
         )
 
-    file_path = os.path.join(exp_path, "data_QNAS.pkl")
+    file_path = os.path.join(exp_path, "net_list.pkl")
 
     if os.path.exists(file_path):
         if os.stat(file_path).st_size == 0:

@@ -38,6 +38,8 @@ def run(**args):
     logger.info(f"Getting parameters from {args['config_file']} ...")
     config = cfg.ConfigParameters(args, phase=phase)
     config.get_parameters()
+    if config.cell_list == 'None':
+        config.cell_list = None
     logger.info(f"Saving parameters for {config.phase} phase ...")
     config.save_params_logfile()
 

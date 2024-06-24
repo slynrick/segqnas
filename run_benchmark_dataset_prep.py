@@ -46,7 +46,7 @@ def get_list_of_files(base_dir, patient_filename_prefix, patient_filename_suffix
     return list_of_lists
 
 
-def load_and_preprocess(case, patient_name, output_folder):
+def load_and_preprocess_prostate(case, patient_name, output_folder):
     """
     loads, preprocesses and saves a case
     This is what happens here:
@@ -80,6 +80,37 @@ def load_and_preprocess(case, patient_name, output_folder):
         mean = slice_npy[1].mean()
         std = slice_npy[1].std()
         slice_npy[1] = (slice_npy[1] - mean) / (std + 1e-8)
+
+        np.save(
+            join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), slice_npy
+        )
+
+def load_and_preprocess_spleen(case, patient_name, output_folder):
+    """
+    loads, preprocesses and saves a case
+    This is what happens here:
+    1) load all images and stack them to a 4d array
+    2) crop to nonzero region, this removes unnecessary zero-valued regions and reduces computation time
+    3) normalize the nonzero region with its mean and standard deviation
+    4) save 4d tensor as numpy array. Also save metadata required to create niftis again (required for export
+    of predictions)
+    :param case:
+    :param patient_name:
+    :return:
+    """
+    # load SimpleITK Images
+    imgs_sitk = [sitk.ReadImage(i) for i in case]
+
+    # get pixel arrays from SimpleITK images
+    imgs_npy = [sitk.GetArrayFromImage(i) for i in imgs_sitk]
+
+    imgs_npy = np.concatenate([i[None] for i in imgs_npy]).astype(np.float32)
+
+    for slice_idx in range(imgs_npy.shape[1]):
+        slice_npy = imgs_npy[:, slice_idx, :, :]
+
+        slice_npy[0] = np.clip(slice_npy[0], -57, 164)
+        slice_npy[0] = (slice_npy[0] - np.min(slice_npy[0])) / np.ptp(slice_npy[0])
 
         np.save(
             join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), slice_npy
@@ -123,7 +154,7 @@ def download_dataset(root_folder, dataset_folder, output_tar, resource, md5):
         download_and_extract(resource, compressed_file, root_folder, md5)
 
 
-def main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, output_tar, patient_filename_prefix, patient_filename_suffix, split_mode):
+def main(dataset, root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, output_tar, patient_filename_prefix, patient_filename_suffix, split_mode):
     download_dataset(root_folder, dataset_folder, output_tar, resource, md5)
 
     list_of_lists = get_list_of_files(dataset_folder, patient_filename_prefix, patient_filename_suffix)
@@ -133,7 +164,7 @@ def main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource
 
     p = Pool(processes=num_threads)
     p.starmap(
-        load_and_preprocess,
+        load_and_preprocess_prostate if dataset == 'prostate' else load_and_preprocess_spleen,
         zip(
             list_of_lists,
             list_of_patient_names,
@@ -184,5 +215,5 @@ if __name__ == "__main__":
         patient_filename_prefix = spleen_config.patient_filename_prefix
         patient_filename_suffix = spleen_config.patient_filename_suffix
 
-    main(root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, 
+    main(args.dataset, root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, 
          output_tar, patient_filename_prefix, patient_filename_suffix, split_mode)
