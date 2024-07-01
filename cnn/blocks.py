@@ -228,6 +228,107 @@ class InceptionBlock(Block):
         x = self._relu_activation(x, name=f"{name}_Block")
 
         return x
+    
+
+
+class VGGBlockSelfAtt(Block):
+    def __call__(self, inputs, name, is_train=True):
+        x = inputs
+
+        x = self._conv_kxk(x, name=f"{name}_1")
+        x = self._batch_norm(x, is_train=is_train, name=f"{name}_1")
+        x = self._relu_activation(x, name=f"{name}_1")
+
+        x = self._conv_kxk(x, name=f"{name}_2")
+        x = self._batch_norm(x, is_train=is_train, name=f"{name}_2")
+        x = self._relu_activation(x, name=f"{name}_2")
+
+        x = self._selfattention(x, name=f"{name}_Block")
+
+        return x
+
+
+class ResNetBlockSelfAtt(Block):
+    def __call__(self, inputs, name, is_train=True):
+        x = inputs
+
+        if inputs.shape[-1] == self.filters:
+            s = inputs
+        else:
+            # this is done to match filters in the shortcut
+            s = self._conv_1x1(inputs, name=f"{name}_Shortcut")
+
+        x = self._conv_kxk(x, name=f"{name}_1")
+        x = self._batch_norm(x, is_train, name=f"{name}_1")
+        x = self._relu_activation(x, name=f"{name}_1")
+
+        x = self._conv_kxk(x, name=f"{name}_Convolution_2")
+        x = self._batch_norm(x, is_train, name=f"{name}_2")
+
+        x = self._add([x, s], name=f"{name}_Addition")
+
+        x = self._relu_activation(x, name=f"{name}_2")
+
+        x = self._selfattention(x, name=f"{name}_Block")
+
+        return x
+
+
+class DenseBlockSelfAtt(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+
+        s_0 = x
+
+        x = self._batch_norm(x, is_train, name=f"{name}_1")
+        x = self._relu_activation(x, name=f"{name}_1")
+        x = self._conv_1x1(x, name=f"{name}_1")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_2")
+        x = self._relu_activation(x, name=f"{name}_2")
+        x = self._conv_kxk(x, name=f"{name}_1")
+
+        s_1 = x
+
+        x = self._concat([x, s_0], name=f"{name}_1")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_3")
+        x = self._relu_activation(x, name=f"{name}_3")
+        x = self._conv_1x1(x, name=f"{name}_2")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_4")
+        x = self._relu_activation(x, name=f"{name}_4")
+        x = self._conv_kxk(x, name=f"{name}_2")
+
+        x = self._concat([x, s_0, s_1], name=f"{name}_2")
+
+        x = self._selfattention(x, name=f"{name}_Block")
+
+        return x
+
+
+class InceptionBlockSelfAtt(Block):
+    def __call__(self, inputs, name=None, is_train=True):
+        x = inputs
+
+        a = self._conv_1x1(x, name=f"{name}_Branch_1")
+
+        b = self._avg_pooling(x, name=f"{name}_Branch_2")
+        b = self._conv_1x1(b, name=f"{name}_Branch_2")
+
+        c = self._conv_1x1(x, name=f"{name}_Branch_3")
+        c = self._conv_kxk(c, name=f"{name}_Branch_3")
+        d = self._conv_1xk(c, name=f"{name}_Branch_3")
+        e = self._conv_kx1(c, name=f"{name}_Branch_3")
+
+        x = self._concat([a, b, d, e], name=f"{name}_Block")
+
+        x = self._batch_norm(x, is_train, name=f"{name}_Block")
+        x = self._relu_activation(x, name=f"{name}_Block")
+
+        x = self._selfattention(x, name=f"{name}_Block")
+
+        return x
 
 
 class IdentityBlock(Block):
