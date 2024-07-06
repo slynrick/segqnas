@@ -1,0 +1,65 @@
+# Configuration file for experiment 4 (search topology and blocks)
+
+QNAS:
+    crossover_rate: 0.1
+    max_generations: 100
+    max_num_nodes: 5
+    num_quantum_ind: 9
+    repetition: 1
+    replace_method: best
+    update_quantum_gen: 1
+    update_quantum_rate: 0.9
+    evolution_patience: 100
+
+    layer_dict:  {
+        'den_d_3_stt': {'cell': 'DownscalingCell', 'block': 'DenseBlockSelfAtt',     'kernel': 3, 'prob':1/6/5},
+        'den_d_5_stt': {'cell': 'DownscalingCell', 'block': 'DenseBlockSelfAtt',     'kernel': 5, 'prob':1/6/5},
+        'den_d_7_stt': {'cell': 'DownscalingCell', 'block': 'DenseBlockSelfAtt',     'kernel': 7, 'prob':1/6/5},
+        'inc_d_3_stt': {'cell': 'DownscalingCell', 'block': 'InceptionBlockSelfAtt', 'kernel': 3, 'prob':1/6/5},
+        'inc_d_5_stt': {'cell': 'DownscalingCell', 'block': 'InceptionBlockSelfAtt', 'kernel': 5, 'prob':1/6/5},
+        'inc_d_7_stt': {'cell': 'DownscalingCell', 'block': 'InceptionBlockSelfAtt', 'kernel': 7, 'prob':1/6/5},
+        'res_d_3_stt': {'cell': 'DownscalingCell', 'block': 'ResNetBlockSelfAtt',    'kernel': 3, 'prob':1/6/5},
+        'res_d_5_stt': {'cell': 'DownscalingCell', 'block': 'ResNetBlockSelfAtt',    'kernel': 5, 'prob':1/6/5},
+        'res_d_7_stt': {'cell': 'DownscalingCell', 'block': 'ResNetBlockSelfAtt',    'kernel': 7, 'prob':1/6/5},
+        'vgg_d_3_stt': {'cell': 'DownscalingCell', 'block': 'VGGBlockSelfAtt',       'kernel': 3, 'prob':1/6/5},
+        'vgg_d_5_stt': {'cell': 'DownscalingCell', 'block': 'VGGBlockSelfAtt',       'kernel': 5, 'prob':1/6/5},
+        'vgg_d_7_stt': {'cell': 'DownscalingCell', 'block': 'VGGBlockSelfAtt',       'kernel': 7, 'prob':1/6/5},
+
+        'den_n_3_stt': {'cell': 'NonscalingCell',  'block': 'DenseBlockSelfAtt',     'kernel': 3, 'prob':1/6/5},
+        'den_n_5_stt': {'cell': 'NonscalingCell',  'block': 'DenseBlockSelfAtt',     'kernel': 5, 'prob':1/6/5},
+        'den_n_7_stt': {'cell': 'NonscalingCell',  'block': 'DenseBlockSelfAtt',     'kernel': 7, 'prob':1/6/5},
+        'inc_n_3_stt': {'cell': 'NonscalingCell',  'block': 'InceptionBlockSelfAtt', 'kernel': 3, 'prob':1/6/5},
+        'inc_n_5_stt': {'cell': 'NonscalingCell',  'block': 'InceptionBlockSelfAtt', 'kernel': 5, 'prob':1/6/5},
+        'inc_n_7_stt': {'cell': 'NonscalingCell',  'block': 'InceptionBlockSelfAtt', 'kernel': 7, 'prob':1/6/5},
+        'res_n_3_stt': {'cell': 'NonscalingCell',  'block': 'ResNetBlockSelfAtt',    'kernel': 3, 'prob':1/6/5},
+        'res_n_5_stt': {'cell': 'NonscalingCell',  'block': 'ResNetBlockSelfAtt',    'kernel': 5, 'prob':1/6/5},
+        'res_n_7_stt': {'cell': 'NonscalingCell',  'block': 'ResNetBlockSelfAtt',    'kernel': 7, 'prob':1/6/5},
+        'vgg_n_3_stt': {'cell': 'NonscalingCell',  'block': 'VGGBlockSelfAtt',       'kernel': 3, 'prob':1/6/5},
+        'vgg_n_5_stt': {'cell': 'NonscalingCell',  'block': 'VGGBlockSelfAtt',       'kernel': 5, 'prob':1/6/5},
+        'vgg_n_7_stt': {'cell': 'NonscalingCell',  'block': 'VGGBlockSelfAtt',       'kernel': 7, 'prob':1/6/5},
+
+        'ide':     {'cell': 'NonscalingCell',  'block': 'IdentityBlock',               'prob':1/5},
+    }
+
+train:
+    batch_size: 32
+    epochs: 30
+    eval_epochs: 6
+    initializations: 1
+    folds: 5
+    stem_filters: 16
+    max_depth: 4
+
+    use_early_stopping_patience: false
+    early_stopping_patience: 5
+
+    gpu_selected: '0'
+    threads: 4
+
+    # Dataset
+    data_path: spleen_dataset/data/Task09_Spleen_preprocessed/
+    image_size: 128
+    skip_slices: 1
+    num_channels: 1
+    num_classes: 2
+    data_augmentation: True
