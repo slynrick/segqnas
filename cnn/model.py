@@ -1,15 +1,12 @@
-from dataclasses import dataclass
 from typing import Any, List
 
 import tensorflow as tf
-
-from keras.layers import Input
-from keras.models import Model
-from keras.optimizers import Adam
-
 from cnn.layer import Layer
 from cnn.loss import gen_dice_coef_loss
 from cnn.metric import gen_dice_coef, soft_gen_dice_coef
+from keras.layers import Input
+from keras.models import Model
+from keras.optimizers import Adam
 
 
 def calculate_number_of_filters(depth, stem_filters):
@@ -199,7 +196,7 @@ def build_net(
 
     model = Model(inputs=[inputs], outputs=[prediction_mask], name="net")
 
-    optimizer = optimizer = Adam()
+    optimizer = Adam()
 
     model.compile(
         optimizer=optimizer,

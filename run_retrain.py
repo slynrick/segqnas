@@ -5,7 +5,6 @@
 """
 
 import argparse
-from multiprocessing import Value
 
 import tensorflow as tf
 
@@ -39,17 +38,17 @@ def main(**args):
     config.load_evolved_data(gen, ind)
 
     logger.info(f"Starting training of model")
-    results = Value('f', 0.0)
     if config.cell_list == 'None':
         config.cell_list = None
     mean_dsc, std_dsc, test_dice = train_detailed.fitness_calculation(
-        args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], results, config.cell_list
+        args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], config.cell_list
     )
 
     logger.info(f"Saving parameters...")
     config.save_params_logfile()
 
-    logger.info(f"Final test: {results}")
+    logger.info(f"Final Val: {mean_dsc} +- {std_dsc}")
+    logger.info(f"Final Test: {test_dice}")
 
 
 if __name__ == "__main__":

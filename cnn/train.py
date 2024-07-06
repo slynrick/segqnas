@@ -7,25 +7,17 @@ import csv
 import os
 import platform
 import time
-from logging import addLevelName
-from multiprocessing import Value
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.util import deprecation
+
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
-
-from cnn.input import (
-    # get_list_of_patients,
-    get_training_augmentation,
-    get_validation_augmentation,
-    Dataset,
-    Dataloader,
-    get_split_deterministic,
-)
-
 from cnn import model
+from cnn.input import (Dataloader, Dataset, get_split_deterministic,
+                       get_training_augmentation, get_validation_augmentation)
+
 
 def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
@@ -155,7 +147,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     mean_dsc = np.mean(val_gen_dice_coef_list)
     std_dsc = np.std(val_gen_dice_coef_list)
     
-    best_model.save(os.path.join(experiment_path, "bestmodel"))
+    best_model.save_weights(os.path.join(experiment_path, "bestmodel", "weights.h5"))
 
     return mean_dsc, std_dsc
 

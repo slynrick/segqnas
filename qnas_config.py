@@ -9,13 +9,11 @@ import inspect
 import os
 from collections import OrderedDict
 from math import sqrt
-from typing import Optional, Union#, get_args, get_origin
-from typing_extensions import get_args, get_origin
+from typing import Optional, Union
 
 import numpy as np
-
-from chromosome import QChromosomeNetwork
-from cnn import blocks, cells, input, model
+from cnn import blocks, cells
+from typing_extensions import get_args, get_origin
 from util import load_pkl, load_yaml, natural_key
 
 
@@ -235,7 +233,32 @@ class ConfigParameters(object):
         self.train_spec["experiment_path"] = os.path.join(
             self.train_spec["experiment_path"], self.args["retrain_folder"]
         )
+        if not os.path.exists(self.train_spec["experiment_path"]):
+            os.mkdir(self.train_spec["experiment_path"])
         del self.args["retrain_folder"]
+
+    def _get_analyze_params(self):
+        """Get specific parameters for the retrain phase. The keys in *self.train_spec* that
+        exist in self.args are overwritten.
+        """
+
+        self.files_spec["previous_QNAS_params"] = os.path.join(
+            self.args["experiment_path"], "log_params_evolution.txt"
+        )
+        self.load_old_params()
+        
+        for key in self.args.keys():
+            self.train_spec[key] = self.args[key]
+
+        with open(
+            os.path.join(
+                self.train_spec["experiment_path"], self.args["id_num"], "net_list.csv"
+            ),
+            newline="",
+        ) as f:
+            reader = csv.reader(f)
+            for row in reader:
+                self.net_list = row
 
     def _get_common_params(self):
         """Get parameters that are combined/calculated the same way for all phases."""
@@ -261,8 +284,12 @@ class ConfigParameters(object):
             self._get_evolution_params()
         elif self.phase == "continue_evolution":
             self._get_continue_params()
-        else:
+        elif self.phase == "retrain":
             self._get_retrain_params()
+        elif self.phase == "analyze":
+            self._get_analyze_params()
+        else:
+            pass
 
         self._get_common_params()
 

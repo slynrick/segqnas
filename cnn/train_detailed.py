@@ -7,26 +7,18 @@ import csv
 import os
 import platform
 import time
-from logging import addLevelName
-from multiprocessing import Value
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.util import deprecation
+
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
-
-from cnn.input import (
-    # get_list_of_patients,
-    get_training_augmentation,
-    get_validation_augmentation,
-    Dataset,
-    Dataloader,
-    get_split_deterministic,
-)
+from cnn import model
+from cnn.input import (Dataloader, Dataset, get_split_deterministic,
+                       get_training_augmentation, get_validation_augmentation)
 from cnn.metric import gen_dice_coef, soft_gen_dice_coef
 
-from cnn import model
 
 def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
@@ -155,7 +147,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     mean_dsc = np.mean(val_gen_dice_coef_list)
     std_dsc = np.std(val_gen_dice_coef_list)
     
-    best_model.save(os.path.join(experiment_path, "bestmodel"))
+    best_model.save_weights(os.path.join(experiment_path, "weights.h5"))
 
     # predict on test dataset
     test_dataset = Dataset(
@@ -188,7 +180,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     return mean_dsc, std_dsc, test_dice
 
 
-def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val, cell_list=None):
+def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=None):
     """Train and evaluate a model using evolved parameters.
 
     Args:
@@ -246,9 +238,6 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val, 
             write = csv.writer(f)
             write.writerow(net_list)
 
-        # train_params["net"] = net
         train_params["net_list"] = net_list
-
-        return_val.value = mean_dsc
 
         return mean_dsc, std_dsc, test_dice
