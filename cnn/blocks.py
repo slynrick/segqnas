@@ -103,7 +103,7 @@ class Block(object):
         )(inputs)
     
     def _depthwise_conv(self, inputs, name):
-        return DepthwiseConv2D(kernel_size=3, padding='same', use_bias=False, name=f"{name}_DepthwiseConv3x3")(inputs)
+        return DepthwiseConv2D(kernel_size=self.kernel_size, padding='same', use_bias=False, name=f"{name}_DepthwiseConv_{self.kernel_size}x{self.kernel_size}")(inputs)
 
     def _swish_activation(self, inputs, name):
         return inputs * Activation("sigmoid", name=f"{name}_Swish")(inputs)
@@ -269,31 +269,6 @@ class MobileNetBlock(Block):
 
         return x
 
-class MobileNetV2Block(Block):
-    def __call__(self, inputs, expansion_factor, out_channels, stride, name, is_train=True):
-        x = inputs
-        in_channels = x.shape[-1]
-
-        # Expansion phase (Pointwise convolution)
-        x = self._conv_1x1(x, filters=in_channels * expansion_factor, name=f"{name}_expand")
-        x = self._batch_norm(x, is_train=is_train, name=f"{name}_expand")
-        x = self._relu6_activation(x, name=f"{name}_expand")
-
-        # Depthwise convolution
-        x = self._depthwise_conv(x, stride=stride, name=f"{name}_dw")
-        x = self._batch_norm(x, is_train=is_train, name=f"{name}_dw")
-        x = self._relu6_activation(x, name=f"{name}_dw")
-
-        # Linear bottleneck (Pointwise convolution without activation)
-        x = self._conv_1x1(x, filters=out_channels, name=f"{name}_project")
-        x = self._batch_norm(x, is_train=is_train, name=f"{name}_project")
-
-        # Residual connection if input and output have the same shape
-        if stride == 1 and in_channels == out_channels:
-            x = Add(name=f"{name}_residual")([inputs, x])
-
-        return x
-
 class EfficientNetBlock(Block):
     def __call__(self, inputs, name, is_train=True):
         x = inputs
@@ -301,35 +276,15 @@ class EfficientNetBlock(Block):
         # Depthwise separable convolution 3x3
         x = self._depthwise_conv(x, name=f"{name}_dw")
         x = self._batch_norm(x, is_train=is_train, name=f"{name}_dw")
-        x = self._swish_activation(x, name=f"{name}_dw")
+        x = self._relu_activation(x, name=f"{name}_dw")
 
         # Pointwise convolution 1x1
         x = self._conv_1x1(x, name=f"{name}_pw")
         x = self._batch_norm(x, is_train=is_train, name=f"{name}_pw")
-        x = self._swish_activation(x, name=f"{name}_pw")
+        x = self._relu_activation(x, name=f"{name}_pw")
 
         return x
 
-class SqueezeNetBlock(Block):
-    def __call__(self, inputs, name, is_train=True):
-        x = inputs
-
-        # Squeeze part (1x1 convolutions)
-        squeeze_channels = int(x.shape[-1]) // 4
-        x = self._conv_kxk(x, filters=squeeze_channels, kernel_size=(1, 1), name=f"{name}_squeeze")
-        x = self._batch_norm(x, is_train=is_train, name=f"{name}_squeeze")
-        x = self._relu_activation(x, name=f"{name}_squeeze")
-
-        # Expand part (1x1 and 3x3 convolutions)
-        x = self._conv_kxk(x, filters=squeeze_channels * 4, kernel_size=(1, 1), name=f"{name}_expand1")
-        x = self._batch_norm(x, is_train=is_train, name=f"{name}_expand1")
-        x = self._relu_activation(x, name=f"{name}_expand1")
-
-        x = self._conv_kxk(x, filters=squeeze_channels * 4, kernel_size=(3, 3), name=f"{name}_expand2")
-        x = self._batch_norm(x, is_train=is_train, name=f"{name}_expand2")
-        x = self._relu_activation(x, name=f"{name}_expand2")
-
-        return x
 
 ######################################### Self att concatenated blocks
 class VGGBlockSelfAtt(Block):
