@@ -147,7 +147,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     mean_dsc = np.mean(val_gen_dice_coef_list)
     std_dsc = np.std(val_gen_dice_coef_list)
     
-    best_model.save_weights(os.path.join(experiment_path, "weights.h5"))
+    best_model.save(os.path.join(experiment_path, "bestmodel"))
 
     return mean_dsc, std_dsc
 

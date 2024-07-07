@@ -16,8 +16,6 @@ from util import load_pkl, load_yaml
 from cnn.loss import gen_dice_coef_loss
 from cnn.metric import gen_dice_coef, soft_gen_dice_coef
 import tensorflow as tf
-from cnn.model import build_net
-
 
 physical_devices = tf.config.list_physical_devices('GPU')
 for gpu_instance in physical_devices:
@@ -77,8 +75,6 @@ def load_params(exp_path, generation=None, individual=0):
         "layer_dict": params["layer_dict"],
         "layer_list": params["QNAS"]["layer_list"],
         "cell_list": params["cell_list"],
-        "num_channels": params["train"]["num_channels"],
-        "image_size": params["train"]["image_size"]
     }
 
     return loaded_params
@@ -121,42 +117,15 @@ def main(exp_path, generation, individual, retrained):
     file_name = f"profile_{params['individual_id'][0]}_{individual}.txt"
     profile_path = os.path.join(os.path.join(exp_path), file_name)
 
-    num_classes = params["num_classes"]
-    num_channels = params["num_channels"]
-    image_size = params["image_size"]
-    stem_filters = params["stem_filters"]
-    max_depth = params["max_depth"]
-
-    patch_size = (image_size, image_size, num_channels)
-    
-    layer_dict = params["layer_dict"]
-    net_list = params["net_list"]
-    cell_list = params["cell_list"]
-    if params["cell_list"] == 'None':
-         cell_list = None
-
     with tf.Graph().as_default():
         with tf.compat.v1.variable_scope("q_net"):
             # Adding input placeholder into the graph
-            #net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  f"retrained" if retrained else '', "bestmodel"),
-            #                                 custom_objects={
-            #                                     'gen_dice_coef': gen_dice_coef,
-            #                                     'gen_dice_coef_loss': gen_dice_coef_loss,
-            #                                     'soft_gen_dice_coef': soft_gen_dice_coef
-            #                                 })
-            net = build_net(
-                input_shape=patch_size,
-                num_classes=num_classes,
-                stem_filters=stem_filters,
-                max_depth=max_depth,
-                layer_dict=layer_dict,
-                net_list=net_list,
-                cell_list=cell_list,
-            )
-            print('Network: ', net_list)
-
-            net.load_weights(os.path.join(args['experiment_path'], "retrained", "weights.h5"))
-            print('Weights loaded') 
+            net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  f"retrained" if retrained else '', "bestmodel"),
+                                             custom_objects={
+                                                 'gen_dice_coef': gen_dice_coef,
+                                                 'gen_dice_coef_loss': gen_dice_coef_loss,
+                                                 'soft_gen_dice_coef': soft_gen_dice_coef
+                                             })
             print(net.summary())
             profile_model(profile_path, params["individual_id_str"])
 

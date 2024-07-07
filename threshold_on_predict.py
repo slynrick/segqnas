@@ -17,8 +17,9 @@ for gpu_instance in physical_devices:
 import qnas_config as cfg
 from cnn.input import (Dataloader, Dataset, get_split_deterministic,
                        get_validation_augmentation)
-from cnn.metric import gen_dice_coef_threshold
-from cnn.model import build_net
+from cnn.loss import gen_dice_coef_loss
+from cnn.metric import (gen_dice_coef, gen_dice_coef_threshold,
+                        soft_gen_dice_coef)
 from util import init_log
 
 
@@ -37,37 +38,20 @@ def main(**args):
     config.load_evolved_data(gen, ind)
 
 
-    num_classes = config.train_spec["num_classes"]
     num_channels = config.train_spec["num_channels"]
     image_size = config.train_spec["image_size"]
-    stem_filters = config.train_spec["stem_filters"]
-    max_depth = config.train_spec["max_depth"]
     data_path = config.train_spec["data_path"]
     batch_size = config.train_spec["batch_size"]
 
     patch_size = (image_size, image_size, num_channels)
     
-    layer_dict = config.layer_dict
-    net_list = config.evolved_params['net']
-    if config.cell_list == 'None':
-        config.cell_list = None
-    cell_list = config.cell_list
 
-    net = build_net(
-        input_shape=patch_size,
-        num_classes=num_classes,
-        stem_filters=stem_filters,
-        max_depth=max_depth,
-        layer_dict=layer_dict,
-        net_list=net_list,
-        cell_list=cell_list,
-    )
-    print('Network: ', net_list)
-
-    net.load_weights(os.path.join(args['experiment_path'], "retrained", "weights.h5"))
-    print('Weights loaded')
-
-    #print(net.summary())
+    net = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
+                                             custom_objects={
+                                                 'gen_dice_coef': gen_dice_coef,
+                                                 'gen_dice_coef_loss': gen_dice_coef_loss,
+                                                 'soft_gen_dice_coef': soft_gen_dice_coef
+                                             })
 
     val_augmentation = get_validation_augmentation(patch_size)
 
@@ -164,6 +148,13 @@ if __name__ == "__main__":
         choices=["NONE", "INFO", "DEBUG"],
         default="NONE",
         help="Logging information level.",
+    )
+
+    parser.add_argument(
+        "--retrained",
+        action='store_true',
+        help="If should check the retrained path "
+        'Default "True".',
     )
 
     arguments = parser.parse_args()
