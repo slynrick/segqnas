@@ -92,7 +92,7 @@ def main(**args):
     best_threshold = 0.5
     best_dice = 0
 
-    for t in range(100):
+    for treshhold in range(100):
         input_d = None
         label = []
         for t in val_dataloader:
@@ -105,10 +105,10 @@ def main(**args):
 
         prediction = np.array(prediction)
         label = np.array(label)
-    
-        val_dice = gen_dice_coef_threshold(label, prediction, t/100)
+
+        val_dice = gen_dice_coef_threshold(label, prediction, threshold=treshhold/100)
         if best_dice < val_dice:
-            best_threshold = t/100
+            best_threshold = treshhold/100
             best_dice = val_dice
 
     input_d = None
