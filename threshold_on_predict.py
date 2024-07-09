@@ -85,7 +85,7 @@ def main(**args):
     
     test_dataloader = Dataloader(
         dataset=test_dataset,
-        augmentation=val_augmentation,
+        augmentation=val_augmentation, #only resize image
         shuffle=False,
     )
 
