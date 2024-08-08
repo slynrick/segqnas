@@ -6,11 +6,11 @@
 
 import copy
 import datetime
+import json
 import os
 from pickle import HIGHEST_PROTOCOL, dump
-import json
-import numpy as np
 
+import numpy as np
 from population import QPopulationNetwork
 from util import ExtractData, delete_old_dirs, init_log, load_pkl
 

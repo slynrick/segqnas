@@ -120,7 +120,7 @@ def main(exp_path, generation, individual, retrained):
     with tf.Graph().as_default():
         with tf.compat.v1.variable_scope("q_net"):
             # Adding input placeholder into the graph
-            net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  f"retrained" if retrained else '', "bestmodel"),
+            net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  "retrained" if retrained else '', "bestmodel"),
                                              custom_objects={
                                                  'gen_dice_coef': gen_dice_coef,
                                                  'gen_dice_coef_loss': gen_dice_coef_loss,

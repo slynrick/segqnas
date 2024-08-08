@@ -18,7 +18,7 @@ import qnas_config as cfg
 from cnn.input import (Dataloader, Dataset, get_split_deterministic,
                        get_validation_augmentation)
 from cnn.loss import gen_dice_coef_loss
-from cnn.metric import (gen_dice_coef, gen_dice_coef_threshold,
+from cnn.metric import (gen_dice_coef,
                         soft_gen_dice_coef)
 from util import init_log
 
@@ -89,44 +89,59 @@ def main(**args):
         shuffle=False,
     )
 
-    best_threshold = 0.5
-    best_dice = 0
-
-    for treshhold in range(100):
-        input_d = None
-        label = []
-        for t in val_dataloader:
-            if input_d is None:
-                input_d = t[0]
-            else:
-                input_d = np.vstack((input_d, t[0]))
-            label.append(t[1])
-        prediction = net.predict(input_d, verbose=0)
-
-        prediction = np.array(prediction)
-        label = np.array(label)
-
-        val_dice = gen_dice_coef_threshold(label, prediction, threshold=treshhold/100)
-        if best_dice < val_dice:
-            best_threshold = treshhold/100
-            best_dice = val_dice
-
     input_d = None
     label = []
-    for t in test_dataloader:
+    for t in val_dataloader:
         if input_d is None:
             input_d = t[0]
         else:
             input_d = np.vstack((input_d, t[0]))
         label.append(t[1])
     prediction = net.predict(input_d, verbose=0)
-
-    prediction = np.array(prediction)
     label = np.array(label)
-    
-    test_dice = gen_dice_coef_threshold(label, prediction, best_threshold)
+    dice_old = gen_dice_coef(label, prediction)
+    dice_new = soft_gen_dice_coef(label, prediction)
 
-    print(f"Best validation dice {best_dice} using threshold {best_threshold} -> test dice with same threshold {test_dice}")
+    print(dice_old, dice_new)
+
+    # best_threshold = 0.5
+    # best_dice = 0
+
+    # for treshhold in range(100):
+    #     input_d = None
+    #     label = []
+    #     for t in val_dataloader:
+    #         if input_d is None:
+    #             input_d = t[0]
+    #         else:
+    #             input_d = np.vstack((input_d, t[0]))
+    #         label.append(t[1])
+    #     prediction = net.predict(input_d, verbose=0)
+
+    #     prediction = np.array(prediction)
+    #     label = np.array(label)
+
+    #     val_dice = gen_dice_coef_threshold(label, prediction, threshold=treshhold/100)
+    #     if best_dice < val_dice:
+    #         best_threshold = treshhold/100
+    #         best_dice = val_dice
+
+    # input_d = None
+    # label = []
+    # for t in test_dataloader:
+    #     if input_d is None:
+    #         input_d = t[0]
+    #     else:
+    #         input_d = np.vstack((input_d, t[0]))
+    #     label.append(t[1])
+    # prediction = net.predict(input_d, verbose=0)
+
+    # prediction = np.array(prediction)
+    # label = np.array(label)
+    
+    # test_dice = gen_dice_coef_threshold(label, prediction, best_threshold)
+
+    #print(f"Best validation dice {best_dice} using threshold {best_threshold} -> test dice with same threshold {test_dice}")
 
 
 

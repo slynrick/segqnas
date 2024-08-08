@@ -67,7 +67,7 @@ def run(**args):
         qnas_cnn.load_qnas_data(file_path=config.files_spec['previous_data_file'])
 
     # Execute evolution
-    logger.info(f"Starting evolution ...")
+    logger.info("Starting evolution ...")
     qnas_cnn.evolve()
 
 if __name__ == '__main__':

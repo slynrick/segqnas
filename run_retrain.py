@@ -21,7 +21,7 @@ def main(**args):
     logger = init_log(args["log_level"], name=__name__)
 
     # Get all parameters
-    logger.info(f"Getting parameters from evolution ...")
+    logger.info("Getting parameters from evolution ...")
     config = cfg.ConfigParameters(args, phase="retrain")
     config.get_parameters()
     
@@ -37,14 +37,14 @@ def main(**args):
 
     config.load_evolved_data(gen, ind)
 
-    logger.info(f"Starting training of model")
+    logger.info("Starting training of model")
     if config.cell_list == 'None':
         config.cell_list = None
     mean_dsc, std_dsc, test_dice = train_detailed.fitness_calculation(
         args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], config.cell_list
     )
 
-    logger.info(f"Saving parameters...")
+    logger.info("Saving parameters...")
     config.save_params_logfile()
 
     logger.info(f"Final Val: {mean_dsc} +- {std_dsc}")
@@ -113,103 +113,3 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
 
     main(**vars(arguments))
-
-
-# from cnn.train import cross_val_train
-
-# train_params = {
-#     "batch_size": 32,
-#     "epochs": 100,
-#     "eval_epochs": 20,
-#     "initializations": 5,
-#     "folds": 5,
-#     "stem_filters": 32,
-#     "max_depth": 4,
-#     "data_path": "spleen_dataset/data/Task09_Spleen_preprocessed/",
-#     "image_size": 128,
-#     "skip_slices": 0,
-#     "num_channels": 1,
-#     "num_classes": 2,
-#     "data_augmentation": True,
-# }
-
-# unet = [
-#     "vgg_n_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_u_3",
-#     "vgg_u_3",
-#     "vgg_u_3",
-#     "vgg_u_3",
-#     "vgg_n_3",
-# ]
-
-# experiment_1_8 = [
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_n_3",
-#     "ide_d",
-#     "vgg_n_3",
-#     "vgg_d_3",
-#     "vgg_u_3",
-#     "ide_d",
-#     "vgg_n_3",
-#     "ide_d"
-# ]
-
-# experiment_1_9 = [
-#     "ide_u",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "ide_d",
-#     "vgg_n_3",
-#     "ide_d",
-#     "vgg_u_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "ide_u"
-# ]
-
-# net_list = unet
-
-# layer_dict = {
-#     "vgg_d_3": {
-#         "cell": "DownscalingCell",
-#         "block": "VGGBlock",
-#         "kernel": 3,
-#         "prob": 1 / 6,
-#     },
-#     "vgg_u_3": {
-#         "cell": "UpscalingCell",
-#         "block": "VGGBlock",
-#         "kernel": 3,
-#         "prob": 1 / 6,
-#     },
-#     "vgg_n_3": {
-#         "cell": "NonscalingCell",
-#         "block": "VGGBlock",
-#         "kernel": 3,
-#         "prob": 1 / 6,
-#     },
-#     "ide_d": {
-#         "cell": "DownscalingCell",
-#         "block": "IdentityBlock",
-#         "prob": 1 / 6,
-#     },
-#     "ide_u": {
-#         "cell": "UpscalingCell",
-#         "block": "IdentityBlock",
-#         "prob": 1 / 6,
-#     },
-#     "ide_n": {
-#         "cell": "NonscalingCell",
-#         "block": "IdentityBlock",
-#         "prob": 1 / 6,
-#     },
-# }
-
-# mean_dsc, std_dsc = cross_val_train(train_params, layer_dict, net_list)
-
-# print(f"{mean_dsc} +- {std_dsc}")

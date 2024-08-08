@@ -1,16 +1,14 @@
 import argparse
-import os
-import shutil
 from multiprocessing import Pool
 
 import datasets.prostate_dataset.config as prostate_config
 import datasets.spleen_dataset.config as spleen_config
 import numpy as np
 import SimpleITK as sitk
-from batchgenerators.utilities.file_and_folder_operations import (
-    join, maybe_mkdir_p, subfiles)
-from monai.apps import download_and_extract
+from batchgenerators.utilities.file_and_folder_operations import join, subfiles, maybe_mkdir_p
+import shutil
 from sklearn.model_selection import train_test_split
+from monai.apps import download_and_extract
 
 
 def get_list_of_patients(base_dir, patient_filename_prefix):

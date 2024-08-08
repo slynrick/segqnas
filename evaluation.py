@@ -5,10 +5,9 @@
 """
 
 import time
-
-import numpy as np
 from multiprocessing import Process, Value
 
+import numpy as np
 from cnn import train
 from util import init_log
 
@@ -94,7 +93,7 @@ class EvalPopulation(object):
                 )
             else:
                 return_val.value = fitness
-                print(f"cached individual")
+                print("cached individual")
             print(f"finishing individual {individual} - {return_val.value}")
             self.logger.info(f"Clculated fitness of individual {individual} on thread {selected_gpu} with {return_val.value}")
 
