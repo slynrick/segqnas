@@ -17,7 +17,7 @@ from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
 from cnn import model
 from cnn.input import (Dataloader, Dataset, get_split_deterministic,
                        get_training_augmentation, get_validation_augmentation)
-from cnn.metric import gen_dice_coef, soft_gen_dice_coef
+from cnn.metric import gen_dice_coef
 
 
 def cross_val_train(train_params, layer_dict, net_list, cell_list=None):

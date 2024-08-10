@@ -3,7 +3,7 @@ from typing import Any, List
 import tensorflow as tf
 from cnn.layer import Layer
 from cnn.loss import gen_dice_coef_loss
-from cnn.metric import gen_dice_coef, soft_gen_dice_coef
+from cnn.metric import gen_dice_coef_avg
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import Adam
@@ -201,7 +201,7 @@ def build_net(
     model.compile(
         optimizer=optimizer,
         loss=gen_dice_coef_loss,
-        metrics=[gen_dice_coef, soft_gen_dice_coef],
+        metrics=[gen_dice_coef_avg],
     )
     
     #print(model.summary())
