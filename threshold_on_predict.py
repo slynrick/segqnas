@@ -19,7 +19,7 @@ from cnn.input import (Dataloader, Dataset, get_split_deterministic,
                        get_validation_augmentation)
 from cnn.loss import gen_dice_coef_loss
 from cnn.metric import (gen_dice_coef,
-                        soft_gen_dice_coef)
+                        gen_dice_coef_avg)
 from util import init_log
 
 
@@ -48,9 +48,8 @@ def main(**args):
 
     net = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
                                              custom_objects={
-                                                 'gen_dice_coef': gen_dice_coef,
+                                                 'gen_dice_coef_avg': gen_dice_coef_avg,
                                                  'gen_dice_coef_loss': gen_dice_coef_loss,
-                                                 'soft_gen_dice_coef': soft_gen_dice_coef
                                              })
 
     val_augmentation = get_validation_augmentation(patch_size)
@@ -100,7 +99,7 @@ def main(**args):
     prediction = net.predict(input_d, verbose=0)
     label = np.array(label)
     dice_old = gen_dice_coef(label, prediction)
-    dice_new = soft_gen_dice_coef(label, prediction)
+    dice_new = gen_dice_coef_avg(label, prediction)
 
     print(dice_old, dice_new)
 

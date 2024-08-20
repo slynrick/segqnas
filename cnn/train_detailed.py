@@ -45,7 +45,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     train_augmentation = get_training_augmentation(patch_size)
     val_augmentation = get_validation_augmentation(patch_size)
 
-    val_gen_dice_coef_list = []
+    val_gen_dice_coef_avg_list = []
     
     best_model = None
     best_metric = 0.0
@@ -129,9 +129,9 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 callbacks=callbacks,
             )
 
-            history_eval_epochs = history.history["val_gen_dice_coef"][-eval_epochs:]
+            history_eval_epochs = history.history["val_gen_dice_coef_avg"][-eval_epochs:]
 
-            val_gen_dice_coef_list.extend(history_eval_epochs)
+            val_gen_dice_coef_avg_list.extend(history_eval_epochs)
 
             mean_dsc = np.mean(history_eval_epochs)
             std_dsc = np.std(history_eval_epochs)
@@ -144,8 +144,8 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 best_metric = mean_dsc
                 best_model = net
 
-    mean_dsc = np.mean(val_gen_dice_coef_list)
-    std_dsc = np.std(val_gen_dice_coef_list)
+    mean_dsc = np.mean(val_gen_dice_coef_avg_list)
+    std_dsc = np.std(val_gen_dice_coef_avg_list)
     
     best_model.save(os.path.join(experiment_path, "bestmodel"))
 

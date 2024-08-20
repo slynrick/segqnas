@@ -30,6 +30,7 @@ def gen_dice_coef_single_class(y_true, y_pred, class_index, smooth=1e-7):
         K.one_hot(K.cast(y_true, "int32"), num_classes=num_classes)[..., class_index]
     )
     y_pred_f = K.flatten(y_pred[..., class_index])
+    print(y_pred_f)
     intersect = K.sum(y_true_f * y_pred_f, axis=-1)
     denom = K.sum(y_true_f + y_pred_f, axis=-1)
     return K.mean((2.0 * intersect / (denom + smooth)))

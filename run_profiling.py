@@ -14,7 +14,7 @@ from chromosome import QChromosomeNetwork
 from cnn import model
 from util import load_pkl, load_yaml
 from cnn.loss import gen_dice_coef_loss
-from cnn.metric import gen_dice_coef, soft_gen_dice_coef
+from cnn.metric import gen_dice_coef_avg
 import tensorflow as tf
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -122,9 +122,8 @@ def main(exp_path, generation, individual, retrained):
             # Adding input placeholder into the graph
             net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  "retrained" if retrained else '', "bestmodel"),
                                              custom_objects={
-                                                 'gen_dice_coef': gen_dice_coef,
+                                                 'gen_dice_coef_avg': gen_dice_coef_avg,
                                                  'gen_dice_coef_loss': gen_dice_coef_loss,
-                                                 'soft_gen_dice_coef': soft_gen_dice_coef
                                              })
             print(net.summary())
             profile_model(profile_path, params["individual_id_str"])
