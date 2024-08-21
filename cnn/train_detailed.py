@@ -49,105 +49,107 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     
     best_model = None
     best_metric = 0.0
+    best_val_data = None
 
     for initialization in range(num_initializations):
-        for fold in range(num_folds):
+        net = model.build_net(
+            input_shape=patch_size,
+            num_classes=num_classes,
+            stem_filters=stem_filters,
+            max_depth=max_depth,
+            layer_dict=layer_dict,
+            net_list=net_list,
+            cell_list=cell_list,
+        )
 
-            net = model.build_net(
-                input_shape=patch_size,
-                num_classes=num_classes,
-                stem_filters=stem_filters,
-                max_depth=max_depth,
-                layer_dict=layer_dict,
-                net_list=net_list,
-                cell_list=cell_list,
+        train_patients, val_patients = get_split_deterministic(
+            # patients,
+            os.path.join(data_path, 'train'),
+            fold=0,
+            num_splits=num_folds,
+            random_state=initialization,
+        )
+
+        train_dataset = Dataset(
+            data_path=os.path.join(data_path, 'train'),
+            selected=train_patients,
+            only_non_empty_slices=True,
+        )
+
+        val_dataset = Dataset(
+            data_path=os.path.join(data_path, 'train'),
+            selected=val_patients,
+            only_non_empty_slices=True,
+        )
+
+        train_dataloader = Dataloader(
+            dataset=train_dataset,
+            batch_size=batch_size,
+            skip_slices=skip_slices,
+            augmentation=train_augmentation,
+            shuffle=True,
+        )
+
+        val_dataloader = Dataloader(
+            dataset=val_dataset,
+            batch_size=batch_size,
+            skip_slices=0,
+            augmentation=val_augmentation,
+            shuffle=False,
+        )
+
+        def learning_rate_fn(epoch):
+            initial_learning_rate = 1e-3
+            end_learning_rate = 1e-4
+            power = 0.9
+            return (
+                (initial_learning_rate - end_learning_rate)
+                * (1 - epoch / float(epochs)) ** (power)
+            ) + end_learning_rate
+
+        callbacks = []
+
+        lr_callback = tf.keras.callbacks.LearningRateScheduler(
+            learning_rate_fn, verbose=False
+        )
+        callbacks.append(lr_callback)
+
+        if use_es_patience:
+            es_callback = tf.keras.callbacks.EarlyStopping(
+                monitor='loss',patience=es_patience
             )
+            callbacks.append(es_callback)
 
-            train_patients, val_patients = get_split_deterministic(
-                # patients,
-                os.path.join(data_path, 'train'),
-                fold=fold,
-                num_splits=num_folds,
-                random_state=initialization,
-            )
+        history = net.fit(
+            train_dataloader,
+            validation_data=val_dataloader,
+            epochs=epochs,
+            verbose=0,
+            callbacks=callbacks,
+        )
 
-            train_dataset = Dataset(
-                data_path=os.path.join(data_path, 'train'),
-                selected=train_patients,
-                only_non_empty_slices=True,
-            )
+        history_eval_epochs = history.history["val_gen_dice_coef_avg"][-eval_epochs:]
 
-            val_dataset = Dataset(
-                data_path=os.path.join(data_path, 'train'),
-                selected=val_patients,
-                only_non_empty_slices=True,
-            )
+        val_gen_dice_coef_avg_list.extend(history_eval_epochs)
 
-            train_dataloader = Dataloader(
-                dataset=train_dataset,
-                batch_size=batch_size,
-                skip_slices=skip_slices,
-                augmentation=train_augmentation,
-                shuffle=True,
-            )
-
-            val_dataloader = Dataloader(
-                dataset=val_dataset,
-                batch_size=batch_size,
-                skip_slices=0,
-                augmentation=val_augmentation,
-                shuffle=False,
-            )
-
-            def learning_rate_fn(epoch):
-                initial_learning_rate = 1e-3
-                end_learning_rate = 1e-4
-                power = 0.9
-                return (
-                    (initial_learning_rate - end_learning_rate)
-                    * (1 - epoch / float(epochs)) ** (power)
-                ) + end_learning_rate
-
-            callbacks = []
-
-            lr_callback = tf.keras.callbacks.LearningRateScheduler(
-                learning_rate_fn, verbose=False
-            )
-            callbacks.append(lr_callback)
-
-            if use_es_patience:
-                es_callback = tf.keras.callbacks.EarlyStopping(
-                    monitor='loss',patience=es_patience
-                )
-                callbacks.append(es_callback)
-
-            history = net.fit(
-                train_dataloader,
-                validation_data=val_dataloader,
-                epochs=epochs,
-                verbose=0,
-                callbacks=callbacks,
-            )
-
-            history_eval_epochs = history.history["val_gen_dice_coef_avg"][-eval_epochs:]
-
-            val_gen_dice_coef_avg_list.extend(history_eval_epochs)
-
-            mean_dsc = np.mean(history_eval_epochs)
-            std_dsc = np.std(history_eval_epochs)
-            
-            print(
-                f"{fold + initialization*num_folds}/{num_folds*num_initializations}: {mean_dsc} +- {std_dsc}"
-            )
-            
-            if mean_dsc > best_metric:
-                best_metric = mean_dsc
-                best_model = net
+        mean_dsc = np.mean(history_eval_epochs)
+        std_dsc = np.std(history_eval_epochs)
+        
+        print(
+            f"{initialization}/{num_initializations}: {mean_dsc} +- {std_dsc}"
+        )
+        
+        if mean_dsc > best_metric:
+            best_metric = mean_dsc
+            best_model = net
+            best_val_data = history.history["val_gen_dice_coef_avg"]
 
     mean_dsc = np.mean(val_gen_dice_coef_avg_list)
     std_dsc = np.std(val_gen_dice_coef_avg_list)
     
     best_model.save(os.path.join(experiment_path, "bestmodel"))
+
+    np.save(os.path.join(experiment_path, "bestmodel", "val_gen_dice_coef_avg"), best_val_data)
 
     # predict on test dataset
     test_dataset = Dataset(

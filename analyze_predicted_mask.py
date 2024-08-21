@@ -9,19 +9,28 @@ import os
 
 import numpy as np
 import tensorflow as tf
+from keras import backend as K
 
 physical_devices = tf.config.list_physical_devices('GPU')
 for gpu_instance in physical_devices:
     tf.config.experimental.set_memory_growth(gpu_instance, True)
 
+import matplotlib.pyplot as plt
 import qnas_config as cfg
-from cnn.input import (Dataloader, Dataset, get_split_deterministic,
-                       get_validation_augmentation)
+from cnn.input import Dataloader, Dataset, get_validation_augmentation
 from cnn.loss import gen_dice_coef_loss
-from cnn.metric import (gen_dice_coef,
-                        gen_dice_coef_avg)
+from cnn.metric import gen_dice_coef_avg
 from util import init_log
 
+def plot_comparison(image: np.ndarray, pred: np.ndarray, label: np.ndarray):
+    fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+    axs[0].imshow(image.squeeze(), cmap='gray')
+    axs[0].set_title('Imagem Original')
+    axs[1].imshow(pred.squeeze(), cmap='gray')
+    axs[1].set_title('Predição')
+    axs[2].imshow(label.squeeze(), cmap='gray')
+    axs[2].set_title('Label Verdadeira')
+    plt.show()
 
 def main(**args):
     logger = init_log(args["log_level"], name=__name__)
@@ -41,39 +50,17 @@ def main(**args):
     num_channels = config.train_spec["num_channels"]
     image_size = config.train_spec["image_size"]
     data_path = config.train_spec["data_path"]
-    batch_size = config.train_spec["batch_size"]
 
     patch_size = (image_size, image_size, num_channels)
     
 
-    net = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
+    net: tf.keras.Model = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
                                              custom_objects={
                                                  'gen_dice_coef_avg': gen_dice_coef_avg,
                                                  'gen_dice_coef_loss': gen_dice_coef_loss,
                                              })
 
     val_augmentation = get_validation_augmentation(patch_size)
-
-    _, val_patients = get_split_deterministic(
-        os.path.join(data_path, 'train'),
-        fold=0,
-        num_splits=5,
-        random_state=0,
-    )
-
-    val_dataset = Dataset(
-        data_path=os.path.join(data_path, 'train'),
-        selected=val_patients,
-        only_non_empty_slices=True,
-    )
-
-    val_dataloader = Dataloader(
-        dataset=val_dataset,
-        batch_size=batch_size,
-        skip_slices=0,
-        augmentation=val_augmentation,
-        shuffle=False,
-    )
 
     # predict on test dataset
     test_dataset = Dataset(
@@ -90,60 +77,19 @@ def main(**args):
 
     input_d = None
     label = []
-    for t in val_dataloader:
+    for t in test_dataloader:
         if input_d is None:
             input_d = t[0]
         else:
             input_d = np.vstack((input_d, t[0]))
         label.append(t[1])
-    prediction = net.predict(input_d, verbose=0)
+    prediction = K.argmax(net.predict(input_d, verbose=0), axis=3)
     label = np.array(label)
-    dice_old = gen_dice_coef(label, prediction)
-    dice_new = gen_dice_coef_avg(label, prediction)
 
-    print(dice_old, dice_new)
+    print(input_d.shape, prediction.shape, label.shape)
 
-    # best_threshold = 0.5
-    # best_dice = 0
-
-    # for treshhold in range(100):
-    #     input_d = None
-    #     label = []
-    #     for t in val_dataloader:
-    #         if input_d is None:
-    #             input_d = t[0]
-    #         else:
-    #             input_d = np.vstack((input_d, t[0]))
-    #         label.append(t[1])
-    #     prediction = net.predict(input_d, verbose=0)
-
-    #     prediction = np.array(prediction)
-    #     label = np.array(label)
-
-    #     val_dice = gen_dice_coef_threshold(label, prediction, threshold=treshhold/100)
-    #     if best_dice < val_dice:
-    #         best_threshold = treshhold/100
-    #         best_dice = val_dice
-
-    # input_d = None
-    # label = []
-    # for t in test_dataloader:
-    #     if input_d is None:
-    #         input_d = t[0]
-    #     else:
-    #         input_d = np.vstack((input_d, t[0]))
-    #     label.append(t[1])
-    # prediction = net.predict(input_d, verbose=0)
-
-    # prediction = np.array(prediction)
-    # label = np.array(label)
-    
-    # test_dice = gen_dice_coef_threshold(label, prediction, best_threshold)
-
-    #print(f"Best validation dice {best_dice} using threshold {best_threshold} -> test dice with same threshold {test_dice}")
-
-
-
+    for i in range(len(input_d)):
+        plot_comparison(input_d[i][:, :, 0], prediction[i].numpy(), label[i])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

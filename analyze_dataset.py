@@ -31,17 +31,15 @@ def main(**args):
 
     data = {}
     num_images = 0
-    for image, mask in val_dataloader:
-        unique, count = np.unique(mask, return_counts=True)
-        for uq, c in zip(unique, count):
-            if uq in data:
-                data[uq] += c/np.sum(count)
-            else:
-                data[uq] = c/np.sum(count)
+    for _, mask in val_dataloader:
+        unique, _ = np.unique(mask, return_counts=True)
+        key = str(np.sort(unique))
+        if key in data:
+            data[key] += 1
+        else:
+            data[key] = 1
         num_images += 1
-    for k in data:
-        data[k] = data[k]/num_images
-    print(f"Train data: {data} ")
+    print(f"Train data ({num_images} images): {data} ")
 
     test_dataset = Dataset(
         data_path=os.path.join(args['data_path'], 'test'),
@@ -57,17 +55,15 @@ def main(**args):
 
     data = {}
     num_images = 0
-    for image, mask in test_dataloader:
-        unique, count = np.unique(mask, return_counts=True)
-        for uq, c in zip(unique, count):
-            if uq in data:
-                data[uq] += c/np.sum(count)
-            else:
-                data[uq] = c/np.sum(count)
+    for _, mask in test_dataloader:
+        unique, _ = np.unique(mask, return_counts=True)
+        key = str(np.sort(unique))
+        if key in data:
+            data[key] += 1
+        else:
+            data[key] = 1
         num_images += 1
-    for k in data:
-        data[k] = data[k]/num_images
-    print(f"Test data: {data} ")
+    print(f"Test data ({num_images} images): {data} ")
 
 
 if __name__ == "__main__":

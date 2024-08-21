@@ -29,7 +29,6 @@ def main(**args):
     config.train_spec['epochs'] = args['max_epochs']
     config.train_spec['eval_epochs'] = args['eval_epochs']
     config.train_spec['initializations'] = args['initializations']
-    config.train_spec['folds'] = args['folds']
     
     gen, ind = args["id_num"].split("_")
     gen = int(gen)
@@ -96,12 +95,6 @@ if __name__ == "__main__":
         type=int,
         default=5,
         help="The number of initializations for the cross validation. Default = 5.",
-    )
-    parser.add_argument(
-        "--folds",
-        type=int,
-        default=5,
-        help="The number of folds for the cross validation. Default = 5.",
     )
     parser.add_argument(
         "--log_level",
