@@ -2,8 +2,8 @@ from typing import Any, List
 
 import tensorflow as tf
 from cnn.layer import Layer
-from cnn.loss import gen_dice_coef_loss
-from cnn.metric import gen_dice_coef_avg
+from cnn.loss import gen_dice_coef_loss, gen_dice_coef_weight_avg_loss
+from cnn.metric import gen_dice_coef_avg, gen_dice_coef_weight_avg
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import Adam
@@ -107,6 +107,7 @@ def build_net(
     net_list,
     cell_list=None,
     is_train=True,
+    loss_class_weights=None
 ):
     depth = 0
     min_depth = 0
@@ -198,11 +199,24 @@ def build_net(
 
     optimizer = Adam()
 
-    model.compile(
-        optimizer=optimizer,
-        loss=gen_dice_coef_loss,
-        metrics=[gen_dice_coef_avg],
-    )
+    if loss_class_weights is not None:
+        def custom_gen_dice_coef_weight_avg_loss(y_true, y_pred):
+            return gen_dice_coef_weight_avg_loss(y_true, y_pred, loss_class_weights)
+        
+        def custom_gen_dice_coef_weight_avg(y_true, y_pred):
+            return gen_dice_coef_weight_avg(y_true, y_pred, loss_class_weights)
+
+        model.compile(
+            optimizer=optimizer,
+            loss=custom_gen_dice_coef_weight_avg_loss,
+            metrics=[custom_gen_dice_coef_weight_avg],
+        )
+    else:
+         model.compile(
+            optimizer=optimizer,
+            loss=gen_dice_coef_loss,
+            metrics=[gen_dice_coef_avg],
+        )
     
     #print(model.summary())
 

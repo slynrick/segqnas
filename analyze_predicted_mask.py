@@ -18,8 +18,8 @@ for gpu_instance in physical_devices:
 import matplotlib.pyplot as plt
 import qnas_config as cfg
 from cnn.input import Dataloader, Dataset, get_validation_augmentation
-from cnn.loss import gen_dice_coef_loss
-from cnn.metric import gen_dice_coef_avg
+from cnn.loss import gen_dice_coef_loss, gen_dice_coef_weight_avg_loss
+from cnn.metric import gen_dice_coef_avg, gen_dice_coef_weight_avg
 from util import init_log
 
 def plot_comparison(image: np.ndarray, pred: np.ndarray, label: np.ndarray):
@@ -52,13 +52,28 @@ def main(**args):
     data_path = config.train_spec["data_path"]
 
     patch_size = (image_size, image_size, num_channels)
-    
 
-    net: tf.keras.Model = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
-                                             custom_objects={
-                                                 'gen_dice_coef_avg': gen_dice_coef_avg,
-                                                 'gen_dice_coef_loss': gen_dice_coef_loss,
-                                             })
+    net: tf.keras.Model = None
+
+    if config.train_spec["use_loss_class_weights"]:
+        def custom_gen_dice_coef_weight_avg_loss(y_true, y_pred):
+            return gen_dice_coef_weight_avg_loss(y_true, y_pred, config.train_spec["loss_class_weights"])
+        
+        def custom_gen_dice_coef_weight_avg(y_true, y_pred):
+            return gen_dice_coef_weight_avg(y_true, y_pred, config.train_spec["loss_class_weights"])
+        
+
+        net: tf.keras.Model = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
+                                                custom_objects={
+                                                    'custom_gen_dice_coef_weight_avg': custom_gen_dice_coef_weight_avg,
+                                                    'custom_gen_dice_coef_weight_avg_loss': custom_gen_dice_coef_weight_avg_loss,
+                                                })
+    else:
+       net: tf.keras.Model = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
+                                                custom_objects={
+                                                    'gen_dice_coef_avg': gen_dice_coef_avg,
+                                                    'gen_dice_coef_loss': gen_dice_coef_loss,
+                                                }) 
 
     val_augmentation = get_validation_augmentation(patch_size)
 

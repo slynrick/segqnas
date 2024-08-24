@@ -36,6 +36,8 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     max_depth = train_params["max_depth"]
     use_es_patience = train_params["use_early_stopping_patience"]
     es_patience = train_params["early_stopping_patience"]
+    loss_class_weights = train_params["loss_class_weights"]
+    use_loss_class_weights = train_params["use_loss_class_weights"]
     
     experiment_path = train_params["experiment_path"]
 
@@ -60,6 +62,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             layer_dict=layer_dict,
             net_list=net_list,
             cell_list=cell_list,
+            loss_class_weights=loss_class_weights if use_loss_class_weights else None,
         )
 
         train_patients, val_patients = get_split_deterministic(
@@ -142,14 +145,18 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
         if mean_dsc > best_metric:
             best_metric = mean_dsc
             best_model = net
-            best_val_data = history.history["val_gen_dice_coef_avg"]
+            best_val_data = history.history
 
     mean_dsc = np.mean(val_gen_dice_coef_avg_list)
     std_dsc = np.std(val_gen_dice_coef_avg_list)
     
     best_model.save(os.path.join(experiment_path, "bestmodel"))
 
-    np.save(os.path.join(experiment_path, "bestmodel", "val_gen_dice_coef_avg"), best_val_data)
+    metrics_folder = os.path.join(experiment_path, "bestmodel", "metrics")
+    if not os.path.exists(metrics_folder):
+        os.mkdir(metrics_folder)
+    for mkey in best_val_data:
+        np.save(os.path.join(metrics_folder, mkey), best_val_data[mkey])
 
     # predict on test dataset
     test_dataset = Dataset(

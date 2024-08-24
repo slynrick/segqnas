@@ -118,7 +118,9 @@ class ConfigParameters(object):
                 ('gpu_selected', str),
                 ('threads', int),
                 ('use_early_stopping_patience', bool),
-                ('early_stopping_patience', int)
+                ('early_stopping_patience', int),
+                ("use_loss_class_weights", bool),
+                ("loss_class_weights", Optional[list]),
             ],
         }
 

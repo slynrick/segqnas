@@ -35,7 +35,9 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     max_depth = train_params["max_depth"]
     use_es_patience = train_params["use_early_stopping_patience"]
     es_patience = train_params["early_stopping_patience"]
-    
+    loss_class_weights = train_params["loss_class_weights"]
+    use_loss_class_weights = train_params["use_loss_class_weights"]
+
     experiment_path = train_params["experiment_path"]
 
     patch_size = (image_size, image_size, num_channels)
@@ -60,6 +62,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 layer_dict=layer_dict,
                 net_list=net_list,
                 cell_list=cell_list,
+                loss_class_weights=loss_class_weights if use_loss_class_weights else None,
             )
 
             train_patients, val_patients = get_split_deterministic(
