@@ -131,7 +131,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             callbacks=callbacks,
         )
 
-        history_eval_epochs = history.history["val_gen_dice_coef_avg"][-eval_epochs:]
+        history_eval_epochs = history.history["val_gen_dice_coef_avg" if not use_loss_class_weights else "val_custom_gen_dice_coef_weight_avg"][-eval_epochs:]
 
         val_gen_dice_coef_avg_list.extend(history_eval_epochs)
 

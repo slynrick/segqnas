@@ -34,6 +34,9 @@ def main(**args):
     gen = int(gen)
     ind = int(ind)
 
+    if args['sel_best']:
+        ind = 0
+
     config.load_evolved_data(gen, ind)
 
     logger.info("Starting training of model")
@@ -101,6 +104,12 @@ if __name__ == "__main__":
         choices=["NONE", "INFO", "DEBUG"],
         default="NONE",
         help="Logging information level.",
+    )
+
+    parser.add_argument(
+        '--sel_best', 
+        dest='sel_best', 
+        action='store_true'
     )
 
     arguments = parser.parse_args()

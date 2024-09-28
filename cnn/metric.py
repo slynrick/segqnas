@@ -2,18 +2,19 @@ from keras import backend as K
 import tensorflow as tf
 
 def gen_dice_coef_weight_avg(y_true, y_pred, loss_class_weights, smooth=1e-7):
-  """
-  Weighted average of Dice coefficients for each class. Ignores background pixel label 0
-  Pass to model as metric during compile statement
-  """
-  num_classes = y_pred.shape[-1]
-  dices = []
-  weights = loss_class_weights[1:]  # Ignore background class
-  for idx in range(1, num_classes):
-      dice = gen_dice_coef_single_class(y_true, y_pred, idx, smooth)
-      dices.append(dice)
-  weighted_dices = tf.multiply(dices, weights)
-  return tf.reduce_mean(weighted_dices)
+    """
+    Weighted average of Dice coefficients for each class. Ignores background pixel label 0
+    Pass to model as metric during compile statement
+    """
+    num_classes = y_pred.shape[-1]
+    dices = []
+    weights = K._to_tensor(loss_class_weights[1:], dtype='float32')  # Ignore background class
+    for idx in range(1, num_classes):
+        dice = gen_dice_coef_single_class(y_true, y_pred, idx, smooth)
+        dices.append(dice)
+    dices = K._to_tensor(dices, dtype='float32')
+    weighted_dices = dices * weights
+    return K.sum(weighted_dices)
 
 def gen_dice_coef_avg(y_true, y_pred, smooth=1e-7):
     """
