@@ -10,6 +10,9 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
+keras.mixed_precision.set_global_policy('mixed_float16')
+
 from tensorflow.python.util import deprecation
 
 deprecation._PRINT_DEPRECATION_WARNINGS = False
@@ -77,14 +80,14 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 data_path=os.path.join(data_path, 'train'),
                 # patients=train_patients,
                 selected=train_patients,
-                only_non_empty_slices=True,
+                only_non_empty_slices=False,
             )
 
             val_dataset = Dataset(
                 data_path=os.path.join(data_path, 'train'),
                 # patients=val_patients,
                 selected=val_patients,
-                only_non_empty_slices=True,
+                only_non_empty_slices=False,
             )
 
             train_dataloader = Dataloader(
@@ -133,7 +136,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 callbacks=callbacks,
             )
 
-            history_eval_epochs = history.history["val_gen_dice_coef_avg" if not use_loss_class_weights else "val_custom_gen_dice_coef_weight_avg"][-eval_epochs:]
+            history_eval_epochs = history.history["val_custom_gen_dice_coef" if not use_loss_class_weights else "val_custom_gen_dice_coef_weight_avg"][-eval_epochs:]
 
             val_gen_dice_coef_avg_list.extend(history_eval_epochs)
 

@@ -1,0 +1,8 @@
+root_folder = "./liver_dataset/data"
+preprocessed_folder = "./liver_dataset/data/Task03_Liver_preprocessed"
+dataset_folder = "./liver_dataset/data/Task03_Liver"
+resource_url = "https://msd-for-monai.s3-us-west-2.amazonaws.com/Task03_Liver.tar"
+resource_md5 = "a90ec6c4aa7f6a3d087205e23d4e6397"
+output_tar = "Task03_Liver.tar"
+patient_filename_prefix = "liver"
+patient_filename_suffix = ".nii.gz"

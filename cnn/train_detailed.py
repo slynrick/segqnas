@@ -76,13 +76,13 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
         train_dataset = Dataset(
             data_path=os.path.join(data_path, 'train'),
             selected=train_patients,
-            only_non_empty_slices=True,
+            only_non_empty_slices=False,
         )
 
         val_dataset = Dataset(
             data_path=os.path.join(data_path, 'train'),
             selected=val_patients,
-            only_non_empty_slices=True,
+            only_non_empty_slices=False,
         )
 
         train_dataloader = Dataloader(
@@ -131,7 +131,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             callbacks=callbacks,
         )
 
-        history_eval_epochs = history.history["val_gen_dice_coef_avg" if not use_loss_class_weights else "val_custom_gen_dice_coef_weight_avg"][-eval_epochs:]
+        history_eval_epochs = history.history["val_custom_gen_dice_coef" if not use_loss_class_weights else "val_custom_gen_dice_coef_weight_avg"][-eval_epochs:]
 
         val_gen_dice_coef_avg_list.extend(history_eval_epochs)
 

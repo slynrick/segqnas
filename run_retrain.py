@@ -29,6 +29,10 @@ def main(**args):
     config.train_spec['epochs'] = args['max_epochs']
     config.train_spec['eval_epochs'] = args['eval_epochs']
     config.train_spec['initializations'] = args['initializations']
+
+    if 'loss_class_weights' not in config.train_spec:
+        config.train_spec['loss_class_weights'] = [0.0, 0.5, 0.5]
+        config.train_spec['use_loss_class_weights'] = False
     
     gen, ind = args["id_num"].split("_")
     gen = int(gen)

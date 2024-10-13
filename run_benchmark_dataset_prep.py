@@ -5,6 +5,7 @@ from multiprocessing import Pool
 
 import datasets.prostate_dataset.config as prostate_config
 import datasets.spleen_dataset.config as spleen_config
+import datasets.liver_dataset.config as liver_dataset
 import numpy as np
 import SimpleITK as sitk
 from batchgenerators.utilities.file_and_folder_operations import (
@@ -48,7 +49,7 @@ def get_list_of_files(base_dir, patient_filename_prefix, patient_filename_suffix
     return list_of_lists
 
 
-def load_and_preprocess_prostate(case, patient_name, output_folder):
+def load_and_preprocess_liver(case, patient_name, output_folder):
     """
     loads, preprocesses and saves a case
     This is what happens here:
@@ -85,6 +86,46 @@ def load_and_preprocess_prostate(case, patient_name, output_folder):
 
         np.save(
             join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), slice_npy
+        )
+
+def load_and_preprocess_prostate(case, patient_name, output_folder):
+    """
+    loads, preprocesses and saves a case
+    This is what happens here:
+    1) load all images and stack them to a 4d array
+    2) crop to nonzero region, this removes unnecessary zero-valued regions and reduces computation time
+    3) normalize the nonzero region with its mean and standard deviation
+    4) save 4d tensor as numpy array. Also save metadata required to create niftis again (required for export
+    of predictions)
+    :param case:
+    :param patient_name:
+    :return:
+    """
+    # load SimpleITK Images
+    imgs_sitk = [sitk.ReadImage(i) for i in case]
+
+    # get pixel arrays from SimpleITK images
+    imgs_npy = [sitk.GetArrayFromImage(i) for i in imgs_sitk]
+
+    imgs_npy = [i[np.newaxis, ...] if len(i.shape) == 3 else i for i in imgs_npy]
+
+    # now stack the images into one 4d array, cast to float because we will get rounding problems if we don't
+    imgs_npy = np.concatenate(imgs_npy).astype(np.float32)
+
+    for slice_idx in range(imgs_npy.shape[1]):
+        slice_npy = imgs_npy[:, slice_idx, :, :]
+
+        mean = slice_npy[0].mean()
+        std = slice_npy[0].std()
+        slice_npy[0] = (slice_npy[0] - mean) / (std + 1e-8)
+
+        mean = slice_npy[1].mean()
+        std = slice_npy[1].std()
+        slice_npy[1] = (slice_npy[1] - mean) / (std + 1e-8)
+
+        only_t2 = slice_npy[[0, 2], :, :]
+        np.save(
+            join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), only_t2
         )
 
 def load_and_preprocess_spleen(case, patient_name, output_folder):
@@ -157,16 +198,23 @@ def download_dataset(root_folder, dataset_folder, output_tar, resource, md5):
 
 
 def main(dataset, root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, output_tar, patient_filename_prefix, patient_filename_suffix, split_mode):
-    download_dataset(root_folder, dataset_folder, output_tar, resource, md5)
+    print("starting")
+    # download_dataset(root_folder, dataset_folder, output_tar, resource, md5)
 
     list_of_lists = get_list_of_files(dataset_folder, patient_filename_prefix, patient_filename_suffix)
     list_of_patient_names = get_list_of_patients(dataset_folder, patient_filename_prefix)
 
     maybe_mkdir_p(preprocessed_folder)
 
+    load_func = load_and_preprocess_spleen
+    if dataset == 'prostate':
+        load_func = load_and_preprocess_prostate
+    elif dataset == 'liver':
+        load_func = load_and_preprocess_liver
+
     p = Pool(processes=num_threads)
     p.starmap(
-        load_and_preprocess_prostate if dataset == 'prostate' else load_and_preprocess_spleen,
+        load_func,
         zip(
             list_of_lists,
             list_of_patient_names,
@@ -216,6 +264,15 @@ if __name__ == "__main__":
         output_tar = spleen_config.output_tar
         patient_filename_prefix = spleen_config.patient_filename_prefix
         patient_filename_suffix = spleen_config.patient_filename_suffix
+    elif args.dataset == 'liver':
+        root_folder = liver_dataset.root_folder
+        dataset_folder = liver_dataset.dataset_folder
+        preprocessed_folder = liver_dataset.preprocessed_folder
+        resource = liver_dataset.resource_url
+        md5 = liver_dataset.resource_md5
+        output_tar = liver_dataset.output_tar
+        patient_filename_prefix = liver_dataset.patient_filename_prefix
+        patient_filename_suffix = liver_dataset.patient_filename_suffix
 
     main(args.dataset, root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, 
          output_tar, patient_filename_prefix, patient_filename_suffix, split_mode)

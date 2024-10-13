@@ -2,12 +2,11 @@ from typing import Any, List
 
 import tensorflow as tf
 from cnn.layer import Layer
-from cnn.loss import gen_dice_coef_loss, gen_dice_coef_weight_avg_loss
-from cnn.metric import gen_dice_coef_avg, gen_dice_coef_weight_avg
+from cnn.loss import gen_dice_coef_loss, gen_dice_coef_weight_avg_loss, gen_dice_coef_soft_loss
+from cnn.metric import gen_dice_coef_avg, gen_dice_coef_weight_avg, soft_gen_dice_coef
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import Adam
-
 
 def calculate_number_of_filters(depth, stem_filters):
     return stem_filters * (2**depth)
@@ -120,7 +119,8 @@ def build_net(
     block = "StemConvolution"
     kernel = 3
     filters = stem_filters
-    x = Layer(cell, block, kernel, filters)(inputs, name=f"{block}")
+    # x = Layer(cell, block, kernel, filters)(inputs, name=f"{block}")
+    x = inputs
 
     real_layer_num = 0
     
@@ -212,10 +212,16 @@ def build_net(
             metrics=[custom_gen_dice_coef_weight_avg],
         )
     else:
-         model.compile(
+        def custom_gen_dice_coef_loss(y_true, y_pred):
+            return gen_dice_coef_loss(y_true, y_pred)
+        
+        def custom_gen_dice_coef(y_true, y_pred):
+            return gen_dice_coef_avg(y_true, y_pred)
+    
+        model.compile(
             optimizer=optimizer,
-            loss=gen_dice_coef_loss,
-            metrics=[gen_dice_coef_avg],
+            loss=custom_gen_dice_coef_loss,
+            metrics=[custom_gen_dice_coef],
         )
     
     #print(model.summary())
