@@ -10,8 +10,6 @@ import time
 
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
-keras.mixed_precision.set_global_policy('mixed_float16')
 
 from tensorflow.python.util import deprecation
 

@@ -51,6 +51,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     
     best_model = None
     best_metric = 0.0
+    best_metric_std = 0.0
     best_val_data = None
 
     for initialization in range(num_initializations):
@@ -98,7 +99,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
             batch_size=batch_size,
             skip_slices=0,
             augmentation=val_augmentation,
-            shuffle=False,
+            shuffle=True,
         )
 
         def learning_rate_fn(epoch):
@@ -144,6 +145,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
         
         if mean_dsc > best_metric:
             best_metric = mean_dsc
+            best_metric_std = std_dsc
             best_model = net
             best_val_data = history.history
 
@@ -162,13 +164,13 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     test_dataset = Dataset(
         data_path=os.path.join(data_path, 'test'),
         selected=None,
-        only_non_empty_slices=True,
+        only_non_empty_slices=False,
     )
     
     test_dataloader = Dataloader(
         dataset=test_dataset,
         augmentation=val_augmentation,
-        shuffle=False,
+        shuffle=True,
     )
     
     input_d = None
@@ -186,7 +188,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     
     test_dice = gen_dice_coef(label, prediction)
 
-    return mean_dsc, std_dsc, test_dice
+    return best_metric, best_metric_std, test_dice
 
 
 def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=None):

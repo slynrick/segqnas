@@ -33,6 +33,7 @@ def main(**args):
     num_images = 0
     for _, mask in val_dataloader:
         unique, _ = np.unique(mask, return_counts=True)
+        print(unique)
         key = str(np.sort(unique))
         if key in data:
             data[key] += 1

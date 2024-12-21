@@ -75,10 +75,9 @@ def get_split_deterministic(data_path, fold=0, num_splits=5, random_state=12345)
 def get_training_augmentation(patch_size):
     train_transform = [
         HorizontalFlip(p=0.5),
-        # ShiftScaleRotate(
-        #     p=0.5, rotate_limit=15
-        # ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        #RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+        ShiftScaleRotate(
+             p=0.5, rotate_limit=15
+        ),
         RandomCropFromBorders(p=0.5),
         Resize(*patch_size),
     ]

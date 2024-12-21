@@ -80,10 +80,6 @@ def load_and_preprocess_liver(case, patient_name, output_folder):
         std = slice_npy[0].std()
         slice_npy[0] = (slice_npy[0] - mean) / (std + 1e-8)
 
-        mean = slice_npy[1].mean()
-        std = slice_npy[1].std()
-        slice_npy[1] = (slice_npy[1] - mean) / (std + 1e-8)
-
         np.save(
             join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), slice_npy
         )
@@ -199,7 +195,7 @@ def download_dataset(root_folder, dataset_folder, output_tar, resource, md5):
 
 def main(dataset, root_folder, dataset_folder, preprocessed_folder, num_threads, resource, md5, output_tar, patient_filename_prefix, patient_filename_suffix, split_mode):
     print("starting")
-    # download_dataset(root_folder, dataset_folder, output_tar, resource, md5)
+    download_dataset(root_folder, dataset_folder, output_tar, resource, md5)
 
     list_of_lists = get_list_of_files(dataset_folder, patient_filename_prefix, patient_filename_suffix)
     list_of_patient_names = get_list_of_patients(dataset_folder, patient_filename_prefix)
