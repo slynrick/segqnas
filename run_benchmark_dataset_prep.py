@@ -7,6 +7,7 @@ import datasets.liver_dataset.config as liver_dataset
 import datasets.prostate_dataset.config as prostate_config
 import datasets.spleen_dataset.config as spleen_config
 import datasets.bcss_dataset.config as bcss_config
+import datasets.brats_dataset.config as brats_config
 import numpy as np
 import SimpleITK as sitk
 from batchgenerators.utilities.file_and_folder_operations import (
@@ -146,6 +147,55 @@ def load_and_preprocess_prostate(case, patient_name, output_folder):
             join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), only_t2
         )
 
+def load_and_preprocess_brain_tumour(case, patient_name, output_folder):
+    """
+    loads, preprocesses and saves a case
+    This is what happens here:
+    1) load all images and stack them to a 4d array
+    2) crop to nonzero region, this removes unnecessary zero-valued regions and reduces computation time
+    3) normalize the nonzero region with its mean and standard deviation
+    4) save 4d tensor as numpy array. Also save metadata required to create niftis again (required for export
+    of predictions)
+    :param case:
+    :param patient_name:
+    :return:
+    """
+    # load SimpleITK Images
+    imgs_sitk = [sitk.ReadImage(i) for i in case]
+
+    # get pixel arrays from SimpleITK images
+    imgs_npy = [sitk.GetArrayFromImage(i) for i in imgs_sitk]
+
+    imgs_npy = [i[np.newaxis, ...] if len(i.shape) == 3 else i for i in imgs_npy]
+
+    # now stack the images into one 4d array, cast to float because we will get rounding problems if we don't
+    imgs_npy = np.concatenate(imgs_npy).astype(np.float32)
+
+    for slice_idx in range(imgs_npy.shape[1]):
+        slice_npy = imgs_npy[:, slice_idx, :, :]
+
+        mean = slice_npy[0].mean()
+        std = slice_npy[0].std()
+        slice_npy[0] = (slice_npy[0] - mean) / (std + 1e-8)
+
+        mean = slice_npy[1].mean()
+        std = slice_npy[1].std()
+        slice_npy[1] = (slice_npy[1] - mean) / (std + 1e-8)
+
+        mean = slice_npy[2].mean()
+        std = slice_npy[2].std()
+        slice_npy[2] = (slice_npy[2] - mean) / (std + 1e-8)
+
+        mean = slice_npy[3].mean()
+        std = slice_npy[3].std()
+        slice_npy[3] = (slice_npy[3] - mean) / (std + 1e-8)
+
+        only_t2 = slice_npy[[3, 4], :, :]
+        np.save(
+            join(output_folder, patient_name + "_" + str(slice_idx) + ".npy"), only_t2
+        )
+        #print(f"Saved {patient_name} slice {slice_idx} at {output_folder}")
+
 def load_and_preprocess_spleen(case, patient_name, output_folder):
     """
     loads, preprocesses and saves a case
@@ -233,6 +283,8 @@ def main(dataset, local_dataset, root_folder, dataset_folder, train_folder, trai
         load_func = load_and_preprocess_liver
     elif dataset == 'bcss':
         load_func = load_and_preprocess_bcss
+    elif dataset == 'brain_tumour':
+        load_func = load_and_preprocess_brain_tumour
 
     p = Pool(processes=num_threads)
     p.starmap(
@@ -315,6 +367,17 @@ if __name__ == "__main__":
         train_mask_folder = bcss_config.train_mask_folder
         local_dataset = True
         patient_pattern_name = "all"
+    elif args.dataset == 'brain_tumour':
+        root_folder = brats_config.root_folder
+        dataset_folder = brats_config.dataset_folder
+        preprocessed_folder = brats_config.preprocessed_folder
+        resource = brats_config.resource_url
+        md5 = brats_config.resource_md5
+        output_tar = brats_config.output_tar
+        patient_filename_prefix = brats_config.patient_filename_prefix
+        patient_filename_suffix = brats_config.patient_filename_suffix
+        train_folder = brats_config.train_folder
+        train_mask_folder = brats_config.train_mask_folder
 
     main(args.dataset, local_dataset, root_folder, dataset_folder, train_folder, train_mask_folder, preprocessed_folder, num_threads, resource, md5, 
          output_tar, patient_filename_prefix, patient_filename_suffix, split_mode, patient_pattern_name)
