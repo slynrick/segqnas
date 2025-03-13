@@ -6,7 +6,7 @@
 
 import argparse
 import os
-
+from typing import Any
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
@@ -21,16 +21,34 @@ from cnn.input import Dataloader, Dataset, get_validation_augmentation
 from cnn.loss import gen_dice_coef_loss, gen_dice_coef_weight_avg_loss
 from cnn.metric import gen_dice_coef_avg, gen_dice_coef_weight_avg
 from util import init_log
+import time
+import random
 
-def plot_comparison(image: np.ndarray, pred: np.ndarray, label: np.ndarray):
-    fig, axs = plt.subplots(1, 3, figsize=(15, 5))
-    axs[0].imshow(image.squeeze(), cmap='gray')
-    axs[0].set_title('Imagem Original')
-    axs[1].imshow(pred.squeeze(), cmap='gray')
-    axs[1].set_title('Predição')
-    axs[2].imshow(label.squeeze(), cmap='gray')
-    axs[2].set_title('Label Verdadeira')
-    plt.show()
+def plot_comparison(axs: Any, image_num: int, image: np.ndarray, pred: np.ndarray, label: np.ndarray):
+    class_colors = np.linspace(0.0, 1.0, 10) # Colors for each class
+    for k, cls in enumerate(np.unique(label)):
+        print(cls, class_colors[k])
+        if cls == 0:
+            continue
+        pred_indices = np.nonzero(pred == cls)
+        pred[pred_indices] = np.array(class_colors[k])
+
+
+        label_indices = np.nonzero(label == cls)
+        label[label_indices] = np.array(class_colors[k])
+
+    print(np.unique(pred))
+    axs[image_num, 0].imshow(image.squeeze(), cmap='gray')
+    axs[image_num, 0].imshow(pred.squeeze(), cmap='tab10', alpha=0.5)
+    if image_num == 0:
+        axs[image_num, 0].set_title('Predicted Label')
+    axs[image_num, 0].axis('off')  # Turn off axes for cleaner plot
+
+    axs[image_num, 1].imshow(image.squeeze(), cmap='gray')
+    axs[image_num, 1].imshow(label.squeeze(), cmap='tab10', alpha=0.5)
+    if image_num == 0:
+        axs[image_num, 1].set_title('Real Label')
+    axs[image_num, 1].axis('off')  # Turn off axes for cleaner plot
 
 def main(**args):
     logger = init_log(args["log_level"], name=__name__)
@@ -39,13 +57,12 @@ def main(**args):
     logger.info(f"Getting parameters from evolution ...")
     config = cfg.ConfigParameters(args, phase="analyze")
     config.get_parameters()
-    
+
     gen, ind = args["id_num"].split("_")
     gen = int(gen)
     ind = int(ind)
 
     config.load_evolved_data(gen, ind)
-
 
     num_channels = config.train_spec["num_channels"]
     image_size = config.train_spec["image_size"]
@@ -61,32 +78,31 @@ def main(**args):
         
         def custom_gen_dice_coef_weight_avg(y_true, y_pred):
             return gen_dice_coef_weight_avg(y_true, y_pred, config.train_spec["loss_class_weights"])
-        
 
         net: tf.keras.Model = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
-                                                custom_objects={
-                                                    'custom_gen_dice_coef_weight_avg': custom_gen_dice_coef_weight_avg,
-                                                    'custom_gen_dice_coef_weight_avg_loss': custom_gen_dice_coef_weight_avg_loss,
-                                                })
+                                                        custom_objects={
+                                                            'custom_gen_dice_coef_weight_avg': custom_gen_dice_coef_weight_avg,
+                                                            'custom_gen_dice_coef_weight_avg_loss': custom_gen_dice_coef_weight_avg_loss,
+                                                        })
     else:
        net: tf.keras.Model = tf.keras.models.load_model(os.path.join(args['experiment_path'],  f"retrained" if args['retrained'] else '', "bestmodel"),
-                                                custom_objects={
-                                                    'gen_dice_coef_avg': gen_dice_coef_avg,
-                                                    'gen_dice_coef_loss': gen_dice_coef_loss,
-                                                }) 
+                                                        custom_objects={
+                                                            'gen_dice_coef_avg': gen_dice_coef_avg,
+                                                            'gen_dice_coef_loss': gen_dice_coef_loss,
+                                                        })
 
     val_augmentation = get_validation_augmentation(patch_size)
 
-    # predict on test dataset
+    # Predict on test dataset
     test_dataset = Dataset(
         data_path=os.path.join(data_path, 'test'),
         selected=None,
         only_non_empty_slices=True,
     )
-    
+
     test_dataloader = Dataloader(
         dataset=test_dataset,
-        augmentation=val_augmentation, #only resize image
+        augmentation=val_augmentation,  # only resize image
         shuffle=False,
     )
 
@@ -98,13 +114,20 @@ def main(**args):
         else:
             input_d = np.vstack((input_d, t[0]))
         label.append(t[1])
+        if len(label) == 50:
+            break
     prediction = K.argmax(net.predict(input_d, verbose=0), axis=3)
     label = np.array(label)
 
-    print(input_d.shape, prediction.shape, label.shape)
+    random.seed(int(time.time()))
+    random_indices = random.sample(range(len(label)), 3)
 
-    for i in range(len(input_d)):
-        plot_comparison(input_d[i][:, :, 0], prediction[i].numpy(), label[i])
+    # Plot the comparisons for the 3 random images
+    fig, axs = plt.subplots(len(random_indices), 2, figsize=(5, 8))
+    for idx, i in enumerate(random_indices):
+        plot_comparison(axs, idx, input_d[i][:, :, 0], prediction[i].numpy(), label[i][0, :, :])
+    plt.tight_layout()
+    plt.savefig(os.path.join(args['experiment_path'], 'predicted_images', f'predicted_image.png'))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
