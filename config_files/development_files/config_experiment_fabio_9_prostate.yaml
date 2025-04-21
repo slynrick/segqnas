@@ -1,0 +1,75 @@
+# Configuration file for experiment 3 (search blocks but keeping topology found in experiment_1)
+
+QNAS:
+    crossover_rate: 0.1
+    max_generations: 100
+    max_num_nodes: 5
+    num_quantum_ind: 9
+    repetition: 1
+    replace_method: best
+    update_quantum_gen: 1
+    update_quantum_rate: 0.9
+    evolution_patience: 100
+
+    layer_dict:  {
+        'den_d_3': {'cell': 'DownscalingCell', 'block': 'DenseBlock',               'kernel': 3, 'prob':1/6/8},
+        'den_d_5': {'cell': 'DownscalingCell', 'block': 'DenseBlock',               'kernel': 5, 'prob':1/6/8},
+        'den_d_7': {'cell': 'DownscalingCell', 'block': 'DenseBlock',               'kernel': 7, 'prob':1/6/8},
+        'inc_d_3': {'cell': 'DownscalingCell', 'block': 'InceptionBlock',           'kernel': 3, 'prob':1/6/8},
+        'inc_d_5': {'cell': 'DownscalingCell', 'block': 'InceptionBlock',           'kernel': 5, 'prob':1/6/8},
+        'inc_d_7': {'cell': 'DownscalingCell', 'block': 'InceptionBlock',           'kernel': 7, 'prob':1/6/8},
+        'res_d_3': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',              'kernel': 3, 'prob':1/6/8},
+        'res_d_5': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',              'kernel': 5, 'prob':1/6/8},
+        'res_d_7': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',              'kernel': 7, 'prob':1/6/8},
+        'vgg_d_3': {'cell': 'DownscalingCell', 'block': 'VGGBlock',                 'kernel': 3, 'prob':1/6/8},
+        'vgg_d_5': {'cell': 'DownscalingCell', 'block': 'VGGBlock',                 'kernel': 5, 'prob':1/6/8},
+        'vgg_d_7': {'cell': 'DownscalingCell', 'block': 'VGGBlock',                 'kernel': 7, 'prob':1/6/8},
+
+        'den_n_3': {'cell': 'NonscalingCell',  'block': 'DenseBlock',               'kernel': 3, 'prob':1/6/8},
+        'den_n_5': {'cell': 'NonscalingCell',  'block': 'DenseBlock',               'kernel': 5, 'prob':1/6/8},
+        'den_n_7': {'cell': 'NonscalingCell',  'block': 'DenseBlock',               'kernel': 7, 'prob':1/6/8},
+        'inc_n_3': {'cell': 'NonscalingCell',  'block': 'InceptionBlock',           'kernel': 3, 'prob':1/6/8},
+        'inc_n_5': {'cell': 'NonscalingCell',  'block': 'InceptionBlock',           'kernel': 5, 'prob':1/6/8},
+        'inc_n_7': {'cell': 'NonscalingCell',  'block': 'InceptionBlock',           'kernel': 7, 'prob':1/6/8},
+        'res_n_3': {'cell': 'NonscalingCell',  'block': 'ResNetBlock',              'kernel': 3, 'prob':1/6/8},
+        'res_n_5': {'cell': 'NonscalingCell',  'block': 'ResNetBlock',              'kernel': 5, 'prob':1/6/8},
+        'res_n_7': {'cell': 'NonscalingCell',  'block': 'ResNetBlock',              'kernel': 7, 'prob':1/6/8},
+        'vgg_n_3': {'cell': 'NonscalingCell',  'block': 'VGGBlock',                 'kernel': 3, 'prob':1/6/8},
+        'vgg_n_5': {'cell': 'NonscalingCell',  'block': 'VGGBlock',                 'kernel': 5, 'prob':1/6/8},
+        'vgg_n_7': {'cell': 'NonscalingCell',  'block': 'VGGBlock',                 'kernel': 7, 'prob':1/6/8},
+
+        'mobile_n_v1': {'cell': 'NonscalingCell',   'block': 'MobileNetBlock',      'kernel': 3, 'prob':1/2/8},
+        'mobile_d_v1': {'cell': 'DownscalingCell',  'block': 'MobileNetBlock',      'kernel': 3, 'prob':1/2/8},
+        'eff_n':       {'cell': 'NonscalingCell',   'block': 'EfficientNetBlock',   'kernel': 3, 'prob':1/2/8},
+        'eff_d':       {'cell': 'DownscalingCell',  'block': 'EfficientNetBlock',   'kernel': 3, 'prob':1/2/8},
+
+        'selfatt': {'cell': 'NonscalingCell',  'block': 'SelfAttentionBlock',                    'prob':1/8},
+
+        'ide':     {'cell': 'NonscalingCell',  'block': 'IdentityBlock',                         'prob':1/8},
+    }
+
+train:
+    batch_size: 32
+    epochs: 30
+    eval_epochs: 6
+    initializations: 1
+    folds: 5
+    stem_filters: 16
+    max_depth: 4
+
+    use_early_stopping_patience: false
+    early_stopping_patience: 5
+
+    use_loss_class_weights: true
+    loss_class_weights: [0.0, 0.5, 0.5]
+
+    gpu_selected: '2'
+    threads: 3
+
+    # Dataset
+    data_path: prostate_dataset/data/Task05_Prostate_preprocessed/
+    image_size: 128
+    skip_slices: 1
+    num_channels: 1
+    num_classes: 3
+    data_augmentation: True

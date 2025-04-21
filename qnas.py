@@ -4,12 +4,13 @@
     - Q-NAS algorithm class.
 """
 
+import copy
 import datetime
+import json
 import os
 from pickle import HIGHEST_PROTOCOL, dump
 
 import numpy as np
-
 from population import QPopulationNetwork
 from util import ExtractData, delete_old_dirs, init_log, load_pkl
 
@@ -38,6 +39,10 @@ class QNAS(object):
         self.eval_func = eval_func
         self.experiment_path = experiment_path
         self.fitnesses = None  # TF calculates mean iou with float32 precision
+        self.max_fitness = 0
+        self.last_max_fitness = 0
+        self.evol_patience = 0
+        self.max_patience = 99999
         self.generations = None
         self.update_quantum_gen = None
         self.logger = init_log(log_level, name=__name__, file_path=log_file)
@@ -51,6 +56,9 @@ class QNAS(object):
 
         self.qpop_net = None
 
+
+        self.arch_memory = {}
+
     def initialize_qnas(
         self,
         num_quantum_ind,
@@ -63,6 +71,7 @@ class QNAS(object):
         initial_probs,
         update_quantum_rate,
         max_num_nodes,
+        evolution_patience,
         cell_list=None,
     ):
 
@@ -89,6 +98,7 @@ class QNAS(object):
         self.generations = max_generations
         self.update_quantum_gen = update_quantum_gen
         self.replace_method = replace_method
+        self.max_patience = evolution_patience
 
         self.qpop_net = QPopulationNetwork(
             num_quantum_ind=num_quantum_ind,
@@ -97,6 +107,7 @@ class QNAS(object):
             update_quantum_rate=update_quantum_rate,
             layer_list=layer_list,
             initial_probs=initial_probs,
+            crossover_rate=crossover_rate
         )
 
     def replace_pop(self, new_pop_net, new_fitnesses, raw_fitnesses):
@@ -113,7 +124,9 @@ class QNAS(object):
                 *new_pop* before the penalization method. Note that, if no penalization method
                 is applied, *raw_fitnesses* = *new_fitnesses*.
         """
-
+        if self.fitnesses is not None:
+            self.last_max_fitness = self.max_fitness
+            self.max_fitness = max(self.fitnesses.max(), self.max_fitness)
         if self.current_gen == 0:
             # In the 1st generation, the current population is the one that was just generated.
             self.qpop_net.current_pop = new_pop_net
@@ -207,6 +220,8 @@ class QNAS(object):
         self.random = np.random.rand()
 
         new_pop_net = self.qpop_net.generate_classical()
+        if self.current_gen > 0:
+            new_pop_net = self.qpop_net.classic_crossover(new_pop=new_pop_net)
         self.logger.info("new population created", new_pop_net)
         # Evaluate population
         new_fitnesses, raw_fitnesses = self.eval_pop(new_pop_net)
@@ -245,7 +260,8 @@ class QNAS(object):
 
         decoded_nets = self.decode_pop(pop_net)
         self.logger.info("Evaluating new population ...")
-        fitnesses = self.eval_func(decoded_nets, generation=self.current_gen)
+        fitnesses = self.eval_func(decoded_nets, generation=self.current_gen, arch_memory=self.arch_memory)
+        self.update_arch_memory(decoded_nets=decoded_nets, fitnesses=fitnesses)
         penalized_fitnesses = np.copy(fitnesses)
 
         if self.penalize_number:
@@ -414,10 +430,30 @@ class QNAS(object):
 
         # Update maximum number of generations if continue previous evolution process
         if self.current_gen > 0:
-            max_generations += self.current_gen + 1
+            # max_generations += self.current_gen + 1
             # Increment current generation, as in the log file we have the completed generations
             self.current_gen += 1
 
         while self.current_gen < max_generations:
+            if self.current_gen > 0:
+                if self.max_fitness <= self.last_max_fitness:
+                    self.evol_patience += 1
+                if self.evol_patience > self.max_patience:
+                    self.logger.info(f"Evolution did not improve the best fitness in {self.max_patience} generations, the evolution is being stopped with max fitness of : {self.max_fitness}")
+                    break
+                
             self.generate_classical()
             self.go_next_gen()
+        self.logger.info(f"\n\nEvolution memory: \n {json.dumps(self.arch_memory, sort_keys=True, indent=4)}")
+
+    def update_arch_memory(self, decoded_nets, fitnesses):
+        for idx, net in enumerate(decoded_nets):
+            key = '+'.join(net)
+            if key not in self.arch_memory:
+                self.arch_memory[key] = {
+                    'fitness': fitnesses[idx],
+                    'count': 1
+                }
+            else:
+                self.arch_memory[key]['count'] += 1
+

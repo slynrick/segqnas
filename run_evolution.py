@@ -38,6 +38,8 @@ def run(**args):
     logger.info(f"Getting parameters from {args['config_file']} ...")
     config = cfg.ConfigParameters(args, phase=phase)
     config.get_parameters()
+    if config.cell_list == 'None':
+        config.cell_list = None
     logger.info(f"Saving parameters for {config.phase} phase ...")
     config.save_params_logfile()
 
@@ -65,7 +67,7 @@ def run(**args):
         qnas_cnn.load_qnas_data(file_path=config.files_spec['previous_data_file'])
 
     # Execute evolution
-    logger.info(f"Starting evolution ...")
+    logger.info("Starting evolution ...")
     qnas_cnn.evolve()
 
 if __name__ == '__main__':

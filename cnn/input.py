@@ -11,6 +11,8 @@ from albumentations import (
     Resize,
     RandomBrightnessContrast,
     ShiftScaleRotate,
+    RandomCropFromBorders,
+    Normalize
 )
 from keras.utils import Sequence
 
@@ -50,16 +52,16 @@ def load_pickle(file, mode="rb"):
         a = pickle.load(f)
     return a
 
-
-def get_split_deterministic(all_keys, fold=0, num_splits=5, random_state=12345):
+def get_split_deterministic(data_path, fold=0, num_splits=5, random_state=12345):
     """
-    Splits a list of patient identifiers (or numbers) into num_splits folds and returns the split for fold fold.
-    :param all_keys:
+    Splits a list of files names into num_splits folds and returns the split for fold fold.
+    :param data_path:
     :param fold:
     :param num_splits:
     :param random_state:
     :return:
     """
+    all_keys = [f for f in os.listdir(data_path)]
     all_keys_sorted = np.sort(list(all_keys))
     splits = KFold(n_splits=num_splits, shuffle=True, random_state=random_state)
     for i, (train_idx, test_idx) in enumerate(splits.split(all_keys_sorted)):
@@ -72,11 +74,11 @@ def get_split_deterministic(all_keys, fold=0, num_splits=5, random_state=12345):
 
 def get_training_augmentation(patch_size):
     train_transform = [
-        #HorizontalFlip(p=0.5),
+        HorizontalFlip(p=0.5),
         ShiftScaleRotate(
-            p=1.0
-        ),  # (shift_limit=0.0625, scale_limit=0.1, rotate_limit=45),
-        #RandomBrightness(p=1.0, limit=(-0.1, 0.1)),
+             p=0.5, rotate_limit=15
+        ),
+        RandomCropFromBorders(p=0.5),
         Resize(*patch_size),
     ]
     return Compose(train_transform)
@@ -132,33 +134,26 @@ class Dataloader(Sequence):
 
 
 class Dataset:
-    def __init__(self, data_path, patients, only_non_empty_slices=False):
+    # def __init__(self, data_path, patients, only_non_empty_slices=False):
+    def __init__(self, data_path, selected = None, only_non_empty_slices=False):
         self.only_non_empty_slices = only_non_empty_slices
+        self.selected = selected
         self.data_path = data_path
-        self._get_list_of_files(patients)
+        self._get_list_of_files()
 
-    def _get_list_of_files(self, patients):
+    def _get_list_of_files(self):
         files = []
-        for patient in patients:
-            files_for_patient = subfiles(
-                self.data_path, prefix=patient + "_", suffix="npy"
-            )
-
-            if self.only_non_empty_slices:
-                non_empty_files_for_patient = []
-
-                for file_for_patient in files_for_patient:
-                    data = np.load(file_for_patient, allow_pickle=True)
-                    mask = data[-1]
-                    labels = np.unique(mask)
-                    if len(labels) == 1 and labels[0] == 0:
-                        continue
-                    else:
-                        non_empty_files_for_patient.append(file_for_patient)
-
-                files_for_patient = non_empty_files_for_patient
-
-            files.extend(files_for_patient)
+        
+        selecteds = self.selected if self.selected is not None else list(os.listdir(self.data_path))
+        
+        for f in selecteds:
+            data = np.load(os.path.join(self.data_path, f), allow_pickle=True)
+            mask = data[-1]
+            labels = np.unique(mask)
+            if len(labels) == 1 and labels[0] == 0 and self.only_non_empty_slices:
+                continue
+            else:
+                files.append(os.path.join(self.data_path, f))
 
         self.files = files
 

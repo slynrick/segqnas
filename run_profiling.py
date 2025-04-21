@@ -13,8 +13,8 @@ import os
 from chromosome import QChromosomeNetwork
 from cnn import model
 from util import load_pkl, load_yaml
-from cnn.loss import gen_dice_coef_loss
-from cnn.metric import gen_dice_coef, soft_gen_dice_coef
+from cnn.loss import gen_dice_coef_loss, gen_dice_coef_weight_avg_loss
+from cnn.metric import gen_dice_coef_avg, gen_dice_coef_weight_avg
 import tensorflow as tf
 
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -75,6 +75,8 @@ def load_params(exp_path, generation=None, individual=0):
         "layer_dict": params["layer_dict"],
         "layer_list": params["QNAS"]["layer_list"],
         "cell_list": params["cell_list"],
+        "use_loss_class_weights": params["train"]["use_loss_class_weights"],
+        "loss_class_weights": params["train"]["loss_class_weights"],
     }
 
     return loaded_params
@@ -120,12 +122,35 @@ def main(exp_path, generation, individual, retrained):
     with tf.Graph().as_default():
         with tf.compat.v1.variable_scope("q_net"):
             # Adding input placeholder into the graph
-            net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  f"retrained" if retrained else '', "bestmodel"),
+            net: tf.keras.Model = None
+
+            if params["use_loss_class_weights"]:
+                def custom_gen_dice_coef_weight_avg_loss(y_true, y_pred):
+                    return gen_dice_coef_weight_avg_loss(y_true, y_pred, params["loss_class_weights"])
+                
+                def custom_gen_dice_coef_weight_avg(y_true, y_pred):
+                    return gen_dice_coef_weight_avg(y_true, y_pred, params["loss_class_weights"])
+                
+
+                net: tf.keras.Model = tf.keras.models.load_model(os.path.join(params['experiment_path'],  "retrained" if retrained else '', "bestmodel"),
+                                                        custom_objects={
+                                                            'custom_gen_dice_coef_weight_avg': custom_gen_dice_coef_weight_avg,
+                                                            'custom_gen_dice_coef_weight_avg_loss': custom_gen_dice_coef_weight_avg_loss,
+                                                        })
+            else:
+                net: tf.keras.Model = tf.keras.models.load_model(os.path.join(params['experiment_path'],  "retrained" if retrained else '', "bestmodel"),
+                                                        custom_objects={
+                                                            'gen_dice_coef_avg': gen_dice_coef_avg,
+                                                            'gen_dice_coef_loss': gen_dice_coef_loss,
+                                                        }) 
+
+
+            net = tf.keras.models.load_model(os.path.join(params['experiment_path'],  "retrained" if retrained else '', "bestmodel"),
                                              custom_objects={
-                                                 'gen_dice_coef': gen_dice_coef,
+                                                 'gen_dice_coef_avg': gen_dice_coef_avg,
                                                  'gen_dice_coef_loss': gen_dice_coef_loss,
-                                                 'soft_gen_dice_coef': soft_gen_dice_coef
                                              })
+            print(net.summary())
             profile_model(profile_path, params["individual_id_str"])
 
 

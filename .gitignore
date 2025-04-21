@@ -122,4 +122,10 @@ old
 .h5
 log
 
+*_dataset/data
+
 config_experiment*/
+
+results-comparison/
+
+bcss_dataset/

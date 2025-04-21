@@ -148,7 +148,7 @@ class ExtractData(object):
 
         with open(out_path, "w") as f:
             if write_headers:
-                print(f"wall_time,step,value", file=f)
+                print("wall_time,step,value", file=f)
             for e in iterator:
                 for v in e.summary.value:
                     if v.tag == tag:
@@ -211,7 +211,7 @@ def check_files(exp_path):
             "evolution or to retrain a model."
         )
 
-    file_path = os.path.join(exp_path, "data_QNAS.pkl")
+    file_path = os.path.join(exp_path, "net_list.pkl")
 
     if os.path.exists(file_path):
         if os.stat(file_path).st_size == 0:
@@ -254,7 +254,7 @@ def init_log(log_level, name, file_path=None):
         handler = logging.FileHandler(file_path)
 
     formatter = logging.Formatter(
-        "%(levelname)s: %(module)s: %(asctime)s.%(msecs)03d " "- %(message)s",
+        "%(levelname)s: %(module)s: %(asctime)s.%(msecs)03d - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     handler.setFormatter(formatter)
@@ -414,7 +414,7 @@ def download_file(data_path, file_name, source_url):
         stat_info = os.stat(file_path)
         print(f"\nSuccessfully downloaded {file_name} {stat_info.st_size} bytes! :)")
     else:
-        print(f"Dataset already downloaded, skipping download...")
+        print("Dataset already downloaded, skipping download...")
 
     return file_path
 

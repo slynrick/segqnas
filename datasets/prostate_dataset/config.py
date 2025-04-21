@@ -1,4 +1,10 @@
 root_folder = "./prostate_dataset/data"
 preprocessed_folder = "./prostate_dataset/data/Task05_Prostate_preprocessed"
 dataset_folder = "./prostate_dataset/data/Task05_Prostate"
-num_threads = 4
+resource_url = "https://msd-for-monai.s3-us-west-2.amazonaws.com/Task05_Prostate.tar"
+resource_md5 = "35138f08b1efaef89d7424d2bcc928db"
+output_tar = "Task05_Prostate.tar"
+patient_filename_prefix = "prostate"
+patient_filename_suffix = ".nii.gz"
+train_folder = "imagesTr"
+train_mask_folder = "labelsTr"

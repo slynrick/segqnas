@@ -7,25 +7,18 @@ import csv
 import os
 import platform
 import time
-from logging import addLevelName
-from multiprocessing import Value
 
 import numpy as np
 import tensorflow as tf
+
 from tensorflow.python.util import deprecation
+
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 from batchgenerators.utilities.file_and_folder_operations import maybe_mkdir_p
-
-from cnn.input import (
-    get_list_of_patients,
-    get_training_augmentation,
-    get_validation_augmentation,
-    Dataset,
-    Dataloader,
-    get_split_deterministic,
-)
-
 from cnn import model
+from cnn.input import (Dataloader, Dataset, get_split_deterministic,
+                       get_training_augmentation, get_validation_augmentation)
+
 
 def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
 
@@ -41,16 +34,20 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
     num_initializations = train_params["initializations"]
     stem_filters = train_params["stem_filters"]
     max_depth = train_params["max_depth"]
-    
+    use_es_patience = train_params["use_early_stopping_patience"]
+    es_patience = train_params["early_stopping_patience"]
+    loss_class_weights = train_params["loss_class_weights"]
+    use_loss_class_weights = train_params["use_loss_class_weights"]
+
     experiment_path = train_params["experiment_path"]
 
     patch_size = (image_size, image_size, num_channels)
 
-    patients = get_list_of_patients(data_path)
+    #patients = get_list_of_patients(data_path)
     train_augmentation = get_training_augmentation(patch_size)
     val_augmentation = get_validation_augmentation(patch_size)
 
-    val_gen_dice_coef_list = []
+    val_gen_dice_coef_avg_list = []
     
     best_model = None
     best_metric = 0.0
@@ -66,25 +63,29 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 layer_dict=layer_dict,
                 net_list=net_list,
                 cell_list=cell_list,
+                loss_class_weights=loss_class_weights if use_loss_class_weights else None,
             )
 
             train_patients, val_patients = get_split_deterministic(
-                patients,
+                # patients,
+                os.path.join(data_path, 'train'),
                 fold=fold,
                 num_splits=num_folds,
                 random_state=initialization,
             )
 
             train_dataset = Dataset(
-                data_path=data_path,
-                patients=train_patients,
-                only_non_empty_slices=True,
+                data_path=os.path.join(data_path, 'train'),
+                # patients=train_patients,
+                selected=train_patients,
+                only_non_empty_slices=False,
             )
 
             val_dataset = Dataset(
-                data_path=data_path,
-                patients=val_patients,
-                only_non_empty_slices=True,
+                data_path=os.path.join(data_path, 'train'),
+                # patients=val_patients,
+                selected=val_patients,
+                only_non_empty_slices=False,
             )
 
             train_dataloader = Dataloader(
@@ -100,7 +101,7 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 batch_size=batch_size,
                 skip_slices=0,
                 augmentation=val_augmentation,
-                shuffle=False,
+                shuffle=True,
             )
 
             def learning_rate_fn(epoch):
@@ -112,21 +113,30 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                     * (1 - epoch / float(epochs)) ** (power)
                 ) + end_learning_rate
 
+            callbacks = []
+
             lr_callback = tf.keras.callbacks.LearningRateScheduler(
                 learning_rate_fn, verbose=False
             )
+            callbacks.append(lr_callback)
+
+            if use_es_patience:
+                es_callback = tf.keras.callbacks.EarlyStopping(
+                    monitor='loss',patience=es_patience
+                )
+                callbacks.append(es_callback)
 
             history = net.fit(
                 train_dataloader,
                 validation_data=val_dataloader,
                 epochs=epochs,
                 verbose=0,
-                callbacks=[lr_callback],
+                callbacks=callbacks,
             )
 
-            history_eval_epochs = history.history["val_gen_dice_coef"][-eval_epochs:]
+            history_eval_epochs = history.history["val_custom_gen_dice_coef" if not use_loss_class_weights else "val_custom_gen_dice_coef_weight_avg"][-eval_epochs:]
 
-            val_gen_dice_coef_list.extend(history_eval_epochs)
+            val_gen_dice_coef_avg_list.extend(history_eval_epochs)
 
             mean_dsc = np.mean(history_eval_epochs)
             std_dsc = np.std(history_eval_epochs)
@@ -138,15 +148,15 @@ def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
                 best_metric = mean_dsc
                 best_model = net
 
-    mean_dsc = np.mean(val_gen_dice_coef_list)
-    std_dsc = np.std(val_gen_dice_coef_list)
+    mean_dsc = np.mean(val_gen_dice_coef_avg_list)
+    std_dsc = np.std(val_gen_dice_coef_avg_list)
     
     best_model.save(os.path.join(experiment_path, "bestmodel"))
 
     return mean_dsc, std_dsc
 
 
-def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val: Value, cell_list=None):
+def fitness_calculation(id_num, train_params, layer_dict, net_list, return_val, cell_list=None):
     """Train and evaluate a model using evolved parameters.
 
     Args:

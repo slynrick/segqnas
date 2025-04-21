@@ -1,0 +1,67 @@
+# Configuration file for experiment 3 (search blocks but keeping topology found in experiment_1)
+
+QNAS:
+    crossover_rate: 0.1
+    max_generations: 100
+    max_num_nodes: 5
+    num_quantum_ind: 6
+    repetition: 1
+    replace_method: best
+    update_quantum_gen: 1
+    update_quantum_rate: 0.9
+    evolution_patience: 100
+
+    layer_dict:  {
+        'den_d_3': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 3, 'prob':1/26},
+        'den_d_5': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 5, 'prob':1/26},
+        'den_d_7': {'cell': 'DownscalingCell', 'block': 'DenseBlock',     'kernel': 7, 'prob':1/26},
+        'inc_d_3': {'cell': 'DownscalingCell', 'block': 'InceptionBlock', 'kernel': 3, 'prob':1/26},
+        'inc_d_5': {'cell': 'DownscalingCell', 'block': 'InceptionBlock', 'kernel': 5, 'prob':1/26},
+        'inc_d_7': {'cell': 'DownscalingCell', 'block': 'InceptionBlock', 'kernel': 7, 'prob':1/26},
+        'res_d_3': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',    'kernel': 3, 'prob':1/26},
+        'res_d_5': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',    'kernel': 5, 'prob':1/26},
+        'res_d_7': {'cell': 'DownscalingCell', 'block': 'ResNetBlock',    'kernel': 7, 'prob':1/26},
+        'vgg_d_3': {'cell': 'DownscalingCell', 'block': 'VGGBlock',       'kernel': 3, 'prob':1/26},
+        'vgg_d_5': {'cell': 'DownscalingCell', 'block': 'VGGBlock',       'kernel': 5, 'prob':1/26},
+        'vgg_d_7': {'cell': 'DownscalingCell', 'block': 'VGGBlock',       'kernel': 7, 'prob':1/26},
+
+        'den_n_3': {'cell': 'NonscalingCell',  'block': 'DenseBlock',     'kernel': 3, 'prob':1/26},
+        'den_n_5': {'cell': 'NonscalingCell',  'block': 'DenseBlock',     'kernel': 5, 'prob':1/26},
+        'den_n_7': {'cell': 'NonscalingCell',  'block': 'DenseBlock',     'kernel': 7, 'prob':1/26},
+        'inc_n_3': {'cell': 'NonscalingCell',  'block': 'InceptionBlock', 'kernel': 3, 'prob':1/26},
+        'inc_n_5': {'cell': 'NonscalingCell',  'block': 'InceptionBlock', 'kernel': 5, 'prob':1/26},
+        'inc_n_7': {'cell': 'NonscalingCell',  'block': 'InceptionBlock', 'kernel': 7, 'prob':1/26},
+        'res_n_3': {'cell': 'NonscalingCell',  'block': 'ResNetBlock',    'kernel': 3, 'prob':1/26},
+        'res_n_5': {'cell': 'NonscalingCell',  'block': 'ResNetBlock',    'kernel': 5, 'prob':1/26},
+        'res_n_7': {'cell': 'NonscalingCell',  'block': 'ResNetBlock',    'kernel': 7, 'prob':1/26},
+        'vgg_n_3': {'cell': 'NonscalingCell',  'block': 'VGGBlock',       'kernel': 3, 'prob':1/26},
+        'vgg_n_5': {'cell': 'NonscalingCell',  'block': 'VGGBlock',       'kernel': 5, 'prob':1/26},
+        'vgg_n_7': {'cell': 'NonscalingCell',  'block': 'VGGBlock',       'kernel': 7, 'prob':1/26},
+
+        'selfatt': {'cell': 'NonscalingCell',  'block': 'SelfAttentionBlock',          'prob':1/26},
+
+        'ide':     {'cell': 'NonscalingCell',  'block': 'IdentityBlock',               'prob':1/26},
+    }
+
+train:
+    batch_size: 32
+    epochs: 30
+    eval_epochs: 6
+    initializations: 1
+    folds: 5
+    stem_filters: 16
+    max_depth: 4
+
+    use_early_stopping_patience: false
+    early_stopping_patience: 5
+
+    gpu_selected: '0'
+    threads: 4
+
+    # Dataset
+    data_path: prostate_dataset/data/Task05_Prostate_preprocessed/
+    image_size: 128
+    skip_slices: 1
+    num_channels: 2
+    num_classes: 3
+    data_augmentation: True

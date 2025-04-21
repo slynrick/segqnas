@@ -5,7 +5,6 @@
 """
 
 import argparse
-from multiprocessing import Value
 
 import tensorflow as tf
 
@@ -14,7 +13,7 @@ for gpu_instance in physical_devices:
     tf.config.experimental.set_memory_growth(gpu_instance, True)
 
 import qnas_config as cfg
-from cnn import train
+from cnn import train_detailed
 from util import init_log
 
 
@@ -22,7 +21,7 @@ def main(**args):
     logger = init_log(args["log_level"], name=__name__)
 
     # Get all parameters
-    logger.info(f"Getting parameters from evolution ...")
+    logger.info("Getting parameters from evolution ...")
     config = cfg.ConfigParameters(args, phase="retrain")
     config.get_parameters()
     
@@ -30,53 +29,32 @@ def main(**args):
     config.train_spec['epochs'] = args['max_epochs']
     config.train_spec['eval_epochs'] = args['eval_epochs']
     config.train_spec['initializations'] = args['initializations']
-    config.train_spec['folds'] = args['folds']
+
+    if 'loss_class_weights' not in config.train_spec:
+        config.train_spec['loss_class_weights'] = [0.0, 0.5, 0.5]
+        config.train_spec['use_loss_class_weights'] = False
     
     gen, ind = args["id_num"].split("_")
     gen = int(gen)
     ind = int(ind)
 
+    if args['sel_best']:
+        ind = 0
+
     config.load_evolved_data(gen, ind)
-    # print(config.args)
-    # print(config.QNAS_spec)
-    # print(config.files_spec)
-    # print(config.layer_dict)
-    # print(config.cell_list)
-    # print(config.previous_params_file)
-    # print(config.evolved_params['net'])
 
-    # It is important to merge the dicts with the evolved_params first, as they need to be
-    # overwritten in case we are using one of the special train schemes.
-
-    logger.info(f"Starting training of model")
-    results = Value('f', 0.0)
-    train.fitness_calculation(
-        args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], results, config.cell_list
+    logger.info("Starting training of model")
+    if config.cell_list == 'None':
+        config.cell_list = None
+    mean_dsc, std_dsc, test_dice = train_detailed.fitness_calculation(
+        args["id_num"], config.train_spec, config.layer_dict, config.evolved_params['net'], config.cell_list
     )
 
-    # print(args)
-    # print(id_num)
-    # print(train_params)
-    # print(layer_dict)
-
-    # with open(os.path.join(args['experiment_path'], args['id_num'], 'net_list.csv'), newline='') as f:
-    #     reader = csv.reader(f)
-    #     for row in reader:
-    #         net_list = row
-
-    # logger.info(f"Starting training of model {config.evolved_params['net']}")
-    # valid_mean_iou, test_info = train.train_and_eval(
-    #     data_info=config.data_info,
-    #     params=train_params,
-    #     layer_dict=config.layer_dict,
-    #     net_list=config.evolved_params["net"],
-    #     lr_schedule=args["lr_schedule"],
-    #     run_train_eval=args["run_train_eval"],
-    # )
-    logger.info(f"Saving parameters...")
+    logger.info("Saving parameters...")
     config.save_params_logfile()
 
-    logger.info(f"Final test: {results}")
+    logger.info(f"Final Val: {mean_dsc} +- {std_dsc}")
+    logger.info(f"Final Test: {test_dice}")
 
 
 if __name__ == "__main__":
@@ -126,118 +104,18 @@ if __name__ == "__main__":
         help="The number of initializations for the cross validation. Default = 5.",
     )
     parser.add_argument(
-        "--folds",
-        type=int,
-        default=5,
-        help="The number of folds for the cross validation. Default = 5.",
-    )
-    parser.add_argument(
         "--log_level",
         choices=["NONE", "INFO", "DEBUG"],
         default="NONE",
         help="Logging information level.",
     )
 
+    parser.add_argument(
+        '--sel_best', 
+        dest='sel_best', 
+        action='store_true'
+    )
+
     arguments = parser.parse_args()
 
     main(**vars(arguments))
-
-
-# from cnn.train import cross_val_train
-
-# train_params = {
-#     "batch_size": 32,
-#     "epochs": 100,
-#     "eval_epochs": 20,
-#     "initializations": 5,
-#     "folds": 5,
-#     "stem_filters": 32,
-#     "max_depth": 4,
-#     "data_path": "spleen_dataset/data/Task09_Spleen_preprocessed/",
-#     "image_size": 128,
-#     "skip_slices": 0,
-#     "num_channels": 1,
-#     "num_classes": 2,
-#     "data_augmentation": True,
-# }
-
-# unet = [
-#     "vgg_n_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_u_3",
-#     "vgg_u_3",
-#     "vgg_u_3",
-#     "vgg_u_3",
-#     "vgg_n_3",
-# ]
-
-# experiment_1_8 = [
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "vgg_n_3",
-#     "ide_d",
-#     "vgg_n_3",
-#     "vgg_d_3",
-#     "vgg_u_3",
-#     "ide_d",
-#     "vgg_n_3",
-#     "ide_d"
-# ]
-
-# experiment_1_9 = [
-#     "ide_u",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "ide_d",
-#     "vgg_n_3",
-#     "ide_d",
-#     "vgg_u_3",
-#     "vgg_d_3",
-#     "vgg_d_3",
-#     "ide_u"
-# ]
-
-# net_list = unet
-
-# layer_dict = {
-#     "vgg_d_3": {
-#         "cell": "DownscalingCell",
-#         "block": "VGGBlock",
-#         "kernel": 3,
-#         "prob": 1 / 6,
-#     },
-#     "vgg_u_3": {
-#         "cell": "UpscalingCell",
-#         "block": "VGGBlock",
-#         "kernel": 3,
-#         "prob": 1 / 6,
-#     },
-#     "vgg_n_3": {
-#         "cell": "NonscalingCell",
-#         "block": "VGGBlock",
-#         "kernel": 3,
-#         "prob": 1 / 6,
-#     },
-#     "ide_d": {
-#         "cell": "DownscalingCell",
-#         "block": "IdentityBlock",
-#         "prob": 1 / 6,
-#     },
-#     "ide_u": {
-#         "cell": "UpscalingCell",
-#         "block": "IdentityBlock",
-#         "prob": 1 / 6,
-#     },
-#     "ide_n": {
-#         "cell": "NonscalingCell",
-#         "block": "IdentityBlock",
-#         "prob": 1 / 6,
-#     },
-# }
-
-# mean_dsc, std_dsc = cross_val_train(train_params, layer_dict, net_list)
-
-# print(f"{mean_dsc} +- {std_dsc}")
