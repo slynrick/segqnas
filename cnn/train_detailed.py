@@ -20,7 +20,7 @@ from cnn.input import (Dataloader, Dataset, get_split_deterministic,
 from cnn.metric import gen_dice_coef
 
 
-def cross_val_train(train_params, layer_dict, net_list, cell_list=None):
+def get_model(train_params, layer_dict, net_list, cell_list=None):
 
     data_path = train_params["data_path"]
     num_classes = train_params["num_classes"]
@@ -230,7 +230,7 @@ def fitness_calculation(id_num, train_params, layer_dict, net_list, cell_list=No
 
 
         try:
-            mean_dsc, std_dsc, test_dice = cross_val_train(
+            mean_dsc, std_dsc, test_dice = get_model(
                 train_params, layer_dict, net_list, cell_list
             )
         except Exception as e:
